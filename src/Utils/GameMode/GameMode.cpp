@@ -7,7 +7,9 @@ GameMode::GameMode()
 
 GameMode::GameMode(const std::string& filePath)
 {
-  _name = filePath.substr(filePath.find_last_of("/") + 1, filePath.find_last_of("."));
+  size_t start = filePath.find_last_of("/") + 1;
+  size_t end = filePath.find_last_of(".");
+  _name = filePath.substr(start, end - start);
 }
 
 GameMode::~GameMode()

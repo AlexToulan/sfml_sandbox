@@ -54,7 +54,7 @@ target_include_directories(SFMLSandbox
 )
 
 target_link_libraries(SFMLSandbox PRIVATE sfml-graphics)
-target_compile_features(SFMLSandbox PRIVATE cxx_std_17)
+target_compile_features(SFMLSandbox PRIVATE cxx_std_20)
 
 if(WIN32)
     add_custom_command(

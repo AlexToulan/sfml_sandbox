@@ -1,8 +1,10 @@
 #include "GameOfLife/GameOfLifeGameMode.hpp"
 #include "Utils/Logging.hpp"
 
+#include <source_location>
+
 GameOfLifeGameMode::GameOfLifeGameMode()
- : GameMode(__FILE__)
+ : GameMode(std::source_location::current().file_name())
 {
 
 }
@@ -68,7 +70,7 @@ void GameOfLifeGameMode::processEvents(sf::Event& event)
       {
         if (event.mouseButton.button == sf::Mouse::Left)
         {
-          log_info(std::to_string(event.mouseButton.x) + " " + std::to_string(event.mouseButton.y));
+          Log::info(std::to_string(event.mouseButton.x) + " " + std::to_string(event.mouseButton.y));
           int x = (event.mouseButton.x - 1) / _cellGrid.getCellSpacing();
           int y = (event.mouseButton.y - 1) / _cellGrid.getCellSpacing();
           setCell(x, y, !getCell(x, y));

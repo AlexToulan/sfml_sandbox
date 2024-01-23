@@ -9,43 +9,43 @@
 // #define FUNCTION_NAME_VISIBLE
 namespace Log
 {
-  void _info(const char* file_name, const char* function_name, int line_num, const std::string& message)
+  void info(const std::string& message, const std::source_location& location)
   {
     #ifdef DEBUG_LOG
       std::cout << "[  INFO  ]  " << blue
       #ifdef PATH_LINK_VISIBLE
-        << file_name << ":" << line_num << " "
+        << location.file_name() << ":" << location.line() << " "
       #endif
       #ifdef FUNCTION_NAME_VISIBLE
-        << function_name << "()"
+        << location.function_name() << "()"
       #endif
-        << reset << " > " << message << std::endl;
+        << reset << "> " << message << std::endl;
     #endif
   }
 
-  void _warn(const char* file_name, const char* function_name, int line_num, const std::string& message)
+    void warn(const std::string& message, const std::source_location& location)
   {
     #ifdef DEBUG_LOG
-      std::cout << yellow << "[ WARNING ] " << blue
-      #ifdef PATH_LINK_VISIBLE
-        << file_name << ":" << line_num << " "
-      #endif
-      #ifdef FUNCTION_NAME_VISIBLE
-        << function_name << "()"
-      #endif
-        << reset << " > " << message << std::endl;
+    std::cout << yellow << "[ WARNING ] " << blue
+    #ifdef PATH_LINK_VISIBLE
+      << location.file_name() << ":" << location.line() << " "
+    #endif
+    #ifdef FUNCTION_NAME_VISIBLE
+      << location.function_name() << "()"
+    #endif
+      << reset << "> " << message << std::endl;
     #endif
   }
 
-  void _error(const char* file_name, const char* function_name, int line_num, const std::string& message)
+  void error(const std::string& message, const std::source_location& location)
   {
     std::cout << red << "[  ERROR  ] " << blue
     #ifdef PATH_LINK_VISIBLE
-      << file_name << ":" << line_num << " "
+      << location.file_name() << ":" << location.line() << " "
     #endif
     #ifdef FUNCTION_NAME_VISIBLE
-      << function_name << "()"
+      << location.function_name() << "()"
     #endif
-      << reset << " > " << message << std::endl;
+      << reset << "> " << message << std::endl;
   }
 }

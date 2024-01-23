@@ -3,7 +3,6 @@
 #include <string>
 #include <source_location>
 
-
 namespace Log
 {
   const std::string red("\033[0;31m");
@@ -14,12 +13,7 @@ namespace Log
   const std::string magenta("\033[0;35m");
   const std::string reset("\033[0m");
 
-  void _info(const char* file_name, const char* function_name, int line_num, const std::string& message);
-  void _warn(const char* file_name, const char* function_name, int line_num, const std::string& message);
-  void _error(const char* file_name, const char* function_name, int line_num, const std::string& message);
+  void info(const std::string& message, const std::source_location& location = std::source_location::current());
+  void warn(const std::string& message, const std::source_location& location = std::source_location::current());
+  void error(const std::string& message, const std::source_location& location = std::source_location::current());
 };
-
-// TODO: upgrade this to use C++20 std::source_location. CMake is set to C++17
-#define log_info(message) Log::_info(__FILE__, __FUNCTION__, __LINE__, (message))
-#define log_warn(message) Log::_warn(__FILE__, __FUNCTION__, __LINE__, (message))
-#define log_error(message) Log::_error(__FILE__, __FUNCTION__, __LINE__, (message))
