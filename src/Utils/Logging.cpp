@@ -2,50 +2,47 @@
 #include <fstream>
 #include <iostream>
 
+
 #include "Logging.hpp"
 
-#define DEBUG_LOG
-#define PATH_LINK_VISIBLE
-// #define FUNCTION_NAME_VISIBLE
-namespace Log
+bool Log::bShowInfo = false;
+bool Log::bShowWarn = false;
+bool Log::bShowError = true;
+std::ofstream Log::logFile;
+
+void Log::init(const std::string& filePath, bool showInfo, bool showWarn)
 {
-  void info(const std::string& message, const std::source_location& location)
-  {
-    #ifdef DEBUG_LOG
-      std::cout << "[  INFO  ]  " << blue
-      #ifdef PATH_LINK_VISIBLE
-        << location.file_name() << ":" << location.line() << " "
-      #endif
-      #ifdef FUNCTION_NAME_VISIBLE
-        << location.function_name() << "()"
-      #endif
-        << reset << "> " << message << std::endl;
-    #endif
-  }
+  logFile = std::ofstream(filePath, std::ofstream::trunc);
+  bShowInfo = showInfo;
+  bShowWarn = showWarn;
+}
 
-    void warn(const std::string& message, const std::source_location& location)
+void Log::info(const std::string& message, const std::source_location& location)
+{
+  logFile << "[  INFO  ]  " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+  if (bShowInfo)
   {
-    #ifdef DEBUG_LOG
-    std::cout << yellow << "[ WARNING ] " << blue
-    #ifdef PATH_LINK_VISIBLE
-      << location.file_name() << ":" << location.line() << " "
-    #endif
-    #ifdef FUNCTION_NAME_VISIBLE
-      << location.function_name() << "()"
-    #endif
-      << reset << "> " << message << std::endl;
-    #endif
+    std::cout << "[  INFO  ]  " << blue()
+      << location.file_name() << ":" << location.line() << " " << reset() << "> " << message << std::endl;
   }
+}
 
-  void error(const std::string& message, const std::source_location& location)
+void Log::warn(const std::string& message, const std::source_location& location)
+{
+  logFile << "[ WARNING ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+  if (bShowWarn)
   {
-    std::cout << red << "[  ERROR  ] " << blue
-    #ifdef PATH_LINK_VISIBLE
-      << location.file_name() << ":" << location.line() << " "
-    #endif
-    #ifdef FUNCTION_NAME_VISIBLE
-      << location.function_name() << "()"
-    #endif
-      << reset << "> " << message << std::endl;
+    std::cout << yellow() << "[ WARNING ] " << blue()
+      << location.file_name() << ":" << location.line() << " " << reset() << "> " << message << std::endl;
+  }
+}
+
+void Log::error(const std::string& message, const std::source_location& location)
+{
+  logFile << "[  ERROR  ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+  if (bShowError)
+  {
+    std::cout << red() << "[  ERROR  ] " << blue()
+      << location.file_name() << ":" << location.line() << " " << reset() << "> " << message << std::endl;
   }
 }

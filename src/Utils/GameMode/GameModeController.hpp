@@ -13,8 +13,9 @@ public:
   GameModeController();
   GameModeController(int screenWidth, int screenHeight, std::string windowTitle);
   ~GameModeController();
-  void addGameMode(std::unique_ptr<GameMode> gameMode);
   bool setup(unsigned int frameRate);
+  void addGameMode(std::unique_ptr<GameMode> gameMode);
+  void selectGameMode(const std::string& gameModeName);
   void run();
   void teardown();
   void nextGameMode();

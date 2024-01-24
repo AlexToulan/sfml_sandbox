@@ -19,6 +19,24 @@ GameModeController::~GameModeController()
 
 }
 
+void GameModeController::selectGameMode(const std::string& gameModeName)
+{
+  size_t targetGameModeIndex = 0;
+  for (auto& gameMode : _gameModes)
+  {
+    if (gameMode->getName() == gameModeName)
+    {
+      break;
+    }
+    targetGameModeIndex++;
+  }
+  switchGameMode(targetGameModeIndex - _currentGameModeIndex);
+  if (_gameModes[_currentGameModeIndex]->getName() != gameModeName)
+  {
+    Log::error(gameModeName + " not found");
+  }
+}
+
 void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 {
   Log::info("Adding " + gameMode->getName());
@@ -29,6 +47,7 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 
 bool GameModeController::setup(unsigned int frameRate)
 {
+  Log::info("Setting up game mode controller");
   _frameRate = frameRate;
   _window.setFramerateLimit(_frameRate);
 
@@ -78,7 +97,7 @@ void GameModeController::run()
     }
 
     _window.clear();
-    _gameModes[_currentGameModeIndex]->update(_loopTimer.pollLoopSeconds());
+    _gameModes[_currentGameModeIndex]->update(_loopTimer.pollSeconds());
     _gameModes[_currentGameModeIndex]->render(_window);
     _window.display();
   }
@@ -91,13 +110,13 @@ void GameModeController::teardown()
 
 void GameModeController::nextGameMode()
 {
-  Log::info("Next Game Mode");
+  Log::info("Next game mode");
   switchGameMode(1);
 }
 
 void GameModeController::previousGameMode()
 {
-  Log::info("Previous Game Mode");
+  Log::info("Previous game mode");
   switchGameMode(-1);
 }
 
@@ -108,11 +127,8 @@ void GameModeController::switchGameMode(int direction)
     Log::warn("No game mode to switch to. Restarting game mode.");
   }
 
-  if (direction > 1)
-    direction = 1;
-  if (direction < -1)
-    direction = -1;
 
+  Log::info("Switching to " + _gameModes[_currentGameModeIndex]->getName());
   _gameModes[_currentGameModeIndex]->onEnd();
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
   _gameModes[_currentGameModeIndex]->onStart();
