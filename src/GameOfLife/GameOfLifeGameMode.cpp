@@ -79,14 +79,14 @@ void GameOfLifeGameMode::processEvents(sf::Event& event)
   }
 }
 
-void GameOfLifeGameMode::update(float delta_seconds)
+void GameOfLifeGameMode::update(float ds)
 {
   if (_bIsPaused)
   {
     return;
   }
 
-  _currentUpdateSec += delta_seconds;
+  _currentUpdateSec += ds;
   if (_currentUpdateSec < _secPerUpdate)
     return;
 

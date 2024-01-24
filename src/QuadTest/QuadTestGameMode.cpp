@@ -79,7 +79,7 @@ void QuadTestGameMode::processEvents(sf::Event& event)
 
 }
 
-void QuadTestGameMode::update(float delta_seconds)
+void QuadTestGameMode::update(float ds)
 {
   for(int y = 0; y < _height; y++)
   {
