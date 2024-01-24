@@ -17,7 +17,7 @@ int main()
   }
   else
   {
-    log_error("GameModeController failed to setup.");
+    Log::error("GameModeController failed to setup.");
   }
   controller.teardown();
   return 0;

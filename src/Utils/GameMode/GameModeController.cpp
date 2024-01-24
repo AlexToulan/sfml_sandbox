@@ -21,7 +21,7 @@ GameModeController::~GameModeController()
 
 void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 {
-  log_info("Adding " + gameMode->getName());
+  Log::info("Adding " + gameMode->getName());
   _gameModes.push_back(std::move(gameMode));
   _bNextKey = false;
   _bPreviousKey = false;
@@ -34,7 +34,7 @@ bool GameModeController::setup(unsigned int frameRate)
 
   if (_gameModes.size() == 0)
   {
-    log_warn("No game modes to run");
+    Log::warn("No game modes to run");
     return false;
   }
 
@@ -91,13 +91,13 @@ void GameModeController::teardown()
 
 void GameModeController::nextGameMode()
 {
-  log_info("Next Game Mode");
+  Log::info("Next Game Mode");
   switchGameMode(1);
 }
 
 void GameModeController::previousGameMode()
 {
-  log_info("Previous Game Mode");
+  Log::info("Previous Game Mode");
   switchGameMode(-1);
 }
 
@@ -105,7 +105,7 @@ void GameModeController::switchGameMode(int direction)
 {
   if (_gameModes.size() < 2)
   {
-    log_warn("No game mode to switch to. Restarting game mode.");
+    Log::warn("No game mode to switch to. Restarting game mode.");
   }
 
   if (direction > 1)
