@@ -10,7 +10,7 @@ public:
   void start();
   void stop();
   float getSeconds();
-  float pollLoopSeconds();
+  float pollSeconds();
 
 private:
   typedef std::chrono::high_resolution_clock hs_clock;

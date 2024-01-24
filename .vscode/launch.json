@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args":[
-        "--game_mode", "QuadTestGameMode"
+        "--game_mode", "GameOfLifeGameMode"
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true
