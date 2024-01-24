@@ -19,6 +19,24 @@ GameModeController::~GameModeController()
 
 }
 
+void GameModeController::selectGameMode(const std::string& gameModeName)
+{
+  size_t targetGameModeIndex = 0;
+  for (auto& gameMode : _gameModes)
+  {
+    if (gameMode->getName() == gameModeName)
+    {
+      break;
+    }
+    targetGameModeIndex++;
+  }
+  switchGameMode(targetGameModeIndex - _currentGameModeIndex);
+  if (_gameModes[_currentGameModeIndex]->getName() != gameModeName)
+  {
+    // TODO: log error
+  }
+}
+
 void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 {
   Log::info("Adding " + gameMode->getName());
@@ -107,11 +125,6 @@ void GameModeController::switchGameMode(int direction)
   {
     Log::warn("No game mode to switch to. Restarting game mode.");
   }
-
-  if (direction > 1)
-    direction = 1;
-  if (direction < -1)
-    direction = -1;
 
   _gameModes[_currentGameModeIndex]->onEnd();
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
