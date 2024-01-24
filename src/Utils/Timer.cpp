@@ -13,12 +13,12 @@ Timer::~Timer()
 
 void Timer::start()
 {
-  _start = hs_clock::now();
+  _start = std::chrono::high_resolution_clock::now();
 }
 
 void Timer::stop()
 {
-  _end = hs_clock::now();
+  _end = std::chrono::high_resolution_clock::now();
 }
 
 float Timer::getSeconds()
@@ -26,7 +26,7 @@ float Timer::getSeconds()
   return std::chrono::duration_cast<std::chrono::duration<double>>(_end - _start).count();
 }
 
-float Timer::pollSeconds()
+float Timer::deltaSeconds()
 {
   stop();
   float seconds = getSeconds();

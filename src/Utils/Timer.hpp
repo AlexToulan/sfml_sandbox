@@ -10,10 +10,9 @@ public:
   void start();
   void stop();
   float getSeconds();
-  float pollSeconds();
+  float deltaSeconds();
 
 private:
-  typedef std::chrono::high_resolution_clock hs_clock;
-  hs_clock::time_point _start;
-  hs_clock::time_point _end;
+  std::chrono::high_resolution_clock::time_point _start;
+  std::chrono::high_resolution_clock::time_point _end;
 };

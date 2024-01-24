@@ -13,6 +13,8 @@ FetchContent_MakeAvailable(SFML)
 
 # utils
 file(GLOB_RECURSE util_files
+    src/thirdparty/*.hpp
+    src/thirdparty/*.cpp
     src/Utils/*.hpp
     src/Utils/*.cpp
     src/Utils/EventSystem/*.hpp

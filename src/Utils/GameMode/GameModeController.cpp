@@ -97,7 +97,7 @@ void GameModeController::run()
     }
 
     _window.clear();
-    _gameModes[_currentGameModeIndex]->update(_loopTimer.pollSeconds());
+    _gameModes[_currentGameModeIndex]->update(_loopTimer.deltaSeconds());
     _gameModes[_currentGameModeIndex]->render(_window);
     _window.display();
   }
