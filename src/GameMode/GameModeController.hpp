@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "Utils/Timer.hpp"
-#include "Utils/GameMode/GameMode.hpp"
+#include "GameMode/GameMode.hpp"
 
 class GameModeController
 {

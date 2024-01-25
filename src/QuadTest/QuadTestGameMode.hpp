@@ -5,7 +5,7 @@
 #include <random>
 #include <array>
 
-#include "Utils/GameMode/GameMode.hpp"
+#include "GameMode/GameMode.hpp"
 
 class QuadTestGameMode : public GameMode
 {
