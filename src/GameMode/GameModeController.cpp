@@ -1,4 +1,4 @@
-#include "Utils/GameMode/GameModeController.hpp"
+#include "GameMode/GameModeController.hpp"
 #include "Utils/Logging.hpp"
 
 
