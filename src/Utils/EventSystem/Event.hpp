@@ -1,14 +1,17 @@
 #pragma once
-
+#include <cstddef>
 class Event
 {
 public:
   Event();
-  Event(int type);
   ~Event();
-  void set_type(int type);
-  int get_type();
+  typedef size_t Key;
+
+  template<class T>
+  const T& as() const
+  {
+    return *static_cast<T*>(this);
+  }
 
 private:
-  int _type;
 };

@@ -26,16 +26,22 @@ file(GLOB_RECURSE util_files
     )
 
 ### game modes
+# quad test
+file(GLOB_RECURSE quad_test_files
+src/QuadTest/*.cpp
+src/QuadTest/*.hpp
+)
+
 # game of life
 file(GLOB_RECURSE game_of_life_files
     src/GameOfLife/*.cpp
     src/GameOfLife/*.hpp
     )
 
-# quad test
-file(GLOB_RECURSE quad_test_files
-    src/QuadTest/*.cpp
-    src/QuadTest/*.hpp
+# ANTS!
+file(GLOB_RECURSE ants_files
+    src/Ants/*.cpp
+    src/Ants/*.hpp
     )
 
 # if you'd like to add another gamemode create another directory "src/Example/"
@@ -49,7 +55,7 @@ file(GLOB_RECURSE quad_test_files
 # add_executable(SFMLSandbox src/main.cpp ${example_game_mode_files})
 
 # executable
-add_executable(SFMLSandbox src/main.cpp ${util_files} ${game_of_life_files} ${quad_test_files})
+add_executable(SFMLSandbox src/main.cpp ${util_files} ${quad_test_files} ${game_of_life_files} ${ants_files})
 target_include_directories(SFMLSandbox
     PRIVATE
     ${CMAKE_SOURCE_DIR}/src/
