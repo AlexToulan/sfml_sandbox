@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Utils/GameMode/GameMode.hpp"
-#include "Utils/UI/CellGrid.hpp"
+#include "GameMode/GameMode.hpp"
+#include "UI/CellGrid.hpp"
 
 class GameOfLifeGameMode : public GameMode
 {

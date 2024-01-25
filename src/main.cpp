@@ -1,6 +1,6 @@
 #include "GameOfLife/GameOfLifeGameMode.hpp"
 #include "QuadTest/QuadTestGameMode.hpp"
-#include "Utils/GameMode/GameModeController.hpp"
+#include "GameMode/GameModeController.hpp"
 #include "Utils/Logging.hpp"
 #include "CliConfig.hpp"
 
