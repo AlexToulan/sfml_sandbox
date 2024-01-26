@@ -13,25 +13,6 @@ EventComponent::~EventComponent()
   unsubscribe();
 }
 
-void EventComponent::publish(const Event::Key& key, const Event& event)
-{
-  auto bindingIt = _eventBindings.find(key);
-  if (bindingIt != _eventBindings.end())
-  {
-    // copy event data for event component each queue
-    for (const auto& eventComponent : bindingIt->second)
-    {
-      eventComponent->queueEvent(key, event);
-    }
-  }
-}
-
-void EventComponent::queueEvent(const Event::Key& key, const Event& event)
-{
-  std::unique_lock<decltype(_queueMutex)> lock(_queueMutex);
-  _eventQueue.insert(std::pair(key, event));
-}
-
 void EventComponent::subscribe(const Event::Key& key, Delegate&& func)
 {
   _delegates.insert(std::pair(key, std::move(func)));
@@ -76,11 +57,18 @@ void EventComponent::unsubscribe(const Event::Key& key)
   _delegates.erase(key);
 }
 
+void EventComponent::queueEvent(const Event::Key& key, Event* event)
+{
+  std::unique_lock<decltype(_queueMutex)> lock(_queueMutex);
+  _eventQueue.insert(std::pair(key, event));
+}
+
 void EventComponent::fireEvents()
 {
   for (const auto& e : _eventQueue)
   {
-    _delegates[e.first](e.second);
+    _delegates[e.first](*e.second);
+    delete e.second;
   }
   _eventQueue.clear();
 }

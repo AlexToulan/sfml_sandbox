@@ -23,11 +23,22 @@ public:
   virtual ~EventComponent();
 
   // TODO: move statics into separate space
-  static void publish(const Event::Key& key, const Event& event);
-
-  // Enqueue a single event into subscriber queue(s)
   // Copies event data for each event component queue
-  void queueEvent(const Event::Key& key, const Event& event);
+  template<class T>
+  static void publish(const Event::Key& key, const T& event)
+  {
+    auto bindingIt = _eventBindings.find(key);
+    if (bindingIt != _eventBindings.end())
+    {
+      // copy event data for event component each queue
+      for (const auto& eventComponent : bindingIt->second)
+      {
+        // we need to copy the event data per listener immediately
+        // events copies are deleted once fired in each listener instance
+        eventComponent->queueEvent(key, static_cast<Event*>(new T(event)));
+      }
+    }
+  }
 
   // Subscribe to a single event
   // func can only be a rvalue, like from std::bind
@@ -41,6 +52,10 @@ public:
   void unsubscribe(const Event::Key& key);
 
 protected:
+  // Enqueue a single event into subscriber queue(s)
+  void queueEvent(const Event::Key& key, Event* event);
+
+protected:
   // Fires events from the queue before clearing it and destroying the containing events
   void fireEvents();
 
@@ -49,6 +64,6 @@ private:
   static std::mutex _bindingMutex;
   static std::map<Event::Key, std::vector<EventComponent*>> _eventBindings;
   std::mutex _queueMutex;
-  std::map<Event::Key, Event> _eventQueue;
+  std::map<Event::Key, Event*> _eventQueue;
   std::map<Event::Key, Delegate> _delegates;
 };
