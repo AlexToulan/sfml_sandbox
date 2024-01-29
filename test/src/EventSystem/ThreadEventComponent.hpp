@@ -2,7 +2,6 @@
 
 #include <thread>
 
-#include "Events.hpp"
 #include "EventTypes.hpp"
 #include "Utils/Logging.hpp"
 #include "Utils/EventSystem/EventComponent.hpp"
