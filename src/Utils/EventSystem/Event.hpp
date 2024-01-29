@@ -1,14 +1,31 @@
 #pragma once
 
-class Event
+#include "EventBase.hpp"
+
+template<class T>
+class Event : public EventBase
 {
 public:
-  Event();
-  Event(int type);
-  ~Event();
-  void set_type(int type);
-  int get_type();
+  Event() : EventBase(), _data()
+  {
+  }
+  Event(const T& data) : EventBase(), _data(data)
+  {
+  }
+  Event(const Event& other) : EventBase(), _data(other.data)
+  {
+  }
+
+  void setData(const T& data)
+  {
+    _data = data;
+  }
+
+  const T& data() const
+  {
+    return _data;
+  }
 
 private:
-  int _type;
+  T _data;
 };

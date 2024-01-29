@@ -43,16 +43,22 @@ file(GLOB_RECURSE sfml_helper_files
     )
 
 # game modes
+# quad test
+file(GLOB_RECURSE quad_test_files
+    src/QuadTest/*.cpp
+    src/QuadTest/*.hpp
+)
+
 # game of life
 file(GLOB_RECURSE game_of_life_files
     src/GameOfLife/*.cpp
     src/GameOfLife/*.hpp
     )
 
-# quad test
-file(GLOB_RECURSE quad_test_files
-    src/QuadTest/*.cpp
-    src/QuadTest/*.hpp
+# ANTS!
+file(GLOB_RECURSE ants_files
+    src/Ants/*.cpp
+    src/Ants/*.hpp
     )
 
 file(GLOB_RECURSE test_files
@@ -71,6 +77,7 @@ file(GLOB_RECURSE test_files
 
 # add_executable(SFMLSandbox src/main.cpp ${example_game_mode_files})
 
+
 # main game executable
 add_executable(SFMLSandbox src/main.cpp ${sfml_helper_files} ${util_files} ${game_of_life_files} ${quad_test_files})
 target_include_directories(SFMLSandbox
@@ -79,11 +86,13 @@ target_include_directories(SFMLSandbox
 )
 
 # gtest executable
-add_executable(testAll ${CMAKE_SOURCE_DIR}/test/src/main_testall.cpp ${test_files} ${util_files})
+add_executable(testAll ${CMAKE_SOURCE_DIR}/test/main_testall.cpp ${test_files} ${util_files})
 target_include_directories(testAll
     PRIVATE
     ${CMAKE_SOURCE_DIR}/src/
+    ${CMAKE_SOURCE_DIR}/test/src/
 )
+
 target_link_libraries(testAll GTest::gtest_main)
 target_compile_features(testAll PRIVATE cxx_std_20)
 gtest_discover_tests(testAll)
