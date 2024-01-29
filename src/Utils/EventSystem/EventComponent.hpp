@@ -53,8 +53,6 @@ public:
     }
   }
 
-protected:
-  typedef TDelegate<EventComponent, EventBase> Delegate;
   // Subscribe to a single event
   template<class T>
   void subscribe(const EventBase::Key& key, void(T::* func)(const EventBase&))
@@ -74,6 +72,8 @@ protected:
   // Unsubscribe from a single event
   void unsubscribe(const EventBase::Key& key);
 
+protected:
+  typedef TDelegate<EventComponent, EventBase> Delegate;
   template<class T>
   static const T& copy(const EventBase& event)
   {

@@ -12,12 +12,11 @@ public:
 
   void setup()
   {
-    subscribe(EventType::VECTOR_INT, &SingleThreadEventComponent::receivedNumbersEvent);
   }
 
-  void setNumbers(const std::vector<int>& numbers)
+  void setOutNumbers(const std::vector<int>& numbers)
   {
-    _outNumbersEvent = Event<std::vector<int>>(numbers);
+    _outNumbersEvent = Event(numbers);
   }
 
   void send()
@@ -28,6 +27,11 @@ public:
   void receivedNumbersEvent(const EventBase& event)
   {
     _inNumbers = copy<std::vector<int>>(event);
+  }
+
+  void clearInNumbers()
+  {
+    _inNumbers.clear();
   }
 
   const std::vector<int>& getNumbers()

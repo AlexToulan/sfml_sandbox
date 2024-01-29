@@ -16,6 +16,11 @@ public:
   {
   }
 
+  void setData(const T& data)
+  {
+    _data = data;
+  }
+
   const T& data() const
   {
     return _data;

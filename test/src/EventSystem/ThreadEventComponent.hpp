@@ -16,7 +16,6 @@ public:
   {
     _dataProcessed = true;
     _isRunning = true;
-    subscribe(EventType::REQ_DOUBLE_INTS, &ThreadEventComponent::receiveNumbers);
 
     if (pthread_create(&_thread, NULL, &_thread_bootstrap, (void*)this) != 0)
     {
@@ -32,7 +31,6 @@ public:
     pthread_join(_thread, nullptr);
   }
 
-private:
   void receiveNumbers(const EventBase& event)
   {
     std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
@@ -40,6 +38,7 @@ private:
     _inNumbers = copy<std::vector<int>>(event);
   }
 
+private:
   bool run()
   {
     if (!_dataProcessed)
@@ -52,7 +51,6 @@ private:
       }
       EventComponent::publish(EventType::VECTOR_INT, Event<std::vector<int>>(doubled));
       _dataProcessed = true;
-      return false;
     }
     return _isRunning;
   }
