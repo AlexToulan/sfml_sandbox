@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Events.hpp"
 #include "EventTypes.hpp"
 #include "Utils/EventSystem/EventComponent.hpp"
 
@@ -26,7 +25,7 @@ public:
 
   void receivedNumbersEvent(const EventBase& event)
   {
-    _inNumbers = copy<std::vector<int>>(event);
+    copy(event, _inNumbers);
   }
 
   void clearInNumbers()

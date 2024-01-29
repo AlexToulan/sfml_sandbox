@@ -39,7 +39,7 @@ TEST_F(ThreadEventComponentTest, ThreadWorkerTest)
   {
     EXPECT_EQ(numbers[i] * 2, requester.getNumbers()[i]);
   }
-  
+
   requester.clearInNumbers();
   requester.send();
   std::this_thread::sleep_for(std::chrono::milliseconds(100));

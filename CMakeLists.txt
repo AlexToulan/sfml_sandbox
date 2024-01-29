@@ -35,7 +35,7 @@ file(GLOB_RECURSE util_files
     src/Utils/EventSystem/*.cpp
     )
 
-    file(GLOB_RECURSE sfml_helper_files
+file(GLOB_RECURSE sfml_helper_files
     src/GameMode/*.hpp
     src/GameMode/*.cpp
     src/UI/*.hpp
@@ -45,8 +45,8 @@ file(GLOB_RECURSE util_files
 # game modes
 # quad test
 file(GLOB_RECURSE quad_test_files
-src/QuadTest/*.cpp
-src/QuadTest/*.hpp
+    src/QuadTest/*.cpp
+    src/QuadTest/*.hpp
 )
 
 # game of life

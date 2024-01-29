@@ -9,22 +9,19 @@
 #include "Delegate.hpp"
 #include "Event.hpp"
 
-// A thread-safe event-component base-class that copies data to each subscriber.
-// Publishers must construct data within event derived objects before publishing.
+// A thread-safe event-component base-class that allows for publishing/subscribing of events.
+// Publishers must construct data within Event template objects before publishing.
 // Publishers can either destroy or recycle event derived objects after publishing.
 class EventComponent
 {
 public:
-  // EventComponent pointer is only used to identify delegates belonging to the owner when unsubscribing
-  // TODO: move typedef into separate space
-  // typedef std::pair<EventComponent*, std::function<void(const EventBase&)>> Delegate;
   EventComponent();
 
   // Unsubscribes from all events
   virtual ~EventComponent();
 
   // Publishes an event on the calling thread.
-  // Delegate implementations are responsible for coping incoming data and locking destination containers.
+  // Delegates are responsible for coping incoming data and locking destination containers.
   static void publish(const EventBase::Key& key)
   {
     EventBase placeholder;
@@ -39,7 +36,7 @@ public:
   }
 
   // Publishes an event on the calling thread.
-  // Delegate implementations are responsible for coping incoming data and locking destination containers.
+  // Delegates are responsible for coping incoming data and locking destination containers.
   template<class T>
   static void publish(const EventBase::Key& key, const Event<T>& event)
   {
@@ -74,10 +71,17 @@ public:
 
 protected:
   typedef TDelegate<EventComponent, EventBase> Delegate;
+  // Returns a reference to the template event data
   template<class T>
-  static const T& copy(const EventBase& event)
+  static const T& unpack(const EventBase& event)
   {
     return static_cast<const Event<T>*>(&event)->data();
+  }
+  // Copies data within the template event to the outData parameter
+  template<class T>
+  static void copy(const EventBase& event, T& outData)
+  {
+    outData = static_cast<const Event<T>*>(&event)->data();
   }
 
 private:

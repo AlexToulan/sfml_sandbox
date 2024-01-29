@@ -12,6 +12,7 @@ class ThreadEventComponent : public EventComponent
 public:
   ThreadEventComponent() : EventComponent() {}
   virtual ~ThreadEventComponent() {}
+
   bool start()
   {
     _dataProcessed = true;
@@ -27,15 +28,18 @@ public:
 
   void stop()
   {
-    _isRunning = false;
-    pthread_join(_thread, nullptr);
+    if (_isRunning)
+    {
+      _isRunning = false;
+      pthread_join(_thread, nullptr);
+    }
   }
 
   void receiveNumbers(const EventBase& event)
   {
     std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
     _dataProcessed = false;
-    _inNumbers = copy<std::vector<int>>(event);
+    copy(event, _inNumbers);
   }
 
 private:
@@ -49,7 +53,7 @@ private:
       {
         doubled.push_back(_inNumbers[i] * 2);
       }
-      EventComponent::publish(EventType::VECTOR_INT, Event<std::vector<int>>(doubled));
+      EventComponent::publish(EventType::VECTOR_INT, Event(doubled));
       _dataProcessed = true;
     }
     return _isRunning;
