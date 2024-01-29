@@ -15,8 +15,8 @@ public:
   bool start()
   {
     _dataProcessed = true;
-    subscribe(EventType::REQ_DOUBLE_INTS, std::bind(&ThreadEventComponent::receiveNumbers, 
-            this, std::placeholders::_1));
+    _isRunning = true;
+    subscribe(EventType::REQ_DOUBLE_INTS, &ThreadEventComponent::receiveNumbers);
 
     if (pthread_create(&_thread, NULL, &_thread_bootstrap, (void*)this) != 0)
     {
@@ -28,14 +28,16 @@ public:
 
   void stop()
   {
+    _isRunning = false;
     pthread_join(_thread, nullptr);
   }
 
 private:
   void receiveNumbers(const EventBase& event)
   {
+    std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
     _dataProcessed = false;
-    _inNumbers = unpack<std::vector<int>>(event);
+    _inNumbers = copy<std::vector<int>>(event);
   }
 
   bool run()
@@ -43,6 +45,7 @@ private:
     if (!_dataProcessed)
     {
       std::vector<int> doubled;
+      std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
       for (size_t i = 0; i < _inNumbers.size(); i++)
       {
         doubled.push_back(_inNumbers[i] * 2);
@@ -51,17 +54,21 @@ private:
       _dataProcessed = true;
       return false;
     }
-    return true;
+    return _isRunning;
   }
 
-  bool _dataProcessed;
+  std::atomic<bool> _dataProcessed;
+  std::atomic<bool> _isRunning;
+
+  std::mutex _numbersMutex;
   std::vector<int> _inNumbers;
 
   pthread_t _thread;
   static void* _thread_bootstrap(void* s)
   {
     int exit_code = 0;
-    while(static_cast<ThreadEventComponent*>(s)->run())
+    ThreadEventComponent* self = static_cast<ThreadEventComponent*>(s);
+    while(self->run())
     {
 
     }

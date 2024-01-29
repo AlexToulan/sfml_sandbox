@@ -13,17 +13,6 @@ EventComponent::~EventComponent()
   unsubscribe();
 }
 
-void EventComponent::subscribe(const EventBase::Key& key, std::function<void(const EventBase&)>&& func)
-{
-  std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
-  auto delIt = _eventBindings.find(key);
-  if (delIt == _eventBindings.end())
-  {
-    _eventBindings[key] = std::vector<Delegate>();
-  }
-  _eventBindings[key].emplace_back(this, std::move(func));
-}
-
 void EventComponent::unsubscribe()
 {
   std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);

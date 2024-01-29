@@ -28,9 +28,8 @@ protected:
 
 TEST_F(SingleThreadEventComponentTest, SingleThreadEvent)
 {
-  // EXPECT_EQ(singleThread_a._message, "");
-  // EventComponent::publish(EventType::STRING, stringEvent);
-  // singleThread_a.run();
+  // EventComponent::publish(EventType::VECTOR_INT, stringEvent);
+  // a.run();
   // EXPECT_EQ(singleThread_a._message, stringEvent._message);
 }
 

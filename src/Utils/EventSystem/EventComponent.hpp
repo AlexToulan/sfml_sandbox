@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 
+#include "Delegate.hpp"
 #include "Event.hpp"
 
 // A thread-safe event-component base-class that copies data to each subscriber.
@@ -13,39 +14,7 @@
 // Publishers can either destroy or recycle event derived objects after publishing.
 class EventComponent
 {
-private:
-  struct Delegate
-  {
-    Delegate(EventComponent* id, std::function<void(const EventBase&)>&& func)
-    {
-      _id = id;
-      _func = std::move(func);
-    }
-    void operator()(const EventBase& e)
-    {
-      _func(e);
-    }
-
-    bool operator==(const Delegate& other) const
-    {
-      return _id == other._id;
-    }
-
-    bool operator!=(const Delegate& other) const
-    {
-      return _id != other._id;
-    }
-
-    bool isOwner(EventComponent* id) const
-    {
-      return id == _id;
-    }
-  private:
-    EventComponent* _id;
-    std::function<void(const EventBase&)> _func;
-  };
 public:
-  // A delegate that can accept an Event and returns nothing
   // EventComponent pointer is only used to identify delegates belonging to the owner when unsubscribing
   // TODO: move typedef into separate space
   // typedef std::pair<EventComponent*, std::function<void(const EventBase&)>> Delegate;
@@ -54,6 +23,8 @@ public:
   // Unsubscribes from all events
   virtual ~EventComponent();
 
+  // Publishes an event on the calling thread.
+  // Delegate implementations are responsible for coping incoming data and locking destination containers.
   static void publish(const EventBase::Key& key)
   {
     EventBase placeholder;
@@ -67,6 +38,8 @@ public:
     }
   }
 
+  // Publishes an event on the calling thread.
+  // Delegate implementations are responsible for coping incoming data and locking destination containers.
   template<class T>
   static void publish(const EventBase::Key& key, const Event<T>& event)
   {
@@ -81,9 +54,19 @@ public:
   }
 
 protected:
+  typedef TDelegate<EventComponent, EventBase> Delegate;
   // Subscribe to a single event
-  // func can only be a rvalue, like from std::bind
-  void subscribe(const EventBase::Key& key, std::function<void(const EventBase&)>&& func);
+  template<class T>
+  void subscribe(const EventBase::Key& key, void(T::* func)(const EventBase&))
+  {
+    std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
+    auto delIt = _eventBindings.find(key);
+    if (delIt == _eventBindings.end())
+    {
+      _eventBindings[key] = std::vector<Delegate>();
+    }
+    _eventBindings[key].emplace_back(this, static_cast<void(EventComponent::*)(const EventBase&)>(func));
+  }
 
   // Unsubscribe from all events
   void unsubscribe();
@@ -92,7 +75,7 @@ protected:
   void unsubscribe(const EventBase::Key& key);
 
   template<class T>
-  static const T& unpack(const EventBase& event)
+  static const T& copy(const EventBase& event)
   {
     return static_cast<const Event<T>*>(&event)->data();
   }

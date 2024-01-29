@@ -12,8 +12,7 @@ public:
 
   void setup()
   {
-    subscribe(EventType::VECTOR_INT,
-      std::bind(&SingleThreadEventComponent::receivedNumbersEvent, this, std::placeholders::_1));
+    subscribe(EventType::VECTOR_INT, &SingleThreadEventComponent::receivedNumbersEvent);
   }
 
   void setNumbers(const std::vector<int>& numbers)
@@ -28,7 +27,7 @@ public:
 
   void receivedNumbersEvent(const EventBase& event)
   {
-    _inNumbers = unpack<std::vector<int>>(event);
+    _inNumbers = copy<std::vector<int>>(event);
   }
 
   const std::vector<int>& getNumbers()
