@@ -10,7 +10,8 @@ protected:
   {
     _timer.start();
     _timer.stop();
-    _epsilonSeconds = 0.0001f;
+    // resolution of 1ms
+    _epsilonSeconds = 0.001f;
   };
 
   void TearDown() override

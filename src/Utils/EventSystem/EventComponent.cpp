@@ -2,7 +2,7 @@
 
 
 std::mutex EventComponent::_bindingMutex;
-std::map<Event::Key, std::vector<EventComponent*>> EventComponent::_eventBindings;
+std::map<EventBase::Key, std::vector<EventComponent::Delegate>> EventComponent::_eventBindings;
 
 EventComponent::EventComponent()
 {
@@ -13,62 +13,44 @@ EventComponent::~EventComponent()
   unsubscribe();
 }
 
-void EventComponent::subscribe(const Event::Key& key, Delegate&& func)
+void EventComponent::subscribe(const EventBase::Key& key, std::function<void(const EventBase&)>&& func)
 {
-  _delegates.insert(std::pair(key, std::move(func)));
   std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
-  auto bindingIt = _eventBindings.find(key);
-  if (bindingIt == _eventBindings.end())
+  auto delIt = _eventBindings.find(key);
+  if (delIt == _eventBindings.end())
   {
-    _eventBindings[key] = std::vector<EventComponent*>();
+    _eventBindings[key] = std::vector<Delegate>();
   }
-  _eventBindings[key].push_back(this);
+  _eventBindings[key].emplace_back(this, std::move(func));
 }
 
 void EventComponent::unsubscribe()
 {
-  std::vector<Event::Key> keys;
-  for (const auto& [key, func] : _delegates)
+  std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
+  for (auto& [key, delegates] : _eventBindings)
   {
-    keys.push_back(key);
-  }
-
-  for (const auto& key : keys)
-  {
-    // TODO: might want to prevent constant locking and unlocking
-    unsubscribe(key);
+    auto eraseStartIt = std::remove_if(delegates.begin(), delegates.end(),
+      [&](const Delegate& del)
+      {
+        return del.isOwner(this);
+      }
+    );
+    delegates.erase(eraseStartIt, delegates.end());
   }
 }
 
-void EventComponent::unsubscribe(const Event::Key& key)
+void EventComponent::unsubscribe(const EventBase::Key& key)
 {
   auto bindingIt = _eventBindings.find(key);
   if (bindingIt != _eventBindings.end())
   {
     std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
-    auto trashStartIt = std::remove_if(bindingIt->second.begin(), bindingIt->second.end(),
-      [&](EventComponent*& self)
+    auto eraseStartIt = std::remove_if(bindingIt->second.begin(), bindingIt->second.end(),
+      [&](Delegate& del)
       {
-        return self == this;
+        return del.isOwner(this);
       }
     );
-    _eventBindings[key].erase(trashStartIt, _eventBindings[key].end());
+    _eventBindings[key].erase(eraseStartIt, _eventBindings[key].end());
   }
-  _delegates.erase(key);
-}
-
-void EventComponent::queueEvent(const Event::Key& key, Event* event)
-{
-  std::unique_lock<decltype(_queueMutex)> lock(_queueMutex);
-  _eventQueue.insert(std::pair(key, event));
-}
-
-void EventComponent::fireEvents()
-{
-  for (const auto& e : _eventQueue)
-  {
-    _delegates[e.first](*e.second);
-    delete e.second;
-  }
-  _eventQueue.clear();
 }

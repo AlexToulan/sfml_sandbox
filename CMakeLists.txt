@@ -86,11 +86,13 @@ target_include_directories(SFMLSandbox
 )
 
 # gtest executable
-add_executable(testAll ${CMAKE_SOURCE_DIR}/test/src/main_testall.cpp ${test_files} ${util_files})
+add_executable(testAll ${CMAKE_SOURCE_DIR}/test/main_testall.cpp ${test_files} ${util_files})
 target_include_directories(testAll
     PRIVATE
     ${CMAKE_SOURCE_DIR}/src/
+    ${CMAKE_SOURCE_DIR}/test/src/
 )
+
 target_link_libraries(testAll GTest::gtest_main)
 target_compile_features(testAll PRIVATE cxx_std_20)
 gtest_discover_tests(testAll)

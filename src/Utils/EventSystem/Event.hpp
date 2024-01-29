@@ -1,17 +1,26 @@
 #pragma once
-#include <cstddef>
-class Event
+
+#include "EventBase.hpp"
+
+template<class T>
+class Event : public EventBase
 {
 public:
-  Event();
-  ~Event();
-  typedef size_t Key;
-
-  template<class T>
-  const T& as() const
+  Event() : EventBase(), _data()
   {
-    return *static_cast<const T*>(this);
+  }
+  Event(const T& data) : EventBase(), _data(data)
+  {
+  }
+  Event(const Event& other) : EventBase(), _data(other.data)
+  {
+  }
+
+  const T& data() const
+  {
+    return _data;
   }
 
 private:
+  T _data;
 };
