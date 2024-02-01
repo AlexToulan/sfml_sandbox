@@ -45,7 +45,7 @@ void GameOfLifeGameMode::onStart()
   }
 
   basicSeed();
-  _secPerUpdate = 0.2;
+  _secPerUpdate = 1.0f / 200.0f;
 }
 
 void GameOfLifeGameMode::processEvents(sf::Event& event)

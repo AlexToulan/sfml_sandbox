@@ -6,12 +6,14 @@ GameModeController::GameModeController()
   : _window(sf::VideoMode(1000, 1000), "SFML Test")
 {
   _currentGameModeIndex = 0;
+  _frames = 0;
 }
 
 GameModeController::GameModeController(int screenWidth, int screenHeight, std::string windowTitle)
   : _window(sf::VideoMode(screenWidth, screenHeight), windowTitle)
 {
   _currentGameModeIndex = 0;
+  _frames = 0;
 }
 
 GameModeController::~GameModeController()
@@ -63,6 +65,7 @@ bool GameModeController::setup(unsigned int frameRate)
 
 void GameModeController::run()
 {
+  _fpsTimer.start();
   while (_window.isOpen())
   {
     sf::Event event;
@@ -77,23 +80,14 @@ void GameModeController::run()
       _gameModes[_currentGameModeIndex]->processEvents(event);
     }
 
-    // cycle game modes
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Period))
-      _bNextKey = true;
-    else
-    {
-      if (_bNextKey)
-        nextGameMode();
-      _bNextKey = false;
-    }
+    processInput();
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Comma))
-      _bPreviousKey = true;
-    else
+    _frames++;
+    if (_fpsTimer.pollSeconds() > 5.0f)
     {
-      if (_bPreviousKey)
-        previousGameMode();
-      _bPreviousKey = false;
+      Log::info("FPS: " + std::to_string(_frames / 5));
+      _fpsTimer.start();
+      _frames = 0;
     }
 
     _window.clear();
@@ -118,6 +112,28 @@ void GameModeController::previousGameMode()
 {
   Log::info("Previous game mode");
   switchGameMode(-1);
+}
+
+void GameModeController::processInput()
+{
+  // cycle game modes
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Period))
+    _bNextKey = true;
+  else
+  {
+    if (_bNextKey)
+      nextGameMode();
+    _bNextKey = false;
+  }
+
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Comma))
+    _bPreviousKey = true;
+  else
+  {
+    if (_bPreviousKey)
+      previousGameMode();
+    _bPreviousKey = false;
+  }
 }
 
 void GameModeController::switchGameMode(int direction)

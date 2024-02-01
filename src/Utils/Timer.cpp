@@ -26,6 +26,12 @@ float Timer::getSeconds()
   return std::chrono::duration_cast<std::chrono::duration<double>>(_end - _start).count();
 }
 
+float Timer::pollSeconds()
+{
+  stop();
+  return getSeconds();
+}
+
 float Timer::deltaSeconds()
 {
   stop();

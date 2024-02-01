@@ -22,9 +22,13 @@ public:
   void previousGameMode();
 
 private:
+  void processInput();
   void switchGameMode(int direction);
 
   Timer _loopTimer;
+  Timer _fpsTimer;
+  int _frames;
+  float _fpsSeconds;
 
   int _frameRate;
   sf::RenderWindow _window;
