@@ -10,7 +10,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args":[
-        "--game_mode", "GameOfLifeGameMode"
+        "--game_mode", "GameOfLifeGameMode",
+        "--frame_rate", "120"
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true

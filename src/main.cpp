@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
   controller.addGameMode(std::make_unique<QuadTestGameMode>());
   controller.addGameMode(std::make_unique<GameOfLifeGameMode>());
 
-  if (controller.setup(60))
+  if (controller.setup(args.frame_rate))
   {
     controller.selectGameMode(args.game_mode);
     controller.run();
