@@ -43,3 +43,8 @@ void EventComponent::unsubscribe(const EventBase::Key& key)
     _eventBindings[key].erase(eraseStartIt, _eventBindings[key].end());
   }
 }
+
+void EventComponent::flushSubscribers()
+{
+  _eventBindings.clear();
+}

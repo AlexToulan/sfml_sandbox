@@ -9,20 +9,21 @@
 class ThreadEventComponent : public EventComponent
 {
 public:
-  ThreadEventComponent() : EventComponent() {}
-  virtual ~ThreadEventComponent() {}
-
-  bool start()
+  ThreadEventComponent() : EventComponent(), _thread()
   {
-    _dataProcessed = true;
-    _isRunning = true;
+    _isRunning = false;
+    _dataProcessed = false;
+  }
 
-    if (pthread_create(&_thread, NULL, &_thread_bootstrap, (void*)this) != 0)
-    {
-      Log::error("failed to start thread");
-      return false;
-    }
-    return true;
+  virtual ~ThreadEventComponent()
+  {
+    stop();
+  }
+
+  void start()
+  {
+    _isRunning = true;
+    _thread = std::thread(&ThreadEventComponent::run, this);
   }
 
   void stop()
@@ -30,7 +31,7 @@ public:
     if (_isRunning)
     {
       _isRunning = false;
-      pthread_join(_thread, nullptr);
+      _thread.join();
     }
   }
 
@@ -42,39 +43,29 @@ public:
   }
 
 private:
-  bool run()
+  void run()
   {
-    if (!_dataProcessed)
+    while (_isRunning)
     {
-      std::vector<int> doubled;
-      std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
-      for (size_t i = 0; i < _inNumbers.size(); i++)
+      if (!_dataProcessed)
       {
-        doubled.push_back(_inNumbers[i] * 2);
+        std::vector<int> doubled;
+        std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
+        for (size_t i = 0; i < _inNumbers.size(); i++)
+        {
+          doubled.push_back(_inNumbers[i] * 2);
+        }
+        EventComponent::publish(EventType::VECTOR_INT, Event(doubled));
+        _dataProcessed = true;
       }
-      EventComponent::publish(EventType::VECTOR_INT, Event(doubled));
-      _dataProcessed = true;
     }
-    return _isRunning;
   }
 
-  std::atomic<bool> _dataProcessed;
   std::atomic<bool> _isRunning;
+  std::atomic<bool> _dataProcessed;
 
   std::mutex _numbersMutex;
   std::vector<int> _inNumbers;
 
-  pthread_t _thread;
-  static void* _thread_bootstrap(void* s)
-  {
-    int exit_code = 0;
-    ThreadEventComponent* self = static_cast<ThreadEventComponent*>(s);
-    while(self->run())
-    {
-
-    }
-    pthread_exit(&exit_code);
-
-    return nullptr;
-  }
+  std::thread _thread;
 };

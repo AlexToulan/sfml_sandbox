@@ -5,13 +5,27 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C++ Launch",
+      "name": "Game Of Life",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args":[
         "--game_mode", "GameOfLifeGameMode",
         "--frame_rate", "10"
+      ],
+      "cwd": "${workspaceFolder}/build/bin",
+      "showDisplayString": true
+    }
+    {
+      "name": "Quad Test",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/SFMLSandbox",
+      "args": [
+        "--game_mode",
+        "QuadTestGameMode",
+        "--frame_rate",
+        "30"
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true

@@ -1,3 +1,4 @@
+#include "EventTypes.hpp"
 #include "GameOfLife/GameOfLifeGameMode.hpp"
 #include "Utils/Logging.hpp"
 
@@ -5,6 +6,7 @@
 
 GameOfLifeGameMode::GameOfLifeGameMode()
  : GameMode(std::source_location::current().file_name())
+ , EventComponent()
 {
 
 }
@@ -45,7 +47,26 @@ void GameOfLifeGameMode::onStart()
     _cellNeighbors.push_back(0);
   }
 
+  _rowsProcessed = 0;
+  subscribe(EventType::ACTIVATE_CELLS_COMPLETE, &GameOfLifeGameMode::activateCellsComplete);
+  subscribe(EventType::CALC_NEIGHBORS_COMPLETE, &GameOfLifeGameMode::calcNeighborsComplete);
+
+  // don't start workers till after we stop changing cells
   basicSeed();
+  startWorkers(_cellGrid.getWidth(), _cellGrid.getHeight());
+}
+
+void GameOfLifeGameMode::onEnd()
+{
+  // clearing and recreating this in onStart causes a crash. window likely holds a ref to VertexBuffer
+  // _cells.create(0);
+  for (size_t i = 0; i < _workers.size(); i++)
+  {
+    _workers[i]->stop();
+  }
+  _activeCells.clear();
+  _cellNeighbors.clear();
+  _workers.clear();
 }
 
 void GameOfLifeGameMode::processEvents(sf::Event& event)
@@ -85,85 +106,62 @@ void GameOfLifeGameMode::update(float ds)
   {
     return;
   }
-
-  int i = 0;
-  for (int y = 0; y < _cellGrid.getHeight(); y++)
-  {
-    for (int x = 0; x < _cellGrid.getWidth(); x++)
-    {
-      _cellNeighbors[i++] = calcNumNeighborsAlive(x, y);
-    }
-  }
-
-  crazyRules();
+  // _cellMutex.lock();
 }
 
 void GameOfLifeGameMode::render(sf::RenderWindow& window)
 {
   // update colors
   sf::Color color = _swatch[0];
+  // _cellMutex.lock(); // only prevents screen tearing as it is only a read
   for (size_t i = 0; i < _activeCells.size(); i++)
   {
     color = _activeCells[i] ? _swatch[8] : _swatch[0];
     _cellGrid.setCellColor(i, color);
   }
+  // _cellMutex.unlock();
+  
   _cellGrid.update();
   window.draw(_cellGrid);
 }
 
-void GameOfLifeGameMode::onEnd()
+void GameOfLifeGameMode::activateCellsComplete(const EventBase& event)
 {
-  // clearing and recreating this in onStart causes a crash. window likely holds a ref to VertexBuffer
-  // _cells.create(0);
-  _activeCells.clear();
-  _cellNeighbors.clear();
-  _workers.clear();
-}
-
-void GameOfLifeGameMode::crazyRules()
-{
-  for (int y = 0; y < _cellGrid.getHeight(); y++)
+  auto range = unpack<std::pair<int, int>>(event);
+  _rowsProcessed += range.second - range.first;
+  if (_rowsProcessed == _cellGrid.getHeight())
   {
-    for (int x = 0; x < _cellGrid.getWidth(); x++)
-    {
-      int cellIndex = _cellGrid.getCellIndex(x, y);
-      if (_activeCells[cellIndex])
-      {
-        if (_cellNeighbors[cellIndex] < 2)
-          setCell(x, y, false);
-        if (_cellNeighbors[cellIndex] > 3)
-          setCell(x, y, false);
-      }
-      else
-      {
-        if (_cellNeighbors[cellIndex] >= 2 && _cellNeighbors[cellIndex] <= 3)
-          setCell(x, y, true);
-      }
-    }
+    // _cellMutex.unlock();
+    _rowsProcessed = 0;
+    EventComponent::publish(EventType::CALC_NEIGHBORS);
   }
 }
 
-void GameOfLifeGameMode::classicRules()
+void GameOfLifeGameMode::calcNeighborsComplete(const EventBase& event)
 {
-  for (int y = 0; y < _cellGrid.getHeight(); y++)
+  auto range = unpack<std::pair<int, int>>(event);
+  _rowsProcessed += range.second - range.first;
+  if (_rowsProcessed == _cellGrid.getHeight())
   {
-    for (int x = 0; x < _cellGrid.getWidth(); x++)
-    {
-      int cellIndex = _cellGrid.getCellIndex(x, y);
-      if (_activeCells[cellIndex])
-      {
-        if (_cellNeighbors[cellIndex] < 2)
-          setCell(x, y, false);
-        if (_cellNeighbors[cellIndex] > 3)
-          setCell(x, y, false);
-      }
-      else
-      {
-        if (_cellNeighbors[cellIndex] == 3)
-          setCell(x, y, true);
-      }
-    }
+    _rowsProcessed = 0;
+    // _cellMutex.lock();
+    EventComponent::publish(EventType::ACTIVATE_CELLS);
   }
+}
+
+void GameOfLifeGameMode::startWorkers(int width, int height)
+{
+  int numWorkers = 10;
+  int yStride = _cellGrid.getHeight() / numWorkers;
+  for (size_t i = 0; i < numWorkers; i++)
+  {
+    _workers.push_back(std::unique_ptr<GameOfLifeWorker>(new GameOfLifeWorker()));
+    _workers[i]->init(0, _cellGrid.getWidth(), yStride * i, yStride * (i + 1), width, height,
+      &_cellNeighbors, &_activeCells); // yuck
+    _workers[i]->start();
+  }
+
+  EventComponent::publish(EventType::CALC_NEIGHBORS);
 }
 
 void GameOfLifeGameMode::basicSeed()
@@ -182,7 +180,7 @@ void GameOfLifeGameMode::basicSeed()
   setCell(center_x + 4, center_y + 2, true);
   setCell(center_x + 5, center_y + 2, true);
 
-  for (int y = - 1; y < 2; y++)
+  for (int y = -1; y < 2; y++)
   {
     setCell(center_x - 5, center_y - y, true);
     setCell(center_x - 2, center_y - y, true);
@@ -206,30 +204,4 @@ void GameOfLifeGameMode::setCell(int x, int y, bool alive)
     color = _swatch[8];
   }
   _cellGrid.setCellColor(x, y, color);
-}
-
-int GameOfLifeGameMode::wrap(int value, int min, int max)
-{
-  if (value < min)
-    return max;
-  if (value > max)
-    return min;
-  return value;
-}
-
-int GameOfLifeGameMode::calcNumNeighborsAlive(int x, int y)
-{
-  // wrap field!
-  int numNeighborsAlive = 0;
-  for (int ny = y - 1; ny <= y + 1; ny++)
-  {
-    for (int nx = x - 1; nx <= x + 1; nx++)
-    {
-      if (nx == x && ny == y)
-        continue;
-      if (getCell(wrap(nx, 0, _cellGrid.getWidth() - 1), wrap(ny, 0, _cellGrid.getHeight() - 1)))
-       numNeighborsAlive++;
-    }
-  }
-  return numNeighborsAlive;
 }

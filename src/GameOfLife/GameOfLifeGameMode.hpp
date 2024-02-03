@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Utils/EventSystem/EventComponent.hpp"
 #include "GameOfLifeWorker.hpp"
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
 
-class GameOfLifeGameMode : public GameMode
+class GameOfLifeGameMode : public GameMode, public EventComponent
 {
 public:
   GameOfLifeGameMode();
@@ -24,15 +25,19 @@ private:
   void basicSeed();
   bool getCell(int x, int y);
   void setCell(int x, int y, bool alive);
-  int wrap(int value, int min, int max);
-  int calcNumNeighborsAlive(int x, int y);
 
-  std::vector<GameOfLifeWorker> _workers;
+  void startWorkers(int width, int height);
+  void activateCellsComplete(const EventBase& event);
+  void calcNeighborsComplete(const EventBase& event);
+  
+  std::atomic<int> _rowsProcessed;
+  std::vector<std::unique_ptr<GameOfLifeWorker>> _workers;
 
   std::unique_ptr<sf::Color[]> _swatch;
   CellGrid _cellGrid;
-  std::vector<bool> _activeCells;
+  std::mutex _cellMutex; // prevents screen tearing
   std::vector<int> _cellNeighbors;
+  std::vector<bool> _activeCells;
   bool _bIsPaused;
 
   // input

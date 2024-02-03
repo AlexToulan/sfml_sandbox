@@ -69,6 +69,9 @@ public:
   // Unsubscribe from a single event
   void unsubscribe(const EventBase::Key& key);
 
+  // clears all subscriptions from the event system
+  static void flushSubscribers();
+
 protected:
   typedef TDelegate<EventComponent, EventBase> Delegate;
   // Returns a reference to the template event data

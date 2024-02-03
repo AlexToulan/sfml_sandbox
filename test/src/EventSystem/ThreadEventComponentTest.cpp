@@ -33,7 +33,7 @@ TEST_F(ThreadEventComponentTest, ThreadWorkerTest)
   requester.setOutNumbers(numbers);
 
   requester.send();
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   EXPECT_EQ(numbers.size(), requester.getNumbers().size());
   for(int i = 0; i < numbers.size(); i++)
   {
@@ -42,7 +42,7 @@ TEST_F(ThreadEventComponentTest, ThreadWorkerTest)
 
   requester.clearInNumbers();
   requester.send();
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   EXPECT_EQ(numbers.size(), requester.getNumbers().size());
   for(int i = 0; i < numbers.size(); i++)
   {
