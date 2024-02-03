@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GameOfLifeWorker.hpp"
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
 
@@ -15,17 +16,21 @@ public:
   virtual void onEnd();
 
 private:
+  // game rules
+  void classicRules();
+  void crazyRules();
+
+  // helper methods
   void basicSeed();
   bool getCell(int x, int y);
   void setCell(int x, int y, bool alive);
   int wrap(int value, int min, int max);
   int calcNumNeighborsAlive(int x, int y);
 
-  sf::Color* _swatch;
-  CellGrid _cellGrid;
+  std::vector<GameOfLifeWorker> _workers;
 
-  float _currentUpdateSec;
-  float _secPerUpdate;
+  std::unique_ptr<sf::Color[]> _swatch;
+  CellGrid _cellGrid;
   std::vector<bool> _activeCells;
   std::vector<int> _cellNeighbors;
   bool _bIsPaused;

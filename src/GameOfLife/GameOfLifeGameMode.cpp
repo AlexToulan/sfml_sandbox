@@ -19,7 +19,8 @@ void GameOfLifeGameMode::onStart()
   _bPauseKey = false;
 
   const sf::Color inactive = sf::Color(1, 7, 22);
-  _swatch = new sf::Color[9]
+
+  _swatch = std::unique_ptr<sf::Color[]>(new sf::Color[9]
   {
     inactive,
     sf::Color(2, 20, 46),
@@ -30,7 +31,7 @@ void GameOfLifeGameMode::onStart()
     sf::Color(31, 100, 190),
     sf::Color(39, 118, 222),
     sf::Color(46, 137, 255),
-  };
+  });
 
   _cellGrid.setup(100, 100, 10, 1, inactive);
 
@@ -45,7 +46,6 @@ void GameOfLifeGameMode::onStart()
   }
 
   basicSeed();
-  _secPerUpdate = 1.0f / 200.0f;
 }
 
 void GameOfLifeGameMode::processEvents(sf::Event& event)
@@ -86,12 +86,6 @@ void GameOfLifeGameMode::update(float ds)
     return;
   }
 
-  _currentUpdateSec += ds;
-  if (_currentUpdateSec < _secPerUpdate)
-    return;
-
-  _currentUpdateSec -= _secPerUpdate;
-
   int i = 0;
   for (int y = 0; y < _cellGrid.getHeight(); y++)
   {
@@ -101,25 +95,7 @@ void GameOfLifeGameMode::update(float ds)
     }
   }
 
-  for (int y = 0; y < _cellGrid.getHeight(); y++)
-  {
-    for (int x = 0; x < _cellGrid.getWidth(); x++)
-    {
-      int cellIndex = _cellGrid.getCellIndex(x, y);
-      if (_activeCells[cellIndex])
-      {
-        if (_cellNeighbors[cellIndex] < 2)
-          setCell(x, y, false);
-        if (_cellNeighbors[cellIndex] > 3)
-          setCell(x, y, false);
-      }
-      else
-      {
-        if (_cellNeighbors[cellIndex] == 3)
-          setCell(x, y, true);
-      }
-    }
-  }
+  crazyRules();
 }
 
 void GameOfLifeGameMode::render(sf::RenderWindow& window)
@@ -141,6 +117,53 @@ void GameOfLifeGameMode::onEnd()
   // _cells.create(0);
   _activeCells.clear();
   _cellNeighbors.clear();
+  _workers.clear();
+}
+
+void GameOfLifeGameMode::crazyRules()
+{
+  for (int y = 0; y < _cellGrid.getHeight(); y++)
+  {
+    for (int x = 0; x < _cellGrid.getWidth(); x++)
+    {
+      int cellIndex = _cellGrid.getCellIndex(x, y);
+      if (_activeCells[cellIndex])
+      {
+        if (_cellNeighbors[cellIndex] < 2)
+          setCell(x, y, false);
+        if (_cellNeighbors[cellIndex] > 3)
+          setCell(x, y, false);
+      }
+      else
+      {
+        if (_cellNeighbors[cellIndex] >= 2 && _cellNeighbors[cellIndex] <= 3)
+          setCell(x, y, true);
+      }
+    }
+  }
+}
+
+void GameOfLifeGameMode::classicRules()
+{
+  for (int y = 0; y < _cellGrid.getHeight(); y++)
+  {
+    for (int x = 0; x < _cellGrid.getWidth(); x++)
+    {
+      int cellIndex = _cellGrid.getCellIndex(x, y);
+      if (_activeCells[cellIndex])
+      {
+        if (_cellNeighbors[cellIndex] < 2)
+          setCell(x, y, false);
+        if (_cellNeighbors[cellIndex] > 3)
+          setCell(x, y, false);
+      }
+      else
+      {
+        if (_cellNeighbors[cellIndex] == 3)
+          setCell(x, y, true);
+      }
+    }
+  }
 }
 
 void GameOfLifeGameMode::basicSeed()

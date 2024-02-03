@@ -27,6 +27,6 @@ private:
   int _cellSize;
   int _vertsPerQuat;
 
-  sf::Vertex* _verts;
+  std::unique_ptr<sf::Vertex[]> _verts;
   sf::VertexBuffer _cells;
 };
