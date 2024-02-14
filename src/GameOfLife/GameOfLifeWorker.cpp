@@ -16,7 +16,8 @@ GameOfLifeWorker::~GameOfLifeWorker()
   stop();
 }
 
-void GameOfLifeWorker::init(int startX, int endX, int startY, int endY, int width, int height, std::vector<int>* cellNeighbors, std::vector<bool>* activeCells)
+void GameOfLifeWorker::init(int startX, int endX, int startY, int endY, int width, int height,
+  std::shared_ptr<bool[]> activeCells, std::shared_ptr<int[]> cellNeighbors)
 {
   _width = width;
   _height = height;

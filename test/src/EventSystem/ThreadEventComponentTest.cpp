@@ -1,4 +1,4 @@
-#include <pthread.h>
+#include <thread>
 
 #include "gtest/gtest.h"
 #include "Utils/EventSystem/EventComponent.hpp"

@@ -36,8 +36,9 @@ private:
   std::unique_ptr<sf::Color[]> _swatch;
   CellGrid _cellGrid;
   std::mutex _cellMutex; // prevents screen tearing
-  std::vector<int> _cellNeighbors;
-  std::vector<bool> _activeCells;
+  std::shared_ptr<bool[]> _activeCells;
+  std::shared_ptr<int[]> _cellNeighbors;
+  size_t _numCells;
   bool _bIsPaused;
 
   // input

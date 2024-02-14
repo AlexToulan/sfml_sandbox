@@ -9,7 +9,8 @@ class GameOfLifeWorker : public EventComponent
 public:
   GameOfLifeWorker();
   virtual ~GameOfLifeWorker();
-  void init(int startX, int endX, int startY, int endY, int width, int height, std::vector<int>* cellNeighbors, std::vector<bool>* activeCells);
+  void init(int startX, int endX, int startY, int endY, int width, int height,
+    std::shared_ptr<bool[]> activeCells, std::shared_ptr<int[]> cellNeighbors);
   void start();
   void stop();
 
@@ -30,8 +31,9 @@ private:
   std::pair<int, int> _xRange;
   std::pair<int, int> _yRange;
 
-  std::vector<int>* _cellNeighbors;
-  std::vector<bool>* _activeCells;
+  std::shared_ptr<bool[]> _activeCells;
+  std::shared_ptr<int[]> _cellNeighbors;
+  size_t _numCells;
 
   std::thread _thread;
   std::atomic<bool> _isRunning;

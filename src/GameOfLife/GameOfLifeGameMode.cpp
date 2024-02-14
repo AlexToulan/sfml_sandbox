@@ -37,15 +37,9 @@ void GameOfLifeGameMode::onStart()
 
   _cellGrid.setup(100, 100, 10, 1, inactive);
 
-  int numCells = _cellGrid.getWidth() * _cellGrid.getHeight();
-  _activeCells.reserve(numCells);
-  _cellNeighbors.reserve(numCells);
-
-  for (int i = 0; i < numCells; i++)
-  {
-    _activeCells.push_back(false);
-    _cellNeighbors.push_back(0);
-  }
+  _numCells = _cellGrid.getWidth() * _cellGrid.getHeight();
+  _activeCells = std::make_shared<bool[]>(_numCells);
+  _cellNeighbors = std::make_shared<int[]>(_numCells);
 
   _rowsProcessed = 0;
   subscribe(EventType::ACTIVATE_CELLS_COMPLETE, &GameOfLifeGameMode::activateCellsComplete);
@@ -64,8 +58,6 @@ void GameOfLifeGameMode::onEnd()
   {
     _workers[i]->stop();
   }
-  _activeCells.clear();
-  _cellNeighbors.clear();
   _workers.clear();
 }
 
@@ -114,7 +106,7 @@ void GameOfLifeGameMode::render(sf::RenderWindow& window)
   // update colors
   sf::Color color = _swatch[0];
   // _cellMutex.lock(); // only prevents screen tearing as it is only a read
-  for (size_t i = 0; i < _activeCells.size(); i++)
+  for (size_t i = 0; i < _numCells; i++)
   {
     color = _activeCells[i] ? _swatch[8] : _swatch[0];
     _cellGrid.setCellColor(i, color);
@@ -157,7 +149,7 @@ void GameOfLifeGameMode::startWorkers(int width, int height)
   {
     _workers.push_back(std::unique_ptr<GameOfLifeWorker>(new GameOfLifeWorker()));
     _workers[i]->init(0, _cellGrid.getWidth(), yStride * i, yStride * (i + 1), width, height,
-      &_cellNeighbors, &_activeCells); // yuck
+      _activeCells, _cellNeighbors); // yuck
     _workers[i]->start();
   }
 
