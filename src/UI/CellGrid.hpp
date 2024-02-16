@@ -18,6 +18,7 @@ public:
   int getHeight() const;
   int getCellSpacing() const;
   size_t getCellIndex(int x, int y) const;
+  size_t getCellIndexWrapped(int x, int y) const;
 
 private:
   int _width;

@@ -1,4 +1,5 @@
 #include "UI/CellGrid.hpp"
+#include "Utils/MathUtils.hpp"
 
 CellGrid::CellGrid()
  : _verts(nullptr)
@@ -104,5 +105,12 @@ int CellGrid::getCellSpacing() const
 
 size_t CellGrid::getCellIndex(int x, int y) const
 {
+  return y * _width + x;
+}
+
+size_t CellGrid::getCellIndexWrapped(int x, int y) const
+{
+  x = mu::wrap(x, 0, _width);
+  y = mu::wrap(y, 0, _height);
   return y * _width + x;
 }

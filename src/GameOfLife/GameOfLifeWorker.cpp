@@ -1,6 +1,7 @@
 #include "EventTypes.hpp"
 #include "GameOfLifeWorker.hpp"
 #include "Utils/Logging.hpp"
+#include "Utils/MathUtils.hpp"
 
 GameOfLifeWorker::GameOfLifeWorker()
   : EventComponent()
@@ -17,7 +18,7 @@ GameOfLifeWorker::~GameOfLifeWorker()
 }
 
 void GameOfLifeWorker::init(int startX, int endX, int startY, int endY, int width, int height,
-  std::shared_ptr<bool[]> activeCells, std::shared_ptr<int[]> cellNeighbors)
+  bool* activeCells, int* cellNeighbors)
 {
   _width = width;
   _height = height;
@@ -54,24 +55,23 @@ void GameOfLifeWorker::run()
 {
   while (_isRunning)
   {
+    if (_calcNeighbors)
+    {
+      for (int y = _yRange.first; y < _yRange.second; y++)
+      {
+        for (int x = _xRange.first; x < _xRange.second; x++)
+        {
+          _cellNeighbors[getCellIndex(x, y)] = calcNumNeighborsAlive(x, y);
+        }
+      }
+      EventComponent::publish(EventType::CALC_NEIGHBORS_COMPLETE, _id);
+      _calcNeighbors = false;
+    }
     if (_setAliveDead)
     {
       classicRules();
       EventComponent::publish(EventType::ACTIVATE_CELLS_COMPLETE, _id);
       _setAliveDead = false;
-    }
-    if (_calcNeighbors)
-    {
-      int i = 0;
-      for (int y = _yRange.first; y < _yRange.second; y++)
-      {
-        for (int x = _xRange.first; x < _xRange.second; x++)
-        {
-          (*_cellNeighbors)[i++] = calcNumNeighborsAlive(x, y);
-        }
-      }
-      EventComponent::publish(EventType::CALC_NEIGHBORS_COMPLETE, _id);
-      _calcNeighbors = false;
     }
   }
 }
@@ -86,15 +86,6 @@ void GameOfLifeWorker::setAliveDead(const EventBase& event)
   _setAliveDead = true;
 }
 
-int GameOfLifeWorker::wrap(int value, int min, int max)
-{
-  if (value < min)
-    return max;
-  if (value > max)
-    return min;
-  return value;
-}
-
 int GameOfLifeWorker::calcNumNeighborsAlive(int x, int y)
 {
   // wrap field!
@@ -105,7 +96,7 @@ int GameOfLifeWorker::calcNumNeighborsAlive(int x, int y)
     {
       if (nx == x && ny == y)
         continue;
-      if ((*_activeCells)[getCellIndex(wrap(nx, 0, _width - 1), wrap(ny, 0, _height - 1))])
+      if (_activeCells[getCellIndex(mu::wrap(nx, 0, _width - 1), mu::wrap(ny, 0, _height - 1))])
         numNeighborsAlive++;
     }
   }
@@ -124,17 +115,17 @@ void GameOfLifeWorker::classicRules()
     for (int x = _xRange.first; x < _xRange.second; x++)
     {
       int cellIndex = getCellIndex(x, y);
-      if ((*_activeCells)[cellIndex])
+      if (_activeCells[cellIndex])
       {
-        if ((*_cellNeighbors)[cellIndex] < 2)
-          (*_activeCells)[cellIndex] = false;
-        if ((*_cellNeighbors)[cellIndex] > 3)
-          (*_activeCells)[cellIndex] = false;
+        if (_cellNeighbors[cellIndex] < 2)
+          _activeCells[cellIndex] = false;
+        if (_cellNeighbors[cellIndex] > 3)
+          _activeCells[cellIndex] = false;
       }
       else
       {
-        if ((*_cellNeighbors)[cellIndex] == 3)
-          (*_activeCells)[cellIndex] = true;
+        if (_cellNeighbors[cellIndex] == 3)
+          _activeCells[cellIndex] = true;
       }
     }
   }
@@ -149,17 +140,17 @@ void GameOfLifeWorker::crazyRules()
     for (int x = _xRange.first; x < _xRange.second; x++)
     {
       int cellIndex = getCellIndex(x, y);
-      if ((*_activeCells)[cellIndex])
+      if (_activeCells[cellIndex])
       {
-        if ((*_cellNeighbors)[cellIndex] < lower)
-          (*_activeCells)[cellIndex] = false;
-        if ((*_cellNeighbors)[cellIndex] > upper)
-          (*_activeCells)[cellIndex] = false;
+        if (_cellNeighbors[cellIndex] < lower)
+          _activeCells[cellIndex] = false;
+        if (_cellNeighbors[cellIndex] > upper)
+          _activeCells[cellIndex] = false;
       }
       else
       {
-        if ((*_cellNeighbors)[cellIndex] >= lower && (*_cellNeighbors)[cellIndex] <= upper)
-          (*_activeCells)[cellIndex] = true;
+        if (_cellNeighbors[cellIndex] >= lower && _cellNeighbors[cellIndex] <= upper)
+          _activeCells[cellIndex] = true;
       }
     }
   }

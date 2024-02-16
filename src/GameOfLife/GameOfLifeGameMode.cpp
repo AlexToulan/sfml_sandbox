@@ -1,6 +1,7 @@
 #include "EventTypes.hpp"
 #include "GameOfLife/GameOfLifeGameMode.hpp"
 #include "Utils/Logging.hpp"
+#include "Utils/MathUtils.hpp"
 
 #include <source_location>
 
@@ -38,8 +39,10 @@ void GameOfLifeGameMode::onStart()
   _cellGrid.setup(100, 100, 10, 1, inactive);
 
   _numCells = _cellGrid.getWidth() * _cellGrid.getHeight();
-  _activeCells = std::make_shared<bool[]>(_numCells);
-  _cellNeighbors = std::make_shared<int[]>(_numCells);
+  // _activeCells = std::make_shared<bool[]>(_numCells);
+  // _cellNeighbors = std::make_shared<int[]>(_numCells);
+  _activeCells = new bool[_numCells] { false };
+  _cellNeighbors = new int[_numCells] { 0 };
 
   _rowsProcessed = 0;
   subscribe(EventType::ACTIVATE_CELLS_COMPLETE, &GameOfLifeGameMode::activateCellsComplete);
@@ -52,12 +55,12 @@ void GameOfLifeGameMode::onStart()
 
 void GameOfLifeGameMode::onEnd()
 {
-  // clearing and recreating this in onStart causes a crash. window likely holds a ref to VertexBuffer
-  // _cells.create(0);
   for (size_t i = 0; i < _workers.size(); i++)
   {
     _workers[i]->stop();
   }
+  delete[] _activeCells;
+  delete[] _cellNeighbors;
   _workers.clear();
 }
 
@@ -68,6 +71,8 @@ void GameOfLifeGameMode::processEvents(sf::Event& event)
     if (!_bPauseKey)
     {
       _bIsPaused = !_bIsPaused;
+      if (!_bIsPaused)
+        EventComponent::publish(EventType::CALC_NEIGHBORS);
     }
     _bPauseKey = true;
   }
@@ -125,7 +130,10 @@ void GameOfLifeGameMode::activateCellsComplete(const EventBase& event)
   {
     // _cellMutex.unlock();
     _rowsProcessed = 0;
-    EventComponent::publish(EventType::CALC_NEIGHBORS);
+    if (!_bIsPaused)
+    {
+      EventComponent::publish(EventType::CALC_NEIGHBORS);
+    }
   }
 }
 
@@ -191,9 +199,20 @@ void GameOfLifeGameMode::setCell(int x, int y, bool alive)
   size_t index = _cellGrid.getCellIndex(x, y);
   _activeCells[index] = alive;
   sf::Color color = _swatch[0];
+  int neighborDelta = -1;
   if (alive)
   {
     color = _swatch[8];
+    neighborDelta = 1;
+  }
+  for (int ny = y - 1; ny <= y + 1; ny++)
+  {
+    for (int nx = x - 1; nx <= x + 1; nx++)
+    {
+      if (nx == x && ny == y)
+        continue;
+      _cellNeighbors[_cellGrid.getCellIndexWrapped(nx, ny)] += neighborDelta;
+    }
   }
   _cellGrid.setCellColor(x, y, color);
 }
