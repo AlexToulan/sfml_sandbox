@@ -69,7 +69,8 @@ void GameOfLifeWorker::run()
     }
     if (_setAliveDead)
     {
-      classicRules();
+      // classicRules();
+      crazyRules();
       EventComponent::publish(EventType::ACTIVATE_CELLS_COMPLETE, _id);
       _setAliveDead = false;
     }

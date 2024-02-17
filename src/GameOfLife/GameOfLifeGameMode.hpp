@@ -35,7 +35,6 @@ private:
 
   std::unique_ptr<sf::Color[]> _swatch;
   CellGrid _cellGrid;
-  std::mutex _cellMutex; // prevents screen tearing
   // TODO: use this once we have C++20
   // std::shared_ptr<bool[]> _activeCells;
   // std::shared_ptr<int[]> _cellNeighbors;

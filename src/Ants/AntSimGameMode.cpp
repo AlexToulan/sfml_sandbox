@@ -7,5 +7,5 @@ AntSimGameMode::AntSimGameMode()
 
 AntSimGameMode::~AntSimGameMode()
 {
-  
+
 }

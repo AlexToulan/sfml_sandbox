@@ -84,16 +84,16 @@ void GameOfLifeGameMode::processEvents(sf::Event& event)
   // TODO: fix crash bug cause by mouse leaving render window
   if (_bIsPaused)
   {
-      if (event.type == sf::Event::MouseButtonPressed)
+    if (event.type == sf::Event::MouseButtonPressed)
+    {
+      if (event.mouseButton.button == sf::Mouse::Left)
       {
-        if (event.mouseButton.button == sf::Mouse::Left)
-        {
-          Log::info(std::to_string(event.mouseButton.x) + " " + std::to_string(event.mouseButton.y));
-          int x = (event.mouseButton.x - 1) / _cellGrid.getCellSpacing();
-          int y = (event.mouseButton.y - 1) / _cellGrid.getCellSpacing();
-          setCell(x, y, !getCell(x, y));
-        }
+        Log::info(std::to_string(event.mouseButton.x) + " " + std::to_string(event.mouseButton.y));
+        int x = (event.mouseButton.x - 1) / _cellGrid.getCellSpacing();
+        int y = (event.mouseButton.y - 1) / _cellGrid.getCellSpacing();
+        setCell(x, y, !getCell(x, y));
       }
+    }
   }
 }
 
@@ -103,21 +103,18 @@ void GameOfLifeGameMode::update(float ds)
   {
     return;
   }
-  // _cellMutex.lock();
 }
 
 void GameOfLifeGameMode::render(sf::RenderWindow& window)
 {
   // update colors
   sf::Color color = _swatch[0];
-  // _cellMutex.lock(); // only prevents screen tearing as it is only a read
   for (size_t i = 0; i < _numCells; i++)
   {
     color = _activeCells[i] ? _swatch[8] : _swatch[0];
     _cellGrid.setCellColor(i, color);
   }
-  // _cellMutex.unlock();
-  
+
   _cellGrid.update();
   window.draw(_cellGrid);
 }
@@ -128,7 +125,6 @@ void GameOfLifeGameMode::activateCellsComplete(const EventBase& event)
   _rowsProcessed += range.second - range.first;
   if (_rowsProcessed == _cellGrid.getHeight())
   {
-    // _cellMutex.unlock();
     _rowsProcessed = 0;
     if (!_bIsPaused)
     {
@@ -144,7 +140,6 @@ void GameOfLifeGameMode::calcNeighborsComplete(const EventBase& event)
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
-    // _cellMutex.lock();
     EventComponent::publish(EventType::ACTIVATE_CELLS);
   }
 }

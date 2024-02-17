@@ -11,11 +11,11 @@
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args":[
         "--game_mode", "GameOfLifeGameMode",
-        "--frame_rate", "40"
+        "--frame_rate", "50"
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true
-    }
+    },
     {
       "name": "Quad Test",
       "type": "cppdbg",
