@@ -11,13 +11,12 @@ int main(int argc, char* argv[])
     args.print();
   
   Log::init(args.log_file_path, args.log_info, args.log_warn);
-
   GameModeController controller(1000, 1000, "Game Mode Test");
 
   controller.addGameMode(std::make_unique<QuadTestGameMode>());
   controller.addGameMode(std::make_unique<GameOfLifeGameMode>());
 
-  if (controller.setup(60))
+  if (controller.setup(args.frame_rate))
   {
     controller.selectGameMode(args.game_mode);
     controller.run();

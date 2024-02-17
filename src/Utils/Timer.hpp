@@ -10,6 +10,7 @@ public:
   void start();
   void stop();
   float getSeconds();
+  float pollSeconds();
   float deltaSeconds();
 
 private:

@@ -1,4 +1,5 @@
 #include "UI/CellGrid.hpp"
+#include "Utils/MathUtils.hpp"
 
 CellGrid::CellGrid()
  : _verts(nullptr)
@@ -8,7 +9,6 @@ CellGrid::CellGrid()
 
 CellGrid::~CellGrid()
 {
-  delete[] _verts;
 }
 
 void CellGrid::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -18,7 +18,7 @@ void CellGrid::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void CellGrid::update()
 {
-  _cells.update(_verts);
+  _cells.update(_verts.get());
 }
 
 void CellGrid::setup(int width, int height, int cellSpacing, int padding, sf::Color color)
@@ -38,7 +38,7 @@ void CellGrid::setup(int width, int height, int cellSpacing, int padding, sf::Co
   }
 
   if (_verts == nullptr)
-    _verts = new sf::Vertex[numCells * _vertsPerQuat]();
+    _verts = std::unique_ptr<sf::Vertex[]>(new sf::Vertex[numCells * _vertsPerQuat]());
 
   for(int y = 0; y < _height; y++)
   {
@@ -105,5 +105,12 @@ int CellGrid::getCellSpacing() const
 
 size_t CellGrid::getCellIndex(int x, int y) const
 {
+  return y * _width + x;
+}
+
+size_t CellGrid::getCellIndexWrapped(int x, int y) const
+{
+  x = mu::wrap(x, 0, _width);
+  y = mu::wrap(y, 0, _height);
   return y * _width + x;
 }

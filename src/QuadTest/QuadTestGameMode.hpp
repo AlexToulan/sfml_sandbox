@@ -27,7 +27,7 @@ private:
 
   sf::Vertex* _verts;
   sf::VertexBuffer _cells;
-  sf::Color* _swatch;
+  std::unique_ptr<sf::Color[]> _swatch;
 
   std::mt19937 _gen;
   std::uniform_int_distribution<> _distrib;

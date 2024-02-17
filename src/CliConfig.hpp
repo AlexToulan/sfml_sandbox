@@ -10,4 +10,5 @@ struct CliConfig : public argparse::Args
   std::string& log_file_path = kwarg("lf,log_file", "log file path").set_default("log.txt");
   std::string& game_mode = kwarg("gm,game_mode", "select the default game mode to start with")
     .set_default("QuadTestGameMode");
+  int& frame_rate = kwarg("fr,frame_rate", "frame rate to use for all game modes").set_default("60");
 };

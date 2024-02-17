@@ -28,7 +28,7 @@ void QuadTestGameMode::onStart()
   const float cellSpacing = _cellSize + _padding * 2.0f;
   const std::size_t numCells = width * height;
   const sf::Color inactive = sf::Color(16, 16, 16);
-  _swatch = new sf::Color[9]
+  _swatch = std::unique_ptr<sf::Color[]> (new sf::Color[9]
   {
     sf::Color(255, 122, 213),
     sf::Color(199, 69, 255),
@@ -39,7 +39,7 @@ void QuadTestGameMode::onStart()
     sf::Color(255, 178, 69),
     sf::Color(255, 85, 69),
     inactive,
-  };
+  });
 
   if (_cells.getVertexCount() == 0)
   {

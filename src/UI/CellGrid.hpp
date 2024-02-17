@@ -18,6 +18,7 @@ public:
   int getHeight() const;
   int getCellSpacing() const;
   size_t getCellIndex(int x, int y) const;
+  size_t getCellIndexWrapped(int x, int y) const;
 
 private:
   int _width;
@@ -27,6 +28,6 @@ private:
   int _cellSize;
   int _vertsPerQuat;
 
-  sf::Vertex* _verts;
+  std::unique_ptr<sf::Vertex[]> _verts;
   sf::VertexBuffer _cells;
 };

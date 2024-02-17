@@ -47,7 +47,7 @@ file(GLOB_RECURSE sfml_helper_files
 file(GLOB_RECURSE quad_test_files
     src/QuadTest/*.cpp
     src/QuadTest/*.hpp
-)
+    )
 
 # game of life
 file(GLOB_RECURSE game_of_life_files
@@ -77,7 +77,11 @@ file(GLOB_RECURSE test_files
 
 # add_executable(SFMLSandbox src/main.cpp ${example_game_mode_files})
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_EXTENSIONS NO)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
+set(CMAKE_CXX_SCAN_FOR_MODULES YES)
 # main game executable
 add_executable(SFMLSandbox src/main.cpp ${sfml_helper_files} ${util_files} ${game_of_life_files} ${quad_test_files})
 target_include_directories(SFMLSandbox

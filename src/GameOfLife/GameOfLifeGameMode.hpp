@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Utils/EventSystem/EventComponent.hpp"
+#include "GameOfLifeWorker.hpp"
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
 
-class GameOfLifeGameMode : public GameMode
+class GameOfLifeGameMode : public GameMode, public EventComponent
 {
 public:
   GameOfLifeGameMode();
@@ -15,19 +17,30 @@ public:
   virtual void onEnd();
 
 private:
+  // game rules
+  void classicRules();
+  void crazyRules();
+
+  // helper methods
   void basicSeed();
   bool getCell(int x, int y);
   void setCell(int x, int y, bool alive);
-  int wrap(int value, int min, int max);
-  int calcNumNeighborsAlive(int x, int y);
 
-  sf::Color* _swatch;
+  void startWorkers(int width, int height);
+  void activateCellsComplete(const EventBase& event);
+  void calcNeighborsComplete(const EventBase& event);
+  
+  std::atomic<int> _rowsProcessed;
+  std::vector<std::unique_ptr<GameOfLifeWorker>> _workers;
+
+  std::unique_ptr<sf::Color[]> _swatch;
   CellGrid _cellGrid;
-
-  float _currentUpdateSec;
-  float _secPerUpdate;
-  std::vector<bool> _activeCells;
-  std::vector<int> _cellNeighbors;
+  // TODO: use this once we have C++20
+  // std::shared_ptr<bool[]> _activeCells;
+  // std::shared_ptr<int[]> _cellNeighbors;
+  bool* _activeCells;
+  int* _cellNeighbors;
+  size_t _numCells;
   bool _bIsPaused;
 
   // input
