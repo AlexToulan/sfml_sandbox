@@ -18,6 +18,7 @@ protected:
 
 TEST_F(EnvironmentTests, CPP20)
 {
+  // can only use shared pointer arrays in c++20
   std::shared_ptr<int[]> testcpp20 = std::make_shared<int[]>(10);
   testcpp20[0] = 20;
   EXPECT_EQ(testcpp20[0], 20);
