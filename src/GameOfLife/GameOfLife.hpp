@@ -5,11 +5,11 @@
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
 
-class GameOfLifeGameMode : public GameMode, public EventComponent
+class GameOfLife : public GameMode, public EventComponent
 {
 public:
-  GameOfLifeGameMode();
-  virtual ~GameOfLifeGameMode();
+  GameOfLife();
+  virtual ~GameOfLife();
   virtual void onStart();
   virtual void processEvents(sf::Event& event);
   virtual void update(float ds);
@@ -23,6 +23,9 @@ private:
 
   // helper methods
   void basicSeed();
+  bool seedFromConfig(std::string configName);
+  void setSeed(const std::vector<bool>& seed, int width, int height, int center_x, int center_y);
+  void saveSeed(const std::vector<bool>& seed, int width, int height, std::string fileName);
   bool getCell(int x, int y);
   void setCell(int x, int y, bool alive);
 
@@ -42,6 +45,9 @@ private:
   int* _cellNeighbors;
   size_t _numCells;
   bool _bIsPaused;
+  bool _bLockToFrameRate;
+  float _startDelaySec;
+  bool _bStartDelayComplete;
 
   // input
   bool _bPauseKey;
