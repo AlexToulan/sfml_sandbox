@@ -1,0 +1,4 @@
+imageName: glider_gun.png
+cellSize: 16
+cellAliveColor: [0, 0, 0, 255]
+cellDeadColor: [255, 255, 255, 255]
