@@ -1,4 +1,4 @@
-#include "GameOfLife/GameOfLifeGameMode.hpp"
+#include "GameOfLife/GameOfLife.hpp"
 #include "QuadTest/QuadTestGameMode.hpp"
 #include "GameMode/GameModeController.hpp"
 #include "Utils/Logging.hpp"
@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
   GameModeController controller(1000, 1000, "Game Mode Test");
 
   controller.addGameMode(std::make_unique<QuadTestGameMode>());
-  controller.addGameMode(std::make_unique<GameOfLifeGameMode>());
+  controller.addGameMode(std::make_unique<GameOfLife>());
 
   if (controller.setup(args.frame_rate))
   {

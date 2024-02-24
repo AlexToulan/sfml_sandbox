@@ -16,6 +16,9 @@ public:
   virtual void onEnd() = 0;
 
   std::string getName() const;
+protected:
+  std::string _resourcesPath;
+
 private:
   std::string _name;
 };

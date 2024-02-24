@@ -23,7 +23,7 @@ void Log::info(const std::string& message, const std::source_location& location)
   if (bShowInfo)
   {
     std::cout << "[  INFO  ]  " << blue()
-      << location.file_name() << ":" << location.line() << " " << reset() << "> " << message << std::endl;
+      << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }
 
@@ -33,7 +33,7 @@ void Log::warn(const std::string& message, const std::source_location& location)
   if (bShowWarn)
   {
     std::cout << yellow() << "[ WARNING ] " << blue()
-      << location.file_name() << ":" << location.line() << " " << reset() << "> " << message << std::endl;
+      << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }
 
@@ -43,6 +43,6 @@ void Log::error(const std::string& message, const std::source_location& location
   if (bShowError)
   {
     std::cout << red() << "[  ERROR  ] " << blue()
-      << location.file_name() << ":" << location.line() << " " << reset() << "> " << message << std::endl;
+      << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }

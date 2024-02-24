@@ -1,0 +1,4 @@
+imageName: pulsar.png
+cellSize: 8
+cellAliveColor: [0, 0, 0, 255]
+cellDeadColor: [255, 255, 255, 255]
