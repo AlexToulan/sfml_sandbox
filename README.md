@@ -4,7 +4,7 @@ A simple 2D graphics sandbox for testing algorithms and game design on Linux. Cr
 ## Build
  - If you're building for the first time run `setup.sh`
  - Download a CMake extension of your choosing
- - Configure CMake to use Clang 14
+   - (optional) Configure CMake to use Clang 17
  - Ctrl+Shift+B for normal code change build
 
 ## Known Bugs
