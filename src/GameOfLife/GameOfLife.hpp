@@ -17,11 +17,8 @@ public:
   virtual void onEnd();
 
 private:
-  // game rules
-  void classicRules();
-  void crazyRules();
-
   // helper methods
+  bool tryCalcNeighbors();
   void basicSeed();
   bool seedFromConfig(std::string configName);
   void setSeed(const std::vector<bool>& seed, int width, int height, int center_x, int center_y);
@@ -51,4 +48,5 @@ private:
 
   // input
   bool _bPauseKey;
+  bool _bStepKeyPressed;
 };

@@ -23,6 +23,7 @@ void GameOfLife::onStart()
   _bLockToFrameRate = true;
   _startDelaySec = 1.0f;
   _bStartDelayComplete = false;
+  _bStepKeyPressed = false;
 
   const sf::Color inactive = sf::Color(1, 7, 22);
 
@@ -39,7 +40,8 @@ void GameOfLife::onStart()
     sf::Color(46, 137, 255),
   });
 
-  _cellGrid.setup(100, 100, 10, 1, inactive);
+  // _cellGrid.setup(100, 100, 10, 1, inactive);
+  _cellGrid.setup(200, 200, 5, 1, inactive);
 
   _numCells = _cellGrid.getWidth() * _cellGrid.getHeight();
   // _activeCells = std::make_shared<bool[]>(_numCells);
@@ -47,7 +49,7 @@ void GameOfLife::onStart()
   _activeCells = new bool[_numCells] { false };
   _cellNeighbors = new int[_numCells] { 0 };
 
-  _rowsProcessed = 0;
+  _rowsProcessed = _cellGrid.getHeight();
   subscribe(EventType::ACTIVATE_CELLS_COMPLETE, &GameOfLife::activateCellsComplete);
   subscribe(EventType::CALC_NEIGHBORS_COMPLETE, &GameOfLife::calcNeighborsComplete);
 
@@ -77,14 +79,10 @@ void GameOfLife::processEvents(sf::Event& event)
     {
       _bIsPaused = !_bIsPaused;
       if (!_bIsPaused)
-        EventComponent::publish(EventType::CALC_NEIGHBORS);
+        tryCalcNeighbors();
     }
-    _bPauseKey = true;
   }
-  else
-  {
-    _bPauseKey = false;
-  }
+  _bPauseKey = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
   
   // TODO: fix crash bug cause by mouse leaving render window
   if (_bIsPaused)
@@ -99,10 +97,11 @@ void GameOfLife::processEvents(sf::Event& event)
         setCell(x, y, !getCell(x, y));
       }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter) && !_bStepKeyPressed)
     {
-      EventComponent::publish(EventType::CALC_NEIGHBORS);
+      tryCalcNeighbors();
     }
+    _bStepKeyPressed = event.type == sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter);
   }
 }
 
@@ -124,7 +123,7 @@ void GameOfLife::update(float ds)
   }
   if (_bLockToFrameRate)
   {
-    EventComponent::publish(EventType::CALC_NEIGHBORS);
+    tryCalcNeighbors();
   }
 }
 
@@ -146,13 +145,9 @@ void GameOfLife::activateCellsComplete(const EventBase& event)
 {
   auto range = unpack<std::pair<int, int>>(event);
   _rowsProcessed += range.second - range.first;
-  if (_rowsProcessed == _cellGrid.getHeight())
+  if (!_bIsPaused && !_bLockToFrameRate)
   {
-    _rowsProcessed = 0;
-    if (!_bIsPaused && !_bLockToFrameRate)
-    {
-      EventComponent::publish(EventType::CALC_NEIGHBORS);
-    }
+    tryCalcNeighbors();
   }
 }
 
@@ -183,6 +178,17 @@ void GameOfLife::startWorkers(int width, int height)
   {
     EventComponent::publish(EventType::CALC_NEIGHBORS);
   }
+}
+
+bool GameOfLife::tryCalcNeighbors()
+{
+  if (_rowsProcessed == _cellGrid.getHeight())
+  {
+    _rowsProcessed = 0;
+    EventComponent::publish(EventType::CALC_NEIGHBORS);
+    return true;
+  }
+  return false;
 }
 
 void GameOfLife::basicSeed()
