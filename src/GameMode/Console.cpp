@@ -16,6 +16,9 @@ Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int bo
   _prompt = " > ";
   _bIsOpen = false;
   _historyIndex = 0;
+  // add commands
+  _commands.push_back("exit");
+  _commands.push_back("quit");
 }
 
 void Console::setSize(int screenWidth, int screenHeight, int borderThickness)
@@ -96,8 +99,15 @@ void Console::sendCommand()
   }
   _historyIndex = _commandHistory.size();
   print("> " + _commandBuffer);
-  // TODO: parse args with argparse and send object instead of string
-  EventComponent::publish(EventType::CONSOLE_COMMAND, Event(_commandBuffer));
+  ConsoleCommand command(_commandBuffer);
+  if (std::find(_commands.begin(), _commands.end(), command._name) != _commands.end())
+  {
+    EventComponent::publish(EventType::CONSOLE_COMMAND, Event(command));
+  }
+  else
+  {
+    print("invalid command: \"" + _commandBuffer + "\"");
+  }
   _commandBuffer.clear();
   _tempCommandBuffer.clear();
   updateText();

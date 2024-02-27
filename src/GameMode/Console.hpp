@@ -8,7 +8,25 @@
 #include <SFML/System/NonCopyable.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "Utils/CliConfig.hpp"
+struct ConsoleCommand
+{
+  ConsoleCommand(std::string commandBuffer)
+  {
+    size_t space = commandBuffer.find_first_of(" \t");
+    if (space == std::string::npos)
+    {
+      _name = commandBuffer;
+      _arg = "";
+    }
+    else
+    {
+      _name = commandBuffer.substr(0, space);
+      _arg = commandBuffer.substr(space + 1, commandBuffer.size());
+    }
+  }
+  std::string _name;
+  std::string _arg;
+};
 
 class Console final : public sf::Drawable, private sf::NonCopyable
 {
@@ -28,24 +46,31 @@ private:
   void print(const std::string line);
   void draw(sf::RenderTarget& rt, sf::RenderStates states) const override;
 
-  bool _bIsOpen;
+  // commands
+  std::vector<std::string> _commands;
+
   // UI
+  bool _bIsOpen;
+  int _charSize;
   sf::Vector2u _anchor;
   sf::RectangleShape _background;
-  sf::Text _bufferText;
-  sf::Text _outputText;
   sf::Color _backgroundColor;
   sf::Color _foregroundColor;
 
-  // 
-  int _charSize;
-  size_t _commandHistorySize;
-  size_t _textBufferSize;
-  size_t _maxBufferLength;
+  // command buffer
+  sf::Text _bufferText;
   std::string _prompt;
   std::string _commandBuffer;
   std::string _tempCommandBuffer;
+  size_t _maxBufferLength;
+
+  // output text
+  sf::Text _outputText;
+  std::vector<std::string> _textBuffer;
+  size_t _textBufferSize;
+
+  // history
   int _historyIndex;
   std::vector<std::string> _commandHistory;
-  std::vector<std::string> _textBuffer;
+  size_t _commandHistorySize;
 };

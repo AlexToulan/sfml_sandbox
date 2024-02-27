@@ -178,5 +178,10 @@ void GameModeController::switchGameMode(int direction)
 void GameModeController::consoleCommand(const EventBase& event)
 {
   // CliConfig config = unpack<CliConfig>(event);
-  Log::info(unpack<std::string>(event));
+  auto command = unpack<ConsoleCommand>(event);
+  if (command._name == "exit" || command._name == "quit")
+  {
+    _bShouldClose = true;
+    Log::info("bye!");
+  }
 }
