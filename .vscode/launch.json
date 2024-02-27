@@ -11,7 +11,7 @@
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args":[
         "--game_mode", "GameOfLife",
-        "--frame_rate", "20"
+        "--frames_per_second", "60"
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true
@@ -22,10 +22,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args": [
-        "--game_mode",
-        "QuadTestGameMode",
-        "--frame_rate",
-        "30"
+        "--game_mode", "QuadTestGameMode",
+        "--frames_per_second", "30"
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true
