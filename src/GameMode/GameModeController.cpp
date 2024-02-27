@@ -3,18 +3,22 @@
 #include "Utils/Logging.hpp"
 
 
-GameModeController::GameModeController()
+GameModeController::GameModeController(const sf::Font& consoleFont)
   : _window(sf::VideoMode(1000, 1000), "SFML Test")
+  , _console(consoleFont, 1000, 1000)
 {
   _currentGameModeIndex = 0;
   _frames = 0;
+  _bShouldClose = false;
 }
 
-GameModeController::GameModeController(int screenWidth, int screenHeight, std::string windowTitle)
+GameModeController::GameModeController(const sf::Font& consoleFont, int screenWidth, int screenHeight, std::string windowTitle)
   : _window(sf::VideoMode(screenWidth, screenHeight), windowTitle)
+  , _console(consoleFont, screenWidth, screenHeight, 1)
 {
   _currentGameModeIndex = 0;
   _frames = 0;
+  _bShouldClose = false;
 }
 
 GameModeController::~GameModeController()
@@ -48,11 +52,15 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
   _bPreviousKey = false;
 }
 
-bool GameModeController::setup(unsigned int frameRate)
+bool GameModeController::setup(unsigned int framesPerSecond, unsigned int updatesPerSecond)
 {
   Log::info("Setting up game mode controller");
-  _frameRate = frameRate;
-  _window.setFramerateLimit(_frameRate);
+  subscribe(EventType::CONSOLE_COMMAND, &GameModeController::consoleCommand);
+  _framesPerSecond = framesPerSecond;
+  _updatesPerSecond = updatesPerSecond;
+  _window.setFramerateLimit(_framesPerSecond);
+  _bConsoleOpenKey = false;
+  _bShouldClose = false;
 
   if (_gameModes.size() == 0)
   {
@@ -72,13 +80,20 @@ void GameModeController::run()
     sf::Event event;
     while (_window.pollEvent(event))
     {
-      if (event.type == sf::Event::Closed || event.KeyReleased && event.key.code == sf::Keyboard::Escape)
+      if (_bShouldClose || event.type == sf::Event::Closed || event.KeyReleased && event.key.code == sf::Keyboard::Escape)
       {
         _gameModes[_currentGameModeIndex]->onEnd();
         _window.close();
         return;
       }
-      _gameModes[_currentGameModeIndex]->processEvents(event);
+      if (_console.isOpen())
+      {
+        _console.processEvents(event);
+      }
+      else
+      {
+        _gameModes[_currentGameModeIndex]->processEvents(event);
+      }
     }
 
     processInput();
@@ -94,6 +109,7 @@ void GameModeController::run()
     _window.clear();
     _gameModes[_currentGameModeIndex]->update(_loopTimer.deltaSeconds());
     _gameModes[_currentGameModeIndex]->render(_window);
+    _window.draw(_console);
     _window.display();
   }
 }
@@ -117,6 +133,14 @@ void GameModeController::previousGameMode()
 
 void GameModeController::processInput()
 {
+  bool grave = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Grave);
+  if (grave && !_bConsoleOpenKey)
+  {
+    _console.toggle();
+    _bConsoleOpenKey = true;
+  }
+  _bConsoleOpenKey = grave;
+
   // cycle game modes
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Period))
     _bNextKey = true;
@@ -145,8 +169,14 @@ void GameModeController::switchGameMode(int direction)
   }
 
   _gameModes[_currentGameModeIndex]->onEnd();
-  EventComponent::flushSubscribers(); // allows event types per game mode
+  // EventComponent::flushSubscribers(); // allows event types per game mode
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
   Log::info("Switching to " + _gameModes[_currentGameModeIndex]->getName());
   _gameModes[_currentGameModeIndex]->onStart();
+}
+
+void GameModeController::consoleCommand(const EventBase& event)
+{
+  // CliConfig config = unpack<CliConfig>(event);
+  Log::info(unpack<std::string>(event));
 }
