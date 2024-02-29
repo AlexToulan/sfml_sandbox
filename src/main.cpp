@@ -2,22 +2,29 @@
 #include "QuadTest/QuadTestGameMode.hpp"
 #include "GameMode/GameModeController.hpp"
 #include "Utils/Logging.hpp"
-#include "CliConfig.hpp"
+#include "Utils/CliConfig.hpp"
 #include <memory>
 
 int main(int argc, char* argv[])
 {
+  int returnCode = 0;
   auto args = argparse::parse<CliConfig>(argc, argv);
   Log::init(args.log_file_path, args.log_info, args.log_warn);
   if (args.log_info)
     args.print();
   
-  GameModeController controller(1000, 1000, "Game Mode Test");
+  sf::Font consoleFont;
+  if (!consoleFont.loadFromFile("resources/Fonts/UbuntuMono-Regular.ttf"))
+  {
+    Log::error("failed to load console font");
+    return 2;
+  }
+  GameModeController controller(consoleFont, 1000, 1000, "Game Mode Test");
 
   controller.addGameMode(std::make_unique<QuadTestGameMode>());
   controller.addGameMode(std::make_unique<GameOfLife>());
 
-  if (controller.setup(args.frame_rate))
+  if (controller.setup(args.frames_per_second, args.updates_per_second))
   {
     controller.selectGameMode(args.game_mode);
     controller.run();
@@ -25,7 +32,8 @@ int main(int argc, char* argv[])
   else
   {
     Log::error("GameModeController failed to setup.");
+    returnCode = 1;
   }
   controller.teardown();
-  return 0;
+  return returnCode;
 }
