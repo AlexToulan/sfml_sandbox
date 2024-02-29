@@ -55,10 +55,17 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 bool GameModeController::setup(unsigned int framesPerSecond, unsigned int updatesPerSecond)
 {
   Log::info("Setting up game mode controller");
+
+  _console.subscribe(EventType::ADD_CONSOLE_COMMAND, &Console::addCommand);
+  _console.addCommand("exit");
+  _console.addCommand("quit");
+  _console.addCommand("restart_game_mode");
+  _console.addCommand("frames_per_second");
+  _console.addCommand("updates_per_second");
   subscribe(EventType::CONSOLE_COMMAND, &GameModeController::consoleCommand);
-  _framesPerSecond = framesPerSecond;
+
+  _window.setFramerateLimit(framesPerSecond);
   _updatesPerSecond = updatesPerSecond;
-  _window.setFramerateLimit(_framesPerSecond);
   _bConsoleOpenKey = false;
   _bShouldClose = false;
 
@@ -107,7 +114,9 @@ void GameModeController::run()
     }
 
     _window.clear();
-    _gameModes[_currentGameModeIndex]->update(_loopTimer.deltaSeconds());
+    float ds = _loopTimer.deltaSeconds();
+    _console.update(ds);
+    _gameModes[_currentGameModeIndex]->update(ds);
     _gameModes[_currentGameModeIndex]->render(_window);
     _window.draw(_console);
     _window.display();
@@ -116,7 +125,7 @@ void GameModeController::run()
 
 void GameModeController::teardown()
 {
-  
+  _console.unsubscribe();
 }
 
 void GameModeController::nextGameMode()
@@ -184,4 +193,26 @@ void GameModeController::consoleCommand(const EventBase& event)
     _bShouldClose = true;
     Log::info("bye!");
   }
+  else if (command._name == "restart_game_mode")
+  {
+    _gameModes[_currentGameModeIndex]->onEnd();
+    _gameModes[_currentGameModeIndex]->onStart();
+  }
+  else if (command._name == "frames_per_second")
+  {
+    int framesPerSecond = std::stoi(command._arg);
+    if (framesPerSecond > 0)
+    {
+      Log::info("frames_per_second: " + std::to_string(framesPerSecond));
+      _window.setFramerateLimit((unsigned long)framesPerSecond);
+    }
+    else
+    {
+      Log::info("\tinvalid argument: \"" + command._arg + "\"");
+    }
+  }
+  /*else if (command._name == "updates_per_second")
+  {
+    
+  }*/
 }

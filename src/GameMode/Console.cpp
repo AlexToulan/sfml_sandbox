@@ -1,24 +1,39 @@
 #include "GameMode/Console.hpp"
+#include "Utils/Logging.hpp"
 
 #include "EventTypes.hpp"
-#include "Utils/EventSystem/EventComponent.hpp"
 
 Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int borderThickness)
   : _background(sf::Vector2f(screenWidth, screenHeight / 2))
 {
   _backgroundColor = sf::Color(127, 127, 127, 127);
   _foregroundColor = sf::Color(192, 192, 192, 127);
+
   _background.setFillColor(_backgroundColor);
   _maxBufferLength = 128 * 1024;
+
   _bufferText.setFont(font);
+  _bufferText.setFillColor(sf::Color(255, 255, 255, 255));
+
+  _bufferHintText.setFont(font);
+  _bufferHintText.setFillColor(sf::Color(192, 192, 192, 255));
+
   _outputText.setFont(font);
+  _outputText.setFillColor(sf::Color(192, 192, 192, 255));
+
   setSize(screenWidth, screenHeight, borderThickness);
   _prompt = " > ";
+  _cursor = "_";
   _bIsOpen = false;
+  _bCursorOn = true;
+  _cursorSeconds = 0.5f;
+  _cursorSecondsElapsed = _cursorSeconds;
   _historyIndex = 0;
-  // add commands
-  _commands.push_back("exit");
-  _commands.push_back("quit");
+}
+
+Console::~Console()
+{
+
 }
 
 void Console::setSize(int screenWidth, int screenHeight, int borderThickness)
@@ -41,6 +56,8 @@ void Console::setSize(int screenWidth, int screenHeight, int borderThickness)
   _textBufferSize = (screenHeight - _anchor.y) / _charSize - 1;
   _bufferText.setCharacterSize(_charSize);
   _bufferText.setPosition(_anchor.x, screenHeight - _charSize - margin - 2);
+  _bufferHintText.setCharacterSize(_charSize);
+  _bufferHintText.setPosition(_anchor.x, screenHeight - _charSize - margin - 2);
   _outputText.setCharacterSize(_charSize);
   _outputText.setPosition(_anchor.x, _anchor.y);
 }
@@ -55,7 +72,8 @@ void Console::setOpen(bool isOpen)
   _bIsOpen = isOpen;
   if (_bIsOpen)
   {
-    updateText();
+    updateBufferText();
+    updateOutputText();
   }
 }
 
@@ -64,9 +82,11 @@ void Console::toggle()
   setOpen(!_bIsOpen);
 }
 
-void Console::updateText()
+void Console::updateBufferText()
 {
-  _bufferText.setString(_prompt + _commandBuffer + "_");
+  _bufferText.setString(_prompt + _commandBuffer + _cursor);
+
+  // handle overflow
   sf::Vector2f bufferPos = _bufferText.getPosition();
   float screenSpaceOverflow = _bufferText.getLocalBounds().width - _background.getSize().x;
   if (screenSpaceOverflow > 0.0f)
@@ -77,6 +97,12 @@ void Console::updateText()
   {
     _bufferText.setPosition(_anchor.x, bufferPos.y);
   }
+
+  updateHintText();
+}
+
+void Console::updateOutputText()
+{
   //update output buffer
   std::string output;
   for (const auto& s : _textBuffer)
@@ -86,31 +112,62 @@ void Console::updateText()
   _outputText.setString(output);
 }
 
+void Console::updateHintText()
+{
+  _hintCommand = "";
+  if (_commandBuffer.size() != 0)
+  {
+    for(const std::string& command : _commands)
+    {
+      if (command.rfind(_commandBuffer, 0) == 0)
+      {
+        _hintCommand = command;
+        break;
+      }
+    }
+  }
+  _bufferHintText.setString(_prompt + _hintCommand);
+}
+
 void Console::sendCommand()
 {
   if (_commandBuffer.empty())
   {
     return;
   }
+
+  // history
   _commandHistory.push_back(_commandBuffer);
   if (_commandHistory.size() > _commandHistorySize)
   {
     _commandHistory.erase(_commandHistory.begin());
   }
   _historyIndex = _commandHistory.size();
-  print("> " + _commandBuffer);
+
+  // execute
   ConsoleCommand command(_commandBuffer);
-  if (std::find(_commands.begin(), _commands.end(), command._name) != _commands.end())
+  if (command._name == "help")
   {
+    print("commands:");
+    print(_commands, "  - ");
+  }
+  else if (std::find(_commands.begin(), _commands.end(), command._name) != _commands.end())
+  {
+    print("> " + _commandBuffer);
     EventComponent::publish(EventType::CONSOLE_COMMAND, Event(command));
   }
   else
   {
     print("invalid command: \"" + _commandBuffer + "\"");
+    print("\tuse \"help\" for command list");
   }
+
+  // finalize
   _commandBuffer.clear();
+  _hintCommand.clear();
   _tempCommandBuffer.clear();
-  updateText();
+  updateBufferText();
+  updateOutputText();
 }
 
 void Console::print(const std::string line)
@@ -122,6 +179,20 @@ void Console::print(const std::string line)
   }
 }
 
+void Console::print(const std::vector<std::string> lines, const std::string newlinePrefix)
+{
+  std::for_each(lines.begin(), lines.end(),
+    [&](const std::string& line)
+    {
+      _textBuffer.push_back(newlinePrefix + line);
+      if (_textBuffer.size() > _textBufferSize)
+      {
+        _textBuffer.erase(_textBuffer.begin());
+      }
+    }
+  );
+}
+
 void Console::processEvents(sf::Event& event)
 {
   if (!_bIsOpen)
@@ -131,6 +202,11 @@ void Console::processEvents(sf::Event& event)
 
   if (event.type == sf::Event::KeyPressed)
   {
+    // temp activate cursor
+    _cursorSecondsElapsed = 0.0f;
+    _cursor = "_";
+    _bCursorOn = true;
+    // process keys
     switch ((int)event.key.code)
     {
     case sf::Keyboard::BackSpace:
@@ -138,7 +214,7 @@ void Console::processEvents(sf::Event& event)
       {
         _commandBuffer.pop_back();
       }
-      updateText();
+      updateBufferText();
       return;
     case sf::Keyboard::Return:
       sendCommand();
@@ -153,8 +229,15 @@ void Console::processEvents(sf::Event& event)
             _tempCommandBuffer = _commandBuffer;
           }
           _commandBuffer = _commandHistory[--_historyIndex];
-          updateText();
+          updateBufferText();
         }
+      }
+      return;
+    case sf::Keyboard::Tab:
+      if (_hintCommand.size() > 0)
+      {
+        _commandBuffer = _hintCommand;
+        updateBufferText();
       }
       return;
     case sf::Keyboard::Down:
@@ -171,7 +254,7 @@ void Console::processEvents(sf::Event& event)
           {
             _commandBuffer = _commandHistory[_historyIndex];
           }
-          updateText();
+          updateBufferText();
         }
       }
       return;
@@ -184,7 +267,27 @@ void Console::processEvents(sf::Event& event)
       && _commandBuffer.size() < _maxBufferLength)
     {
       _commandBuffer += static_cast<char>(event.text.unicode);
-      updateText();
+      updateBufferText();
+    }
+  }
+}
+
+void Console::update(float deltaSeconds)
+{
+  _cursorSecondsElapsed += deltaSeconds;
+  if (_cursorSecondsElapsed > _cursorSeconds)
+  {
+    _cursorSecondsElapsed -= _cursorSeconds;
+    _bCursorOn = !_bCursorOn;
+    if (_bCursorOn)
+    {
+      _cursor = "_";
+      _bufferText.setString(_prompt + _commandBuffer + _cursor);
+    }
+    else
+    {
+      _cursor = "";
+      _bufferText.setString(_prompt + _commandBuffer + _cursor);
     }
   }
 }
@@ -197,5 +300,22 @@ void Console::draw(sf::RenderTarget& rt, sf::RenderStates states) const
   }
   rt.draw(_background, states);
   rt.draw(_outputText, states);
+  rt.draw(_bufferHintText, states);
   rt.draw(_bufferText, states);
+}
+
+void Console::addCommand(const EventBase& event)
+{
+  addCommand(unpack<std::string>(event));
+}
+
+void Console::addCommand(const std::string command)
+{
+  if (std::find(_commands.begin(), _commands.end(), command) == _commands.end())
+  {
+    auto it = std::lower_bound(_commands.begin(), _commands.end(),
+      command, std::less<std::string>());
+    _commands.insert(it, command);
+  }
+  Log::info(command + std::to_string(_commands.size()));
 }

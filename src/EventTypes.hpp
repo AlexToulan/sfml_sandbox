@@ -6,6 +6,7 @@ enum EventType : size_t
 {
   NA = 0,
   QUIT,
+  ADD_CONSOLE_COMMAND,
   CONSOLE_COMMAND,
   TOGGLE_PAUSE,
   ACTIVATE_CELLS,

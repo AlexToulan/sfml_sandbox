@@ -28,6 +28,8 @@ public:
 private:
   void processInput();
   void switchGameMode(int direction);
+
+  // events
   void consoleCommand(const EventBase& event);
 
   Console _console;
@@ -37,7 +39,6 @@ private:
   int _frames;
   float _fpsSeconds;
 
-  int _framesPerSecond;
   int _updatesPerSecond;
   sf::RenderWindow _window;
   size_t _currentGameModeIndex;
