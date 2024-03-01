@@ -1,4 +1,4 @@
-#include "GameMode/Console.hpp"
+#include "Console.hpp"
 #include "Utils/Logging.hpp"
 
 #include "EventTypes.hpp"
@@ -7,19 +7,19 @@ Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int bo
   : _background(sf::Vector2f(screenWidth, screenHeight / 2))
 {
   _backgroundColor = sf::Color(127, 127, 127, 127);
-  _foregroundColor = sf::Color(192, 192, 192, 127);
+  _foregroundColor = sf::Color(192, 192, 192, 255);
 
   _background.setFillColor(_backgroundColor);
   _maxBufferLength = 128 * 1024;
 
   _bufferText.setFont(font);
-  _bufferText.setFillColor(sf::Color(255, 255, 255, 255));
+  _bufferText.setFillColor(sf::Color::White);
 
   _bufferHintText.setFont(font);
-  _bufferHintText.setFillColor(sf::Color(192, 192, 192, 255));
+  _bufferHintText.setFillColor(_foregroundColor);
 
   _outputText.setFont(font);
-  _outputText.setFillColor(sf::Color(192, 192, 192, 255));
+  _outputText.setFillColor(_foregroundColor);
 
   setSize(screenWidth, screenHeight, borderThickness);
   _prompt = " > ";
@@ -49,15 +49,15 @@ void Console::setSize(int screenWidth, int screenHeight, int borderThickness)
   _background.setPosition(borderThickness, borderThickness + screenHeight - screenHeight / 2);
 
   _charSize = 16u;
-  float margin = 0.0f + borderThickness / 2;
+  float margin = borderThickness + 4.0f;
 
   _anchor = sf::Vector2u(margin, margin + screenHeight / 2);
   _commandHistorySize = 128;
   _textBufferSize = (screenHeight - _anchor.y) / _charSize - 1;
   _bufferText.setCharacterSize(_charSize);
-  _bufferText.setPosition(_anchor.x, screenHeight - _charSize - margin - 2);
+  _bufferText.setPosition(_anchor.x, screenHeight - _charSize - margin);
   _bufferHintText.setCharacterSize(_charSize);
-  _bufferHintText.setPosition(_anchor.x, screenHeight - _charSize - margin - 2);
+  _bufferHintText.setPosition(_bufferText.getPosition());
   _outputText.setCharacterSize(_charSize);
   _outputText.setPosition(_anchor.x, _anchor.y);
 }
