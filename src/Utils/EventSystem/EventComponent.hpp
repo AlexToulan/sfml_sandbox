@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 
+#include "Utils/Logging.hpp"
 #include "Delegate.hpp"
 #include "Event.hpp"
 
@@ -55,12 +56,22 @@ public:
   void subscribe(const EventBase::Key& key, void(T::* func)(const EventBase&))
   {
     std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
-    auto delIt = _eventBindings.find(key);
-    if (delIt == _eventBindings.end())
+    // enforce unique keys
+    if (_eventBindings.find(key) == _eventBindings.end())
     {
       _eventBindings[key] = std::vector<Delegate>();
     }
-    _eventBindings[key].emplace_back(this, static_cast<void(EventComponent::*)(const EventBase&)>(func));
+    // prevent duplicate delegates under the same event key
+    auto del = Delegate(this, static_cast<void(EventComponent::*)(const EventBase&)>(func));
+    if (std::find(_eventBindings[key].begin(), _eventBindings[key].end(), del) == _eventBindings[key].end())
+    {
+      _eventBindings[key].emplace_back(del);
+    }
+    else
+    {
+      // users can still subscribe with duplicate delegate instances if under different event types
+      Log::warn("key: [" + std::to_string(key) + "] attempted to subscribe more than once with the same delegate instance");
+    }
   }
 
   // Unsubscribe from all events
