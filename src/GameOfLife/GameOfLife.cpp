@@ -62,6 +62,7 @@ void GameOfLife::onStart()
 
 void GameOfLife::onEnd()
 {
+  unsubscribe();
   for (size_t i = 0; i < _workers.size(); i++)
   {
     _workers[i]->stop();
