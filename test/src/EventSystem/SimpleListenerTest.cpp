@@ -52,9 +52,11 @@ TEST_F(SimpleListenerTest, ScopedListener)
     events.publish(EventType::REQ_INC_INT, Event(number));
     EXPECT_EQ(temp.getNumber(), 1);
   }
-  // publishing to a destroyed object
+  // we get an expected error here by publishing to a destroyed object
   EXPECT_FALSE(events.publish(EventType::REQ_INC_INT, Event(number)));
-
+  // cleanup bindings
+  events.flushSubscribers();
+  
   {
     SimpleListener temp;
     events.subscribe(EventType::REQ_INC_INT, temp.bind(&SimpleListener::receivedNumbersEvent));
