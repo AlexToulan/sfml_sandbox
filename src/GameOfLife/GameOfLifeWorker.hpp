@@ -2,9 +2,9 @@
 
 #include <thread>
 
-#include "Utils/EventSystem/EventComponent.hpp"
+#include "Utils/EventSystem/EventSystem.hpp"
 
-class GameOfLifeWorker : public EventComponent
+class GameOfLifeWorker : public EventSystem
 {
 public:
   GameOfLifeWorker();

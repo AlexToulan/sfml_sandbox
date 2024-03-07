@@ -42,7 +42,7 @@ void Log::error(const std::string& message, const std::source_location& location
   logFile << "[  ERROR  ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowError)
   {
-    std::cout << red() << "[  ERROR  ] " << blue()
+    std::cerr << red() << "[  ERROR  ] " << blue()
       << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }

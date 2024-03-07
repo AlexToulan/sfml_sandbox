@@ -154,7 +154,7 @@ void Console::sendCommand()
   else if (std::find(_commands.begin(), _commands.end(), command._name) != _commands.end())
   {
     print("> " + _commandBuffer);
-    EventComponent::publish(EventType::CONSOLE_COMMAND, Event(command));
+    EventSystem::publish(EventType::CONSOLE_COMMAND, Event(command));
   }
   else
   {

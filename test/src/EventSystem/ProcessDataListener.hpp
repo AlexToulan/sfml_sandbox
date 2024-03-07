@@ -1,13 +1,13 @@
 #pragma once
 
-#include "EventTypes.hpp"
-#include "Utils/EventSystem/EventComponent.hpp"
+#include "TestEvents.hpp"
+#include "Utils/EventSystem/EventListener.hpp"
 
-class SingleThreadEventComponent : public EventComponent
+class ProcessDataListener : public EventListener
 {
 public:
-  SingleThreadEventComponent() : EventComponent() {}
-  virtual ~SingleThreadEventComponent(){}
+  ProcessDataListener() : EventListener() {}
+  virtual ~ProcessDataListener(){}
 
   void setup()
   {
@@ -20,7 +20,7 @@ public:
 
   void send()
   {
-    publish(EventType::REQ_DOUBLE_INTS, _outNumbersEvent);
+    TestEvents.publish(EventType::REQ_DOUBLE_INTS, _outNumbersEvent);
   }
 
   void receivedNumbersEvent(const EventBase& event)

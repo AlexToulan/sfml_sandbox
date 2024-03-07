@@ -4,7 +4,7 @@
 #include "Utils/MathUtils.hpp"
 
 GameOfLifeWorker::GameOfLifeWorker()
-  : EventComponent()
+  : EventSystem()
   , _thread()
 {
   _isRunning = false;
@@ -64,14 +64,14 @@ void GameOfLifeWorker::run()
           _cellNeighbors[getCellIndex(x, y)] = calcNumNeighborsAlive(x, y);
         }
       }
-      EventComponent::publish(EventType::CALC_NEIGHBORS_COMPLETE, _id);
+      EventSystem::publish(EventType::CALC_NEIGHBORS_COMPLETE, _id);
       _calcNeighbors = false;
     }
     if (_setAliveDead)
     {
       classicRules();
       // crazyRules();
-      EventComponent::publish(EventType::ACTIVATE_CELLS_COMPLETE, _id);
+      EventSystem::publish(EventType::ACTIVATE_CELLS_COMPLETE, _id);
       _setAliveDead = false;
     }
   }

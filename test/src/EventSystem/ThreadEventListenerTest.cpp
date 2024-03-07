@@ -1,13 +1,13 @@
 #include <thread>
 
 #include "gtest/gtest.h"
-#include "Utils/EventSystem/EventComponent.hpp"
 #include "Utils/Logging.hpp"
 
-#include "SingleThreadEventComponent.hpp"
-#include "ThreadEventComponent.hpp"
+#include "ProcessDataListener.hpp"
+#include "ThreadEventListener.hpp"
+#include "TestEvents.hpp"
 
-class ThreadEventComponentTest : public testing::Test
+class ThreadEventListenerTest : public testing::Test
 {
 protected:
   void SetUp() override
@@ -21,15 +21,15 @@ protected:
     worker.stop();
   };
 
-  SingleThreadEventComponent requester;
-  ThreadEventComponent worker;
+  ProcessDataListener requester;
+  ThreadEventListener worker;
   std::vector<int> numbers;
 };
 
-TEST_F(ThreadEventComponentTest, ThreadWorkerTest)
+TEST_F(ThreadEventListenerTest, ThreadWorkerTest)
 {
-  requester.subscribe(EventType::VECTOR_INT, &SingleThreadEventComponent::receivedNumbersEvent);
-  worker.subscribe(EventType::REQ_DOUBLE_INTS, &ThreadEventComponent::receiveNumbers);
+  TestEvents.subscribe(EventType::VECTOR_INT, requester.bind(&ProcessDataListener::receivedNumbersEvent));
+  TestEvents.subscribe(EventType::REQ_DOUBLE_INTS, worker.bind(&ThreadEventListener::receiveNumbers));
   requester.setOutNumbers(numbers);
 
   requester.send();

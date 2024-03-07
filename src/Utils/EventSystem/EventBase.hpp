@@ -6,8 +6,8 @@ class EventBase
 {
 public:
   typedef size_t Key;
-  EventBase();
-  ~EventBase();
+  EventBase() {}
+  ~EventBase() {}
 
   template<class T>
   const T& as() const

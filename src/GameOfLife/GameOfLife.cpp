@@ -8,7 +8,7 @@
 
 GameOfLife::GameOfLife()
  : GameMode(std::source_location::current().file_name())
- , EventComponent()
+ , EventSystem()
 {
 }
 
@@ -159,7 +159,7 @@ void GameOfLife::calcNeighborsComplete(const EventBase& event)
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
-    EventComponent::publish(EventType::ACTIVATE_CELLS);
+    EventSystem::publish(EventType::ACTIVATE_CELLS);
   }
 }
 
@@ -177,7 +177,7 @@ void GameOfLife::startWorkers(int width, int height)
 
   if (!_bIsPaused)
   {
-    EventComponent::publish(EventType::CALC_NEIGHBORS);
+    EventSystem::publish(EventType::CALC_NEIGHBORS);
   }
 }
 
@@ -186,7 +186,7 @@ bool GameOfLife::tryCalcNeighbors()
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
-    EventComponent::publish(EventType::CALC_NEIGHBORS);
+    EventSystem::publish(EventType::CALC_NEIGHBORS);
     return true;
   }
   return false;

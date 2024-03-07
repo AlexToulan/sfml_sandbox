@@ -92,17 +92,17 @@ file(GLOB_RECURSE test_files
 # add_executable(SFMLSandbox src/main.cpp ${example_game_mode_files})
 
 # main game executable
-add_executable(SFMLSandbox src/main.cpp ${sfml_helper_files} ${util_files} ${game_of_life_files} ${quad_test_files})
-target_include_directories(SFMLSandbox
-    PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/
-)
+# # add_executable(SFMLSandbox src/main.cpp ${sfml_helper_files} ${util_files} ${game_of_life_files} ${quad_test_files})
+# # target_include_directories(SFMLSandbox
+# #     PRIVATE
+# #     ${CMAKE_SOURCE_DIR}/src/
+# # )
 
 # DEV ONLY - COPY FILES IN RELEASE
 # create symbolic link to resources directory
-add_custom_command(TARGET SFMLSandbox PRE_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E create_symlink
-                   ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:SFMLSandbox>/resources)
+# # add_custom_command(TARGET SFMLSandbox PRE_BUILD
+# #                    COMMAND ${CMAKE_COMMAND} -E create_symlink
+# #                    ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:SFMLSandbox>/resources)
 
 # gtest executable
 add_executable(testAll ${CMAKE_SOURCE_DIR}/test/main_testall.cpp ${test_files} ${util_files})
@@ -117,9 +117,9 @@ target_compile_features(testAll PRIVATE cxx_std_20)
 gtest_discover_tests(testAll)
 
 # linker
-target_compile_features(SFMLSandbox PRIVATE cxx_std_20)
-target_link_libraries(SFMLSandbox PRIVATE sfml-graphics)
-target_link_libraries(SFMLSandbox PUBLIC yaml-cpp::yaml-cpp)
+# # target_compile_features(SFMLSandbox PRIVATE cxx_std_20)
+# # target_link_libraries(SFMLSandbox PRIVATE sfml-graphics)
+# # target_link_libraries(SFMLSandbox PUBLIC yaml-cpp::yaml-cpp)
 
 if(WIN32)
     add_custom_command(
@@ -129,4 +129,4 @@ if(WIN32)
         VERBATIM)
 endif()
 
-install(TARGETS SFMLSandbox)
+# install(TARGETS SFMLSandbox)
