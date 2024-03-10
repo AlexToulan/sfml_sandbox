@@ -9,9 +9,10 @@ public:
   SimpleListener() : EventListener(), _number(0) {}
   virtual ~SimpleListener(){}
 
-  void receivedNumbersEvent(const EventBase& event)
+  void receivedNumbersEvent(const int num)
   {
-    _number += unpack<int>(event);
+    // _number += unpack<int>(event);
+    _number += num;
   }
 
   const int getNumber() const

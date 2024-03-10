@@ -56,13 +56,13 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
 {
   Log::info("Setting up game mode controller");
 
-  _console.subscribe(EventType::ADD_CONSOLE_COMMAND, &Console::addCommand);
+  _console.subscribe(EConsoleEvent::ADD_COMMAND, &Console::addCommand);
   _console.addCommand("exit");
   _console.addCommand("quit");
   _console.addCommand("restart_game_mode");
   _console.addCommand("frames_per_second");
   _console.addCommand("updates_per_second");
-  subscribe(EventType::CONSOLE_COMMAND, &GameModeController::consoleCommand);
+  // ConsoleEvents.subscribe("exit", &GameModeController::consoleCommand);
 
   _window.setFramerateLimit(framesPerSecond);
   _updatesPerSecond = updatesPerSecond;

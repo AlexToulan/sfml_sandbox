@@ -4,14 +4,14 @@
 #include <string>
 #include <vector>
 
-#include "EventTypes.hpp"
 #include "Utils/CliConfig.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
+#include "Utils/EventSystem/EventListener.hpp"
 #include "Utils/Timer.hpp"
 #include "GameMode/GameMode.hpp"
 #include "Console.hpp"
 
-class GameModeController : public EventSystem
+class GameModeController : public EventListener
 {
 public:
   GameModeController(const sf::Font& consoleFont);

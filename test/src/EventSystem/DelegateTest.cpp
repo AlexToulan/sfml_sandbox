@@ -1,0 +1,119 @@
+#include "gtest/gtest.h"
+#include "Utils/EventSystem/ADelegate.hpp"
+#include "Utils/EventSystem/TDelegate.hpp"
+#include "Utils/EventSystem/VDelegate.hpp"
+#include "Utils/Logging.hpp"
+
+class MemberClass
+{
+public:
+  MemberClass()
+  {
+    _data = 0;
+  }
+  void setData(int data)
+  {
+    _data = data;
+  }
+  void setOne()
+  {
+    _data = 1;
+  }
+  void setAdd(int a, int b)
+  {
+    _data = a + b;
+  }
+  void add(int a)
+  {
+    _data += a;
+  }
+  void multiply(int a)
+  {
+    _data *= a;
+  }
+  int getData()
+  {
+    return _data;
+  }
+
+private:
+  int _data;
+};
+
+class Events_DelegateTest : public testing::Test
+{
+protected:
+  void SetUp() override
+  {
+  };
+
+  void TearDown() override
+  {
+  };
+  MemberClass _class;
+};
+
+TEST_F(Events_DelegateTest, TDelegateExecute)
+{
+  TDelegate<MemberClass, int> del(&_class, &MemberClass::setData);
+  int num = 5;
+  del(num);
+  EXPECT_EQ(num, _class.getData());
+}
+
+TEST_F(Events_DelegateTest, VDelegateExecute)
+{
+  VDelegate<int, MemberClass> delGetData(&_class, &MemberClass::getData);
+
+  // no parameter
+  VDelegate<void, MemberClass> delSetOne(&_class, &MemberClass::setOne);
+  delSetOne();
+  EXPECT_EQ(1, delGetData());
+  _class.setData(0);
+
+  // multiple parameters
+  VDelegate<void, MemberClass, int, int> delAdd(&_class, &MemberClass::setAdd);
+  int num = 5;
+  delAdd(num, num);
+  EXPECT_EQ(num * 2, delGetData());
+}
+
+TEST_F(Events_DelegateTest, VDelegateGenericConversion)
+{
+  VDelegate<int, MemberClass> a(&_class, &MemberClass::getData);
+  GDelegate genDel = a.asGeneric();
+
+  _class.setData(1);
+  int rtn = genDel.exec<int, MemberClass>();
+  EXPECT_EQ(1, rtn);
+}
+
+TEST_F(Events_DelegateTest, ADelegateExecute)
+{
+  ADelegate<MemberClass, int> delegate;
+  delegate.add(&_class, &MemberClass::add);
+  delegate(2);
+  EXPECT_EQ(2, _class.getData());
+}
+
+TEST_F(Events_DelegateTest, ADelegateMultiExecuteInOrder)
+{
+  ADelegate<MemberClass, int> delegate;
+  // _data += 2;
+  delegate.add(&_class, &MemberClass::add);
+  // _data *= 2;
+  delegate.add(&_class, &MemberClass::multiply);
+  // _data = 0;
+  // _data += 2; -> 2;
+  // _data *= 2; -> 4;
+  delegate(2);
+  EXPECT_EQ(4, _class.getData());
+
+  delegate.remove(&_class, &MemberClass::multiply);
+  delegate(2);
+  EXPECT_EQ(6, _class.getData());
+
+  delegate.remove(&_class, &MemberClass::add);
+  delegate(2);
+  EXPECT_EQ(6, _class.getData());
+}

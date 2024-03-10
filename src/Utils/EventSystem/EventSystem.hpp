@@ -8,14 +8,15 @@
 
 #include "Utils/Logging.hpp"
 #include "TDelegate.hpp"
-#include "Event.hpp"
 #include "EventListener.hpp"
 
-// A thread-safe event-component base-class that allows for publishing/subscribing of events.
-// Publishers must construct data within Event template objects before publishing.
-// Publishers can either destroy or recycle event derived objects after publishing.
+/// @brief
+/// A thread-safe event-component base-class that allows for publishing/subscribing of events.
+/// Publishers must construct data within Event template objects before publishing.
+/// Publishers can either destroy or recycle event derived objects after publishing.
+
 template<class TKey>
-class EventSystem
+class EventSystem final
 {
 public:
   EventSystem()
@@ -26,39 +27,47 @@ public:
   {
   }
 
-  // Publishes an event on the calling thread.
-  // Delegates are responsible for coping incoming data and locking destination containers.
-  bool publish(const TKey& key)
+  /// Publishes an event on the calling thread.
+  /// @param key The event key to publish under. </param>
+  /// @return True: if there are no stale event bindings.
+  template<class P>
+  bool publish(const TKey& key) const
   {
-    EventBase placeholder;
+    P placeholder;
     return publish(key, placeholder);
   }
 
-  // Publishes an event on the calling thread.
-  // Delegates are responsible for coping incoming data and locking destination containers.
-  bool publish(const TKey& key, const EventBase& eventBase)
+  /// Publishes an event on the calling thread.
+  /// @param key The event key to publish under.
+  /// @param data The data to pass to the listener.
+  /// @return True: if there are no stale event bindings.
+  template<typename P>
+  bool publish(const TKey& key, const P& data) const
   {
     bool succ = true;
     auto bindingIt = _eventBindings.find(key);
     if (bindingIt != _eventBindings.end())
     {
-      for (auto& del : _eventBindings[key])
+      for (auto& del : _eventBindings.at(key))
       {
         if (del.unique())
         {
-          Log::error("EventListener was destroyed without unsubscribing from events");
+          Log::error("EventListener destroyed without unsubscribing from event system bindings.");
           succ = false;
         }
         else
         {
-          del->exec(eventBase);
+          // TODO: enforce type-safety
+          del->template execAs<EventListener, P>(data);
         }
       }
     }
     return succ;
   }
 
-  // Subscribe to a single event
+  /// Subscribe to a single event
+  /// @param key The event key to listen for.
+  /// @param delegate_ptr Pointer to shared generic delegate.
   bool subscribe(const TKey& key, const std::shared_ptr<EventListener::Delegate>& delegate_ptr)
   {
     std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
@@ -73,7 +82,6 @@ public:
     {
       return (*del_ptr) == (*delegate_ptr);
     });
-    // if (std::find(_eventBindings[key].begin(), _eventBindings[key].end(), delegate) == _eventBindings[key].end())
     if (it == _eventBindings[key].end())
     {
       _eventBindings[key].emplace_back(delegate_ptr);
@@ -87,8 +95,12 @@ public:
     return true;
   }
 
-  // Unsubscribe from all events
-  void unsubscribe(const EventListener* listener)
+  ///
+  /// @brief Unsubscribe from all events for this EventListener
+  /// 
+  /// @param listener The EventListener that's unsubscribing
+  ///
+  void unsubscribe(EventListener* listener)
   {
     std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
     for (auto& [key, delegates] : _eventBindings)
@@ -96,15 +108,21 @@ public:
       auto eraseStartIt = std::remove_if(delegates.begin(), delegates.end(),
         [&](std::shared_ptr<EventListener::Delegate>& del)
         {
-          return del->isOwner(listener);
+          return del->isCaller(listener);
         }
       );
       delegates.erase(eraseStartIt, delegates.end());
     }
+    listener->pruneBindings();
   }
 
-  // Unsubscribe from a single event
-  void unsubscribe(const TKey& key, const EventListener* listener)
+  ///
+  /// @brief Unsubscribe from a single event type for this EventListener
+  /// 
+  /// @param key Key to unsubscribe from
+  /// @param listener EventListener that's unsubscribing
+  ///
+  void unsubscribe(const TKey& key, EventListener* listener)
   {
     auto bindingIt = _eventBindings.find(key);
     if (bindingIt != _eventBindings.end())
@@ -113,17 +131,29 @@ public:
       auto eraseStartIt = std::remove_if(bindingIt->second.begin(), bindingIt->second.end(),
         [&](std::shared_ptr<EventListener::Delegate>& del)
         {
-          return del->isOwner(listener);
+          return del->isCaller(listener);
         }
       );
       _eventBindings[key].erase(eraseStartIt, _eventBindings[key].end());
     }
+    listener->pruneBindings();
   }
 
-  // clears all subscriptions from the event system
-  void flushSubscribers()
+  // removes delegates with dangling references
+  void pruneBindings()
   {
-    _eventBindings.clear();
+    std::unique_lock<decltype(_bindingMutex)> lock(_bindingMutex);
+    for (auto& [key, delegates] : _eventBindings)
+    {
+      auto eraseStartIt = std::remove_if(delegates.begin(), delegates.end(),
+        [&](std::shared_ptr<EventListener::Delegate>& del)
+        {
+          // if the event system is the only owner of this delegate, it is a dangling reference
+          return del.unique();
+        }
+      );
+      delegates.erase(eraseStartIt, delegates.end());
+    }
   }
 
 private:

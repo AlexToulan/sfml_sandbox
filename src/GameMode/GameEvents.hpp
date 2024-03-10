@@ -2,7 +2,9 @@
 
 #include <cstddef>
 
-enum EventType : size_t
+#include "Utils/EventSystem/EventSystem.hpp"
+
+enum EGameEvent : size_t
 {
   NA = 0,
   QUIT,
@@ -14,3 +16,5 @@ enum EventType : size_t
   CALC_NEIGHBORS,
   CALC_NEIGHBORS_COMPLETE
 };
+
+static EventSystem<EGameEvent> GameEvents;

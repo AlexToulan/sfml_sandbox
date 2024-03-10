@@ -1,7 +1,7 @@
 #include "Console.hpp"
 #include "Utils/Logging.hpp"
 
-#include "EventTypes.hpp"
+#include "ConsoleEvents.hpp"
 
 Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int borderThickness)
   : _background(sf::Vector2f(screenWidth, screenHeight / 2))
@@ -154,7 +154,7 @@ void Console::sendCommand()
   else if (std::find(_commands.begin(), _commands.end(), command._name) != _commands.end())
   {
     print("> " + _commandBuffer);
-    EventSystem::publish(EventType::CONSOLE_COMMAND, Event(command));
+    // EventSystem::publish(EventType::CONSOLE_COMMAND, Event(command));
   }
   else
   {

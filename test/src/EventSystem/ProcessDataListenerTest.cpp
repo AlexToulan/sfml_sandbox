@@ -6,7 +6,7 @@
 
 #include "ProcessDataListener.hpp"
 
-class ProcessDataListenerTest : public testing::Test
+class Events_ProcessDataListenerTest : public testing::Test
 {
 protected:
   void SetUp() override
@@ -25,41 +25,36 @@ protected:
   EventSystem<EventType> events;
 };
 
-TEST_F(ProcessDataListenerTest, MultipleSubscribe)
+TEST_F(Events_ProcessDataListenerTest, MultipleSubscribe)
 {
-  events.subscribe(EventType::VECTOR_INT, a.bind(&ProcessDataListener::receivedNumbersEvent));
-  events.subscribe(EventType::VECTOR_INT, b.bind(&ProcessDataListener::receivedNumbersEvent));
+  events.subscribe(EventType::VECTOR_INT, a.bind(&ProcessDataListener::receivedNumbers));
+  events.subscribe(EventType::VECTOR_INT, b.bind(&ProcessDataListener::receivedNumbers));
 
-  Event event = Event(numbers_1);
-  events.publish(EventType::VECTOR_INT, event);
+  events.publish(EventType::VECTOR_INT, numbers_1);
   EXPECT_EQ(numbers_1, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
-  event.setData(numbers_2);
-  events.publish(EventType::VECTOR_INT, event);
+  events.publish(EventType::VECTOR_INT, numbers_2);
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_2, b.getNumbers());
 }
 
-TEST_F(ProcessDataListenerTest, Unsubscribe)
+TEST_F(Events_ProcessDataListenerTest, Unsubscribe)
 {
-  events.subscribe(EventType::VECTOR_INT, a.bind(&ProcessDataListener::receivedNumbersEvent));
-  events.subscribe(EventType::VECTOR_INT, b.bind(&ProcessDataListener::receivedNumbersEvent));
-  Event event = Event(numbers_1);
+  events.subscribe(EventType::VECTOR_INT, a.bind(&ProcessDataListener::receivedNumbers));
+  events.subscribe(EventType::VECTOR_INT, b.bind(&ProcessDataListener::receivedNumbers));
 
-  events.publish(EventType::VECTOR_INT, event);
+  events.publish(EventType::VECTOR_INT, numbers_1);
   EXPECT_EQ(numbers_1, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
-  event.setData(numbers_2);
   events.unsubscribe(EventType::VECTOR_INT, &b);
-  events.publish(EventType::VECTOR_INT, event);
+  events.publish(EventType::VECTOR_INT, numbers_2);
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
-  event.setData(numbers_1);
   events.unsubscribe(EventType::VECTOR_INT, &a);
-  events.publish(EventType::VECTOR_INT, event);
+  events.publish(EventType::VECTOR_INT, numbers_1);
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 }

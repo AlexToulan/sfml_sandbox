@@ -35,11 +35,11 @@ public:
     }
   }
 
-  void receiveNumbers(const EventBase& event)
+  void receiveNumbers(const std::vector<int>& nums)
   {
     std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
+    _inNumbers = nums;
     _dataProcessed = false;
-    copy(event, _inNumbers);
   }
 
 private:
@@ -55,7 +55,7 @@ private:
         {
           doubled.push_back(_inNumbers[i] * 2);
         }
-        TestEvents.publish(EventType::VECTOR_INT, Event(doubled));
+        TestEvents.publish(EventType::VECTOR_INT, doubled);
         _dataProcessed = true;
       }
     }

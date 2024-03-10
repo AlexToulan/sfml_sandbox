@@ -15,17 +15,17 @@ public:
 
   void setOutNumbers(const std::vector<int>& numbers)
   {
-    _outNumbersEvent = Event(numbers);
+    _outNumbers = numbers;
   }
 
   void send()
   {
-    TestEvents.publish(EventType::REQ_DOUBLE_INTS, _outNumbersEvent);
+    TestEvents.publish(EventType::REQ_DOUBLE_INTS, _outNumbers);
   }
 
-  void receivedNumbersEvent(const EventBase& event)
+  void receivedNumbers(const std::vector<int>& nums)
   {
-    copy(event, _inNumbers);
+    _inNumbers = nums;
   }
 
   void clearInNumbers()
@@ -40,5 +40,5 @@ public:
 
 private:
   std::vector<int> _inNumbers;
-  Event<std::vector<int>> _outNumbersEvent;
+  std::vector<int> _outNumbers;
 };

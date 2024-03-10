@@ -1,49 +1,44 @@
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
-#include "Event.hpp"
 #include "TDelegate.hpp"
 
 class EventListener
 {
 public:
-  typedef TDelegate<EventListener, const EventBase&> Delegate;
+  typedef TDelegate<EventListener, void*> Delegate;
 
   EventListener() {}
   virtual ~EventListener() {}
   // Returns a delegate from the function signature parameter
-  template<class T>
-  std::shared_ptr<Delegate> bind(void(T::* func)(const EventBase&))
+  template<class T, class P>
+  std::shared_ptr<Delegate> bind(void(T::* func)(P))
   {
     std::shared_ptr<Delegate> delegate = buildDelegate(func);
-    
     _delegates.push_back(delegate);
-
     return delegate;
   }
 
-protected:
-  // Returns a reference to the template event data
-  template<class T>
-  static const T& unpack(const EventBase& eventBase)
+  void pruneBindings()
   {
-    return static_cast<const Event<T>*>(&eventBase)->data();
-  }
-  // Copies data within the template event to the outData parameter
-  template<class T>
-  static void copy(const EventBase& eventBase, T& outData)
-  {
-    outData = static_cast<const Event<T>*>(&eventBase)->data();
-  }
-
-  template<class T>
-  std::shared_ptr<Delegate> buildDelegate(void(T::* func)(const EventBase&)) const
-  {
-    return std::make_shared<Delegate>(this, static_cast<void(EventListener::*)(const EventBase&)>(func));
+    auto eraseStartIt = std::remove_if(_delegates.begin(), _delegates.end(),
+      [&](std::shared_ptr<EventListener::Delegate>& del)
+      {
+        // if the event system is the only owner of this delegate, it is a dangling reference
+        return del.unique();
+      }
+    );
+    _delegates.erase(eraseStartIt, _delegates.end());
   }
 
 private:
+  template<class T, class P>
+  std::shared_ptr<Delegate> buildDelegate(void(T::* func)(P)) const
+  {
+    return std::make_shared<Delegate>(this, reinterpret_cast<void(EventListener::*)(void*)>(func));
+  }
   std::vector<std::shared_ptr<Delegate>> _delegates;
 };

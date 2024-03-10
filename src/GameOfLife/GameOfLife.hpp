@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Utils/EventSystem/EventSystem.hpp"
+#include "Utils/EventSystem/EventListener.hpp"
 #include "GameOfLifeWorker.hpp"
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
 
-class GameOfLife : public GameMode, public EventSystem
+class GameOfLife : public GameMode, public EventListener
 {
 public:
   GameOfLife();

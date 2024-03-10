@@ -50,8 +50,8 @@ void GameOfLife::onStart()
   _cellNeighbors = new int[_numCells] { 0 };
 
   _rowsProcessed = _cellGrid.getHeight();
-  subscribe(EventType::ACTIVATE_CELLS_COMPLETE, &GameOfLife::activateCellsComplete);
-  subscribe(EventType::CALC_NEIGHBORS_COMPLETE, &GameOfLife::calcNeighborsComplete);
+  subscribe(EGameEvent::ACTIVATE_CELLS_COMPLETE, &GameOfLife::activateCellsComplete);
+  subscribe(EGameEvent::CALC_NEIGHBORS_COMPLETE, &GameOfLife::calcNeighborsComplete);
 
   // don't start workers till after we stop changing cells
   // basicSeed();
@@ -159,7 +159,7 @@ void GameOfLife::calcNeighborsComplete(const EventBase& event)
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
-    EventSystem::publish(EventType::ACTIVATE_CELLS);
+    GameEvents.publish(EGameEvent::ACTIVATE_CELLS);
   }
 }
 
@@ -177,7 +177,7 @@ void GameOfLife::startWorkers(int width, int height)
 
   if (!_bIsPaused)
   {
-    EventSystem::publish(EventType::CALC_NEIGHBORS);
+    GameEvents.publish(EGameEvent::CALC_NEIGHBORS);
   }
 }
 
@@ -186,7 +186,7 @@ bool GameOfLife::tryCalcNeighbors()
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
-    EventSystem::publish(EventType::CALC_NEIGHBORS);
+    GameEvents.publish(EGameEvent::CALC_NEIGHBORS);
     return true;
   }
   return false;

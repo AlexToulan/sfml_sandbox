@@ -8,7 +8,7 @@
 #include <SFML/System/NonCopyable.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "Utils/EventSystem/EventSystem.hpp"
+#include "Utils/EventSystem/EventListener.hpp"
 
 struct ConsoleCommand
 {
@@ -30,7 +30,7 @@ struct ConsoleCommand
   std::string _arg;
 };
 
-class Console final : public sf::Drawable, public EventSystem
+class Console final : public sf::Drawable, public EventListener
 {
 public:
   Console(const sf::Font& font, int screenWidth = 1000, int screenHeight = 1000, int borderThickness = 0);

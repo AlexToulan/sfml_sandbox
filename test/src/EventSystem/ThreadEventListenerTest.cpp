@@ -7,7 +7,7 @@
 #include "ThreadEventListener.hpp"
 #include "TestEvents.hpp"
 
-class ThreadEventListenerTest : public testing::Test
+class Events_ThreadEventListenerTest : public testing::Test
 {
 protected:
   void SetUp() override
@@ -26,14 +26,14 @@ protected:
   std::vector<int> numbers;
 };
 
-TEST_F(ThreadEventListenerTest, ThreadWorkerTest)
+TEST_F(Events_ThreadEventListenerTest, ThreadWorkerTest)
 {
-  TestEvents.subscribe(EventType::VECTOR_INT, requester.bind(&ProcessDataListener::receivedNumbersEvent));
+  TestEvents.subscribe(EventType::VECTOR_INT, requester.bind(&ProcessDataListener::receivedNumbers));
   TestEvents.subscribe(EventType::REQ_DOUBLE_INTS, worker.bind(&ThreadEventListener::receiveNumbers));
   requester.setOutNumbers(numbers);
 
   requester.send();
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   EXPECT_EQ(numbers.size(), requester.getNumbers().size());
   for(int i = 0; i < numbers.size(); i++)
   {
@@ -42,7 +42,7 @@ TEST_F(ThreadEventListenerTest, ThreadWorkerTest)
 
   requester.clearInNumbers();
   requester.send();
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   EXPECT_EQ(numbers.size(), requester.getNumbers().size());
   for(int i = 0; i < numbers.size(); i++)
   {
