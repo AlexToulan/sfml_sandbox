@@ -1,17 +1,53 @@
 #pragma once
 
 /// @brief Generic member function Delegate for storage and explicit variadic execution.
-struct GDelegate
+class GDelegate
 {
-  /// @brief Factory method type converting to Delegate
+public:
+  /// @brief Default constructor.
+  GDelegate()
+    : _objPtr(nullptr)
+    , _func(nullptr)
+  {
+  }
+
+  GDelegate(const GDelegate& other)
+    : _objPtr(other._objPtr)
+    , _func(other._func)
+  {
+  }
+
+  // GDelegate(const GDelegate&& other)
+  // {
+  //   _objPtr = other._objPtr;
+  //   _func = other._func;
+
+  //   other._objPtr = nullptr;
+  //   other._func = nullptr;
+  // }
+
+  GDelegate& operator=(const GDelegate& other)
+  {
+    _objPtr = other._objPtr;
+    _func = other._func;
+    return *this;
+  }
+
+  /// @brief Template constructor for converting a VDelegate signature into a GDelegate instance.
   /// @tparam TReturn Delegate return type.
-  /// @tparam TObj Object pointer type.
-  /// @tparam ...VArgs Parameter pack types.
-  /// @param objPtr Pointer to the subscriber instance.
-  /// @param func Member function pointer to call.
-  /// @return Underlying delegate return value.
+  /// @tparam TObj Caller type.
+  /// @tparam ...VArgs Parameter pack to pass to the Delegate method.
+  /// @param objPtr Object to call.
+  /// @param func Method to call.
+  // template<typename TReturn, typename TObj, typename... VArgs>
+  // GDelegate(TObj* objPtr, TReturn(TObj::* func)(const VArgs&...))
+  // {
+  //   _objPtr = static_cast<void*>(objPtr);
+  //   _func =  reinterpret_cast<void(Object::*)()>(func);
+  // }
+
   template<class TReturn, class TObj, class... VArgs>
-  static GDelegate create(TObj* objPtr, TReturn(TObj::* func)(VArgs...))
+  static GDelegate create(TObj* objPtr, TReturn(TObj::* func)(const VArgs&...))
   {
     return GDelegate(static_cast<void*>(objPtr), reinterpret_cast<void(Object::*)()>(func));
   }
@@ -26,7 +62,7 @@ struct GDelegate
   TReturn exec(const VArgs&... vargs)
   {
     TObj* o = static_cast<TObj*>(_objPtr);
-    TReturn(TObj::* func)(VArgs...) = reinterpret_cast<TReturn(TObj::*)(VArgs...)>(_func);
+    TReturn(TObj::* func)(const VArgs&...) = reinterpret_cast<TReturn(TObj::*)(const VArgs&...)>(_func);
     return (o->*func)(vargs...);
   }
 
@@ -46,9 +82,18 @@ struct GDelegate
     return _objPtr != other._objPtr || _func != other._func;
   }
 
+  /// @brief Checks if this Delegate calls the incoming instance.
+  /// @param caller Instance to check ownership against.
+  /// @return True if the Delegate references the provided caller.
+  template<class TObj>
+  bool isCaller(TObj* caller) const
+  {
+    return _objPtr == static_cast<void*>(caller);
+  }
+
 private:
   /// @brief Generic placeholder object type
-  class Object{};
+  class Object {};
 
   /// @brief Private default constructor.
   /// @param objPtr Generic object reference storage.

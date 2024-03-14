@@ -10,7 +10,7 @@ template<class TReturn, class TObj, class... VArgs>
 class VDelegate
 {
 public:
-  VDelegate(const TObj* objPtr, TReturn(TObj::* func)(VArgs...))
+  VDelegate(const TObj* objPtr, TReturn(TObj::* func)(const VArgs&...))
     : _objPtr(const_cast<TObj*>(objPtr))
     , _func(func)
   {
@@ -87,5 +87,5 @@ public:
 
 private:
   TObj* _objPtr;
-  TReturn(TObj::* _func)(VArgs...);
+  TReturn(TObj::* _func)(const VArgs&...);
 };

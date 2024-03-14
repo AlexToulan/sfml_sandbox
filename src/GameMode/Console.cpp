@@ -304,12 +304,7 @@ void Console::draw(sf::RenderTarget& rt, sf::RenderStates states) const
   rt.draw(_bufferText, states);
 }
 
-void Console::addCommand(const EventBase& event)
-{
-  addCommand(unpack<std::string>(event));
-}
-
-void Console::addCommand(const std::string command)
+void Console::addCommand(const std::string& command)
 {
   if (std::find(_commands.begin(), _commands.end(), command) == _commands.end())
   {

@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 project(CMakeSFMLProject LANGUAGES CXX)
 
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(BUILD_SFML_SANDBOX "Build main project" OFF)
+option(BUILD_SFML_SANDBOX "Build main project" ON)
 option(BUILD_TESTS "Build unit tests" ON)
 
 # dependancies
@@ -17,15 +16,17 @@ FetchContent_Declare(
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
-# gtest - requires cmake 3.13 or later
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-# use gtest CMake
-include(GoogleTest)
+if (BUILD_TESTS)
+    # gtest - requires cmake 3.13 or later
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip)
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    # use gtest CMake
+    include(GoogleTest)
+endif()
 
 # yaml-cpp
 FetchContent_Declare(

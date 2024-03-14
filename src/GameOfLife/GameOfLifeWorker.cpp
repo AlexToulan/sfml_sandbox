@@ -1,10 +1,10 @@
-#include "EventTypes.hpp"
+#include "GameMode/GameEvents.hpp"
 #include "GameOfLifeWorker.hpp"
 #include "Utils/Logging.hpp"
 #include "Utils/MathUtils.hpp"
 
 GameOfLifeWorker::GameOfLifeWorker()
-  : EventSystem()
+  : EventListener()
   , _thread()
 {
   _isRunning = false;
@@ -35,8 +35,8 @@ void GameOfLifeWorker::start()
   {
     Log::error("thread already running");
   }
-  subscribe(EGameEvent::ACTIVATE_CELLS, &GameOfLifeWorker::setAliveDead);
-  subscribe(EGameEvent::CALC_NEIGHBORS, &GameOfLifeWorker::calcNeighbors);
+  GameEvents.bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
+  GameEvents.bind(EGameEvent::CALC_NEIGHBORS, this, &GameOfLifeWorker::calcNeighbors);
   _isRunning = true;
   _thread = std::thread(&GameOfLifeWorker::run, this);
 }
@@ -45,7 +45,7 @@ void GameOfLifeWorker::stop()
 {
   if (_isRunning)
   {
-    unsubscribe();
+    GameEvents.unsubscribe(this);
     _isRunning = false;
     _thread.join();
   }
@@ -77,12 +77,12 @@ void GameOfLifeWorker::run()
   }
 }
 
-void GameOfLifeWorker::calcNeighbors(const EventBase& event)
+void GameOfLifeWorker::calcNeighbors()
 {
   _calcNeighbors = true;
 }
 
-void GameOfLifeWorker::setAliveDead(const EventBase& event)
+void GameOfLifeWorker::setAliveDead()
 {
   _setAliveDead = true;
 }

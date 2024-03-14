@@ -19,7 +19,7 @@ public:
   /// @brief Constructs with a single delegate (use VDelegate if only one delegate needed).
   /// @param objectPtr A pointer to the listening object.
   /// @param func Member method to be called.
-  ADelegate(const TObj* objectPtr, void(TObj::* func)(VArgs...))
+  ADelegate(const TObj* objectPtr, void(TObj::* func)(const VArgs&...))
   {
     add(VDelegate<void, TObj, VArgs...>(objectPtr, func));
   }
@@ -99,7 +99,7 @@ public:
   /// @brief Uniquely subscribe to a VDelegate.
   /// @param objectPtr A pointer to the listening object.
   /// @param func Member method to be called.
-  void add(const TObj* objectPtr, void(TObj::* func)(VArgs...))
+  void add(const TObj* objectPtr, void(TObj::* func)(const VArgs&...))
   {
     add(VDelegate(objectPtr, func));
   }
@@ -112,7 +112,7 @@ public:
     _delegates.erase(end, _delegates.end());
   }
 
-  void remove(const TObj* objectPtr, void(TObj::* func)(VArgs...))
+  void remove(const TObj* objectPtr, void(TObj::* func)(const VArgs&...))
   {
     remove(VDelegate(objectPtr, func));
   }

@@ -30,7 +30,7 @@ struct ConsoleCommand
   std::string _arg;
 };
 
-class Console final : public sf::Drawable, public EventListener
+class Console final : public EventListener, public sf::Drawable
 {
 public:
   Console(const sf::Font& font, int screenWidth = 1000, int screenHeight = 1000, int borderThickness = 0);
@@ -43,8 +43,7 @@ public:
   void update(float deltaSeconds);
 
   // events
-  void addCommand(const EventBase& event);
-  void addCommand(const std::string command);
+  void addCommand(const std::string& command);
 
 private:
   void updateBufferText();

@@ -4,28 +4,32 @@
 #include <memory>
 #include <vector>
 
-#include "TDelegate.hpp"
+#include "GDelegate.hpp"
+#include "VDelegate.hpp"
 
 class EventListener
 {
 public:
-  typedef TDelegate<EventListener, void*> Delegate;
-
   EventListener() {}
   virtual ~EventListener() {}
-  // Returns a delegate from the function signature parameter
-  template<class T, class P>
-  std::shared_ptr<Delegate> bind(void(T::* func)(P))
+
+  /// @brief Binds and event with a shared pointer so the caller can track listener lifecycle.
+  /// @tparam TObj The subscriber type.
+  /// @tparam ...VArgs Parameter pack for the method.
+  /// @param func The method to call.
+  /// @return Shared pointer to a Generic Delegate.
+  template<class TObj, class... VArgs>
+  static std::shared_ptr<GDelegate> bind(TObj* self, void(TObj::* func)(const VArgs&...))
   {
-    std::shared_ptr<Delegate> delegate = buildDelegate(func);
-    _delegates.push_back(delegate);
+    std::shared_ptr<GDelegate> delegate = std::make_shared<GDelegate>(GDelegate::create(self, func));
+    self->addBinding(delegate);
     return delegate;
   }
 
   void pruneBindings()
   {
     auto eraseStartIt = std::remove_if(_delegates.begin(), _delegates.end(),
-      [&](std::shared_ptr<EventListener::Delegate>& del)
+      [&](std::shared_ptr<GDelegate>& del)
       {
         // if the event system is the only owner of this delegate, it is a dangling reference
         return del.unique();
@@ -35,10 +39,10 @@ public:
   }
 
 private:
-  template<class T, class P>
-  std::shared_ptr<Delegate> buildDelegate(void(T::* func)(P)) const
+  void addBinding(const std::shared_ptr<GDelegate>& delegate)
   {
-    return std::make_shared<Delegate>(this, reinterpret_cast<void(EventListener::*)(void*)>(func));
+    _delegates.push_back(delegate);
   }
-  std::vector<std::shared_ptr<Delegate>> _delegates;
+
+  std::vector<std::shared_ptr<GDelegate>> _delegates;
 };

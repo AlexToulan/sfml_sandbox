@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "Utils/EventSystem/ADelegate.hpp"
-#include "Utils/EventSystem/TDelegate.hpp"
 #include "Utils/EventSystem/VDelegate.hpp"
 #include "Utils/Logging.hpp"
 
@@ -11,7 +10,7 @@ public:
   {
     _data = 0;
   }
-  void setData(int data)
+  void setData(const int& data)
   {
     _data = data;
   }
@@ -19,15 +18,15 @@ public:
   {
     _data = 1;
   }
-  void setAdd(int a, int b)
+  void setAdd(const int& a, const int& b)
   {
     _data = a + b;
   }
-  void add(int a)
+  void add(const int& a)
   {
     _data += a;
   }
-  void multiply(int a)
+  void multiply(const int& a)
   {
     _data *= a;
   }
@@ -40,6 +39,7 @@ private:
   int _data;
 };
 
+/// @brief Tests for GDelegate, VDelegate and ADelegate
 class Events_DelegateTest : public testing::Test
 {
 protected:
@@ -52,14 +52,6 @@ protected:
   };
   MemberClass _class;
 };
-
-TEST_F(Events_DelegateTest, TDelegateExecute)
-{
-  TDelegate<MemberClass, int> del(&_class, &MemberClass::setData);
-  int num = 5;
-  del(num);
-  EXPECT_EQ(num, _class.getData());
-}
 
 TEST_F(Events_DelegateTest, VDelegateExecute)
 {

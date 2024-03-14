@@ -30,7 +30,9 @@ private:
   void switchGameMode(int direction);
 
   // events
-  void consoleCommand(const EventBase& event);
+  void exit();
+  void restartGameMode();
+  void setFramesPerSecond(const std::string& fps);
 
   Console _console;
   bool _bShouldClose;

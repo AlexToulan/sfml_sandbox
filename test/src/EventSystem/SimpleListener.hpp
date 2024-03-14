@@ -9,7 +9,7 @@ public:
   SimpleListener() : EventListener(), _number(0) {}
   virtual ~SimpleListener(){}
 
-  void receivedNumbersEvent(const int num)
+  void receivedNumbers(const int& num)
   {
     // _number += unpack<int>(event);
     _number += num;

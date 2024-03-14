@@ -7,6 +7,7 @@
 #include "ThreadEventListener.hpp"
 #include "TestEvents.hpp"
 
+/// @brief Testing sending and receiving data between threads
 class Events_ThreadEventListenerTest : public testing::Test
 {
 protected:
@@ -28,8 +29,8 @@ protected:
 
 TEST_F(Events_ThreadEventListenerTest, ThreadWorkerTest)
 {
-  TestEvents.subscribe(EventType::VECTOR_INT, requester.bind(&ProcessDataListener::receivedNumbers));
-  TestEvents.subscribe(EventType::REQ_DOUBLE_INTS, worker.bind(&ThreadEventListener::receiveNumbers));
+  TestEvents.bind(EventType::VECTOR_INT, &requester, &ProcessDataListener::receivedNumbers);
+  TestEvents.bind(EventType::REQ_DOUBLE_INTS, &worker, &ThreadEventListener::receiveNumbers);
   requester.setOutNumbers(numbers);
 
   requester.send();

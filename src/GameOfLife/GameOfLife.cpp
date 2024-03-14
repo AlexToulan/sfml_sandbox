@@ -1,5 +1,5 @@
-#include "EventTypes.hpp"
 #include "GameOfLife/GameOfLife.hpp"
+#include "GameMode/GameEvents.hpp"
 #include "Utils/Logging.hpp"
 #include "Utils/MathUtils.hpp"
 #include "Utils/Yaml.hpp"
@@ -7,8 +7,8 @@
 #include <source_location>
 
 GameOfLife::GameOfLife()
- : GameMode(std::source_location::current().file_name())
- , EventSystem()
+ : EventListener()
+ , GameMode(std::source_location::current().file_name())
 {
 }
 
@@ -50,8 +50,9 @@ void GameOfLife::onStart()
   _cellNeighbors = new int[_numCells] { 0 };
 
   _rowsProcessed = _cellGrid.getHeight();
-  subscribe(EGameEvent::ACTIVATE_CELLS_COMPLETE, &GameOfLife::activateCellsComplete);
-  subscribe(EGameEvent::CALC_NEIGHBORS_COMPLETE, &GameOfLife::calcNeighborsComplete);
+  GameEvents.bind(EGameEvent::ACTIVATE_CELLS_COMPLETE, this, &GameOfLife::activateCellsComplete);
+  GameEvents.bind(EGameEvent::CALC_NEIGHBORS_COMPLETE, this, &GameOfLife::calcNeighborsComplete);
+  Log::info(std::to_string(_rowsProcessed));
 
   // don't start workers till after we stop changing cells
   // basicSeed();
@@ -62,7 +63,7 @@ void GameOfLife::onStart()
 
 void GameOfLife::onEnd()
 {
-  unsubscribe();
+  GameEvents.unsubscribe(this);
   for (size_t i = 0; i < _workers.size(); i++)
   {
     _workers[i]->stop();
@@ -74,7 +75,8 @@ void GameOfLife::onEnd()
 
 void GameOfLife::processEvents(sf::Event& event)
 {
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+  bool pauseKey = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+  if (pauseKey)
   {
     if (!_bPauseKey)
     {
@@ -83,7 +85,7 @@ void GameOfLife::processEvents(sf::Event& event)
         tryCalcNeighbors();
     }
   }
-  _bPauseKey = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+  _bPauseKey = pauseKey;
   
   // TODO: fix crash bug cause by mouse leaving render window
   if (_bIsPaused)
@@ -142,20 +144,20 @@ void GameOfLife::render(sf::RenderWindow& window)
   window.draw(_cellGrid);
 }
 
-void GameOfLife::activateCellsComplete(const EventBase& event)
+void GameOfLife::activateCellsComplete(const std::pair<int, int>& range)
 {
-  auto range = unpack<std::pair<int, int>>(event);
   _rowsProcessed += range.second - range.first;
+  Log::info(std::to_string(_rowsProcessed));
   if (!_bIsPaused && !_bLockToFrameRate)
   {
     tryCalcNeighbors();
   }
 }
 
-void GameOfLife::calcNeighborsComplete(const EventBase& event)
+void GameOfLife::calcNeighborsComplete(const std::pair<int, int>& range)
 {
-  auto range = unpack<std::pair<int, int>>(event);
   _rowsProcessed += range.second - range.first;
+  Log::info(std::to_string(_rowsProcessed));
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
@@ -189,6 +191,7 @@ bool GameOfLife::tryCalcNeighbors()
     GameEvents.publish(EGameEvent::CALC_NEIGHBORS);
     return true;
   }
+  Log::warn("couldn't restart game of life");
   return false;
 }
 

@@ -5,7 +5,7 @@
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
 
-class GameOfLife : public GameMode, public EventListener
+class GameOfLife : public EventListener, public GameMode
 {
 public:
   GameOfLife();
@@ -27,8 +27,8 @@ private:
   void setCell(int x, int y, bool alive);
 
   void startWorkers(int width, int height);
-  void activateCellsComplete(const EventBase& event);
-  void calcNeighborsComplete(const EventBase& event);
+  void activateCellsComplete(const std::pair<int, int>& range);
+  void calcNeighborsComplete(const std::pair<int, int>& range);
   
   std::atomic<int> _rowsProcessed;
   std::vector<std::unique_ptr<GameOfLifeWorker>> _workers;

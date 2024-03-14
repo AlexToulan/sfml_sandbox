@@ -6,6 +6,7 @@
 
 #include "ProcessDataListener.hpp"
 
+/// @brief Tests for sending and receiving data
 class Events_ProcessDataListenerTest : public testing::Test
 {
 protected:
@@ -27,34 +28,34 @@ protected:
 
 TEST_F(Events_ProcessDataListenerTest, MultipleSubscribe)
 {
-  events.subscribe(EventType::VECTOR_INT, a.bind(&ProcessDataListener::receivedNumbers));
-  events.subscribe(EventType::VECTOR_INT, b.bind(&ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &a, &ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &b, &ProcessDataListener::receivedNumbers));
 
-  events.publish(EventType::VECTOR_INT, numbers_1);
+  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_1));
   EXPECT_EQ(numbers_1, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
-  events.publish(EventType::VECTOR_INT, numbers_2);
+  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_2));
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_2, b.getNumbers());
 }
 
 TEST_F(Events_ProcessDataListenerTest, Unsubscribe)
 {
-  events.subscribe(EventType::VECTOR_INT, a.bind(&ProcessDataListener::receivedNumbers));
-  events.subscribe(EventType::VECTOR_INT, b.bind(&ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &a, &ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &b, &ProcessDataListener::receivedNumbers));
 
-  events.publish(EventType::VECTOR_INT, numbers_1);
+  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_1));
   EXPECT_EQ(numbers_1, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
   events.unsubscribe(EventType::VECTOR_INT, &b);
-  events.publish(EventType::VECTOR_INT, numbers_2);
+  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_2));
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
   events.unsubscribe(EventType::VECTOR_INT, &a);
-  events.publish(EventType::VECTOR_INT, numbers_1);
+  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_1));
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 }
