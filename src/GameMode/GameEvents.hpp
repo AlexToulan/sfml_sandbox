@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
+#include <mutex>
 
 #include "Utils/EventSystem/EventSystem.hpp"
 
@@ -13,4 +15,18 @@ enum EGameEvent : size_t
   CALC_NEIGHBORS_COMPLETE
 };
 
-static EventSystem<EGameEvent> GameEvents;
+namespace Events
+{
+  extern std::unique_ptr<EventSystem<EGameEvent>> Game;
+}
+// namespace GameEventSystem
+// {
+//   std::once_flag instance;
+//   inline void initOnce()
+//   {
+//     std::call_once(instance, []()
+//     {
+//       GameEvents = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
+//     });
+//   }
+// }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "EventTypes.hpp"
 #include "Utils/EventSystem/EventListener.hpp"
 
 class SimpleListener : public EventListener

@@ -2,7 +2,7 @@
 
 #include <thread>
 
-#include "TestEvents.hpp"
+#include "EventsTest.hpp"
 #include "Utils/Logging.hpp"
 #include "Utils/EventSystem/EventListener.hpp"
 
@@ -55,7 +55,7 @@ private:
         {
           doubled.push_back(_inNumbers[i] * 2);
         }
-        TestEvents.publish(EventType::VECTOR_INT, doubled);
+        Events::Test->publish(ETestType::VECTOR_INT, doubled);
         _dataProcessed = true;
       }
     }

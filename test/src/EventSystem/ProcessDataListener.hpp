@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TestEvents.hpp"
+#include "EventsTest.hpp"
 #include "Utils/EventSystem/EventListener.hpp"
 
 class ProcessDataListener : public EventListener
@@ -20,7 +20,7 @@ public:
 
   void send()
   {
-    TestEvents.publish(EventType::REQ_DOUBLE_INTS, _outNumbers);
+    Events::Test->publish(ETestType::REQ_DOUBLE_INTS, _outNumbers);
   }
 
   void receivedNumbers(const std::vector<int>& nums)

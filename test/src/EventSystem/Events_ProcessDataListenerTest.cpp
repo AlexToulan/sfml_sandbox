@@ -1,6 +1,7 @@
 #include <thread>
 
 #include "gtest/gtest.h"
+#include "TestType.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/Logging.hpp"
 
@@ -23,39 +24,39 @@ protected:
   ProcessDataListener b;
   std::vector<int> numbers_1;
   std::vector<int> numbers_2;
-  EventSystem<EventType> events;
+  EventSystem<ETestType> events;
 };
 
 TEST_F(Events_ProcessDataListenerTest, MultipleSubscribe)
 {
-  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &a, &ProcessDataListener::receivedNumbers));
-  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &b, &ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(ETestType::VECTOR_INT, &a, &ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(ETestType::VECTOR_INT, &b, &ProcessDataListener::receivedNumbers));
 
-  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_1));
+  EXPECT_TRUE(events.publish(ETestType::VECTOR_INT, numbers_1));
   EXPECT_EQ(numbers_1, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
-  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_2));
+  EXPECT_TRUE(events.publish(ETestType::VECTOR_INT, numbers_2));
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_2, b.getNumbers());
 }
 
 TEST_F(Events_ProcessDataListenerTest, Unsubscribe)
 {
-  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &a, &ProcessDataListener::receivedNumbers));
-  EXPECT_TRUE(events.bind(EventType::VECTOR_INT, &b, &ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(ETestType::VECTOR_INT, &a, &ProcessDataListener::receivedNumbers));
+  EXPECT_TRUE(events.bind(ETestType::VECTOR_INT, &b, &ProcessDataListener::receivedNumbers));
 
-  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_1));
+  EXPECT_TRUE(events.publish(ETestType::VECTOR_INT, numbers_1));
   EXPECT_EQ(numbers_1, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
-  events.unsubscribe(EventType::VECTOR_INT, &b);
-  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_2));
+  events.unsubscribe(ETestType::VECTOR_INT, &b);
+  EXPECT_TRUE(events.publish(ETestType::VECTOR_INT, numbers_2));
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 
-  events.unsubscribe(EventType::VECTOR_INT, &a);
-  EXPECT_TRUE(events.publish(EventType::VECTOR_INT, numbers_1));
+  events.unsubscribe(ETestType::VECTOR_INT, &a);
+  EXPECT_TRUE(events.publish(ETestType::VECTOR_INT, numbers_1));
   EXPECT_EQ(numbers_2, a.getNumbers());
   EXPECT_EQ(numbers_1, b.getNumbers());
 }

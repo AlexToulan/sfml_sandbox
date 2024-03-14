@@ -50,9 +50,9 @@ void GameOfLife::onStart()
   _cellNeighbors = new int[_numCells] { 0 };
 
   _rowsProcessed = _cellGrid.getHeight();
-  GameEvents.bind(EGameEvent::ACTIVATE_CELLS_COMPLETE, this, &GameOfLife::activateCellsComplete);
-  GameEvents.bind(EGameEvent::CALC_NEIGHBORS_COMPLETE, this, &GameOfLife::calcNeighborsComplete);
-  Log::info(std::to_string(_rowsProcessed));
+  Events::Game->bind(EGameEvent::ACTIVATE_CELLS_COMPLETE, this, &GameOfLife::activateCellsComplete);
+  Events::Game->bind(EGameEvent::CALC_NEIGHBORS_COMPLETE, this, &GameOfLife::calcNeighborsComplete);
+  
 
   // don't start workers till after we stop changing cells
   // basicSeed();
@@ -63,7 +63,7 @@ void GameOfLife::onStart()
 
 void GameOfLife::onEnd()
 {
-  GameEvents.unsubscribe(this);
+  Events::Game->unsubscribe(this);
   for (size_t i = 0; i < _workers.size(); i++)
   {
     _workers[i]->stop();
@@ -147,7 +147,6 @@ void GameOfLife::render(sf::RenderWindow& window)
 void GameOfLife::activateCellsComplete(const std::pair<int, int>& range)
 {
   _rowsProcessed += range.second - range.first;
-  Log::info(std::to_string(_rowsProcessed));
   if (!_bIsPaused && !_bLockToFrameRate)
   {
     tryCalcNeighbors();
@@ -157,11 +156,11 @@ void GameOfLife::activateCellsComplete(const std::pair<int, int>& range)
 void GameOfLife::calcNeighborsComplete(const std::pair<int, int>& range)
 {
   _rowsProcessed += range.second - range.first;
-  Log::info(std::to_string(_rowsProcessed));
+  
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
-    GameEvents.publish(EGameEvent::ACTIVATE_CELLS);
+    Events::Game->publish(EGameEvent::ACTIVATE_CELLS);
   }
 }
 
@@ -179,7 +178,7 @@ void GameOfLife::startWorkers(int width, int height)
 
   if (!_bIsPaused)
   {
-    GameEvents.publish(EGameEvent::CALC_NEIGHBORS);
+    Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
   }
 }
 
@@ -188,7 +187,7 @@ bool GameOfLife::tryCalcNeighbors()
   if (_rowsProcessed == _cellGrid.getHeight())
   {
     _rowsProcessed = 0;
-    GameEvents.publish(EGameEvent::CALC_NEIGHBORS);
+    Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
     return true;
   }
   Log::warn("couldn't restart game of life");

@@ -5,7 +5,9 @@
 
 #include "ProcessDataListener.hpp"
 #include "ThreadEventListener.hpp"
-#include "TestEvents.hpp"
+#include "EventsTest.hpp"
+
+std::unique_ptr<EventSystem<ETestType>> Events::Test;
 
 /// @brief Testing sending and receiving data between threads
 class Events_ThreadEventListenerTest : public testing::Test
@@ -13,6 +15,7 @@ class Events_ThreadEventListenerTest : public testing::Test
 protected:
   void SetUp() override
   {
+    Events::Test = std::make_unique<EventSystem<ETestType>>();
     numbers = {5, 4, 3, 2, 1};
     worker.start();
   };
@@ -29,8 +32,8 @@ protected:
 
 TEST_F(Events_ThreadEventListenerTest, ThreadWorkerTest)
 {
-  TestEvents.bind(EventType::VECTOR_INT, &requester, &ProcessDataListener::receivedNumbers);
-  TestEvents.bind(EventType::REQ_DOUBLE_INTS, &worker, &ThreadEventListener::receiveNumbers);
+  Events::Test->bind(ETestType::VECTOR_INT, &requester, &ProcessDataListener::receivedNumbers);
+  Events::Test->bind(ETestType::REQ_DOUBLE_INTS, &worker, &ThreadEventListener::receiveNumbers);
   requester.setOutNumbers(numbers);
 
   requester.send();

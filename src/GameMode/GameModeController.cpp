@@ -1,10 +1,13 @@
 #include <string>
 
 #include "ConsoleEvents.hpp"
+#include "GameEvents.hpp"
 #include "GameModeController.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/Logging.hpp"
 
+std::unique_ptr<EventSystem<EGameEvent>> Events::Game;
+std::unique_ptr<EventSystem<std::string>> Events::Console;
 
 GameModeController::GameModeController(const sf::Font& consoleFont)
   : EventListener()
@@ -60,15 +63,18 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 bool GameModeController::setup(unsigned int framesPerSecond, unsigned int updatesPerSecond)
 {
   Log::info("Setting up game mode controller");
+  Events::Game = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
+  Events::Console = std::make_unique<EventSystem<std::string>>("ConsoleEvents");
 
   _console.addCommand("exit");
   _console.addCommand("quit");
   _console.addCommand("restart_game_mode");
   _console.addCommand("frames_per_second");
   _console.addCommand("updates_per_second");
-  ConsoleEvents.bind("exit", this, &GameModeController::exit);
-  ConsoleEvents.bind("quit", this, &GameModeController::exit);
-  ConsoleEvents.bind("restart_game_mode", this, &GameModeController::restartGameMode);
+  Events::Console->bind("exit", this, &GameModeController::exit);
+  Events::Console->bind("quit", this, &GameModeController::exit);
+  Events::Console->bind("restart_game_mode", this, &GameModeController::restartGameMode);
+  Events::Console->bind("frames_per_second", this, &GameModeController::setFramesPerSecond);
 
   _window.setFramerateLimit(framesPerSecond);
   _updatesPerSecond = updatesPerSecond;

@@ -20,14 +20,15 @@ template<class TKey>
 class EventSystem final
 {
 public:
-  EventSystem()
+  EventSystem(std::string name = "EventSystem")
   {
-    Log::info("EventSystem()");
+    _name = name;
+    Log::info("EventSystem(): " + _name);
   }
 
   ~EventSystem()
   {
-    Log::info("~EventSystem()");
+    Log::info("~EventSystem(): " + _name);
   }
 
   /// @brief Publishes an event on the calling thread.
@@ -159,6 +160,7 @@ public:
   }
 
 private:
+  std::string _name;
   template<typename T>
   std::string keyToString(const T& key)
   {

@@ -8,6 +8,7 @@ option(BUILD_TESTS "Build unit tests" ON)
 
 # dependancies
 include(FetchContent)
+include(GoogleTest)
 
 # sfml
 FetchContent_Declare(
@@ -16,17 +17,14 @@ FetchContent_Declare(
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
-if (BUILD_TESTS)
-    # gtest - requires cmake 3.13 or later
-    FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip)
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-    # use gtest CMake
-    include(GoogleTest)
-endif()
+# gtest - requires cmake 3.13 or later
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+# use gtest CMake
 
 # yaml-cpp
 FetchContent_Declare(
@@ -115,12 +113,14 @@ if (BUILD_TESTS)
     target_include_directories(testAll
         PRIVATE
         ${CMAKE_SOURCE_DIR}/src/
+        # ${util_files}
         ${CMAKE_SOURCE_DIR}/test/src/
     )
 
     target_link_libraries(testAll GTest::gtest_main)
     target_compile_features(testAll PRIVATE cxx_std_20)
-    gtest_discover_tests(testAll)
+    gtest_discover_tests(testAll DISCOVERY_TIMEOUT 600)
+    # gtest_discover_tests(testAll)
 endif()
 
 # linker

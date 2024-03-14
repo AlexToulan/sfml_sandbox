@@ -1,7 +1,23 @@
 #pragma once
 
 #include <string>
+#include <memory>
+#include <mutex>
 
 #include "Utils/EventSystem/EventSystem.hpp"
 
-static EventSystem<std::string> ConsoleEvents;
+namespace Events
+{
+  extern std::unique_ptr<EventSystem<std::string>> Console;
+}
+// namespace ConsoleEventSystem
+// {
+//   std::once_flag instance;
+//   inline void initOnce()
+//   {
+//     std::call_once(instance, []()
+//     {
+//       ConsoleEvents = std::make_unique<EventSystem<std::string>>("ConsoleEvents");
+//     });
+//   }
+// }

@@ -154,7 +154,7 @@ void Console::sendCommand()
   else if (std::find(_commands.begin(), _commands.end(), command._name) != _commands.end())
   {
     print("> " + _commandBuffer);
-    // EventSystem::publish(EventType::CONSOLE_COMMAND, Event(command));
+    Events::Console->publish(command._name, command._arg);
   }
   else
   {
@@ -312,5 +312,5 @@ void Console::addCommand(const std::string& command)
       command, std::less<std::string>());
     _commands.insert(it, command);
   }
-  Log::info(command + std::to_string(_commands.size()));
+  Log::info("Adding command: " + command + "\t num commands: " + std::to_string(_commands.size()));
 }

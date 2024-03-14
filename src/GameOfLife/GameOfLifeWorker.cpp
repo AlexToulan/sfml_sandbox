@@ -35,8 +35,8 @@ void GameOfLifeWorker::start()
   {
     Log::error("thread already running");
   }
-  GameEvents.bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
-  GameEvents.bind(EGameEvent::CALC_NEIGHBORS, this, &GameOfLifeWorker::calcNeighbors);
+  Events::Game->bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
+  Events::Game->bind(EGameEvent::CALC_NEIGHBORS, this, &GameOfLifeWorker::calcNeighbors);
   _isRunning = true;
   _thread = std::thread(&GameOfLifeWorker::run, this);
 }
@@ -45,7 +45,7 @@ void GameOfLifeWorker::stop()
 {
   if (_isRunning)
   {
-    GameEvents.unsubscribe(this);
+    Events::Game->unsubscribe(this);
     _isRunning = false;
     _thread.join();
   }
@@ -64,14 +64,14 @@ void GameOfLifeWorker::run()
           _cellNeighbors[getCellIndex(x, y)] = calcNumNeighborsAlive(x, y);
         }
       }
-      GameEvents.publish(EGameEvent::CALC_NEIGHBORS_COMPLETE, _id);
+      Events::Game->publish(EGameEvent::CALC_NEIGHBORS_COMPLETE, _id);
       _calcNeighbors = false;
     }
     if (_setAliveDead)
     {
       classicRules();
       // crazyRules();
-      GameEvents.publish(EGameEvent::ACTIVATE_CELLS_COMPLETE, _id);
+      Events::Game->publish(EGameEvent::ACTIVATE_CELLS_COMPLETE, _id);
       _setAliveDead = false;
     }
   }
