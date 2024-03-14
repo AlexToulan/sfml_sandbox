@@ -66,11 +66,11 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
   Events::Game = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
   Events::Console = std::make_unique<EventSystem<std::string>>("ConsoleEvents");
 
-  _console.addCommand("exit");
-  _console.addCommand("quit");
-  _console.addCommand("restart_game_mode");
-  _console.addCommand("frames_per_second");
-  _console.addCommand("updates_per_second");
+  _console.addCommand("exit", "quits the application");
+  _console.addCommand("quit", "quits the application");
+  _console.addCommand("restart_game_mode", "restarts the current game mode");
+  _console.addCommand("frames_per_second", "[int arg] sets the GPU framerate of the application");
+  _console.addCommand("updates_per_second", "[int arg] sets the CPU framerate of the application");
   Events::Console->bind("exit", this, &GameModeController::exit);
   Events::Console->bind("quit", this, &GameModeController::exit);
   Events::Console->bind("restart_game_mode", this, &GameModeController::restartGameMode);

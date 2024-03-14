@@ -115,18 +115,21 @@ void Console::updateOutputText()
 void Console::updateHintText()
 {
   _hintCommand = "";
+  std::string helpMessage = "";
   if (_commandBuffer.size() != 0)
   {
-    for(const std::string& command : _commands)
+    for(const auto& [command, help] : _commands)
     {
       if (command.rfind(_commandBuffer, 0) == 0)
       {
         _hintCommand = command;
+        if (command.size() == _commandBuffer.size())
+          helpMessage = "\t" + help;
         break;
       }
     }
   }
-  _bufferHintText.setString(_prompt + _hintCommand);
+  _bufferHintText.setString(_prompt + _hintCommand + helpMessage);
 }
 
 void Console::sendCommand()
@@ -151,7 +154,7 @@ void Console::sendCommand()
     print("commands:");
     print(_commands, "  - ");
   }
-  else if (std::find(_commands.begin(), _commands.end(), command._name) != _commands.end())
+  else if (_commands.contains(command._name))
   {
     print("> " + _commandBuffer);
     Events::Console->publish(command._name, command._arg);
@@ -170,7 +173,7 @@ void Console::sendCommand()
   updateOutputText();
 }
 
-void Console::print(const std::string line)
+void Console::print(const std::string& line)
 {
   _textBuffer.push_back(line);
   if (_textBuffer.size() > _textBufferSize)
@@ -179,7 +182,7 @@ void Console::print(const std::string line)
   }
 }
 
-void Console::print(const std::vector<std::string> lines, const std::string newlinePrefix)
+void Console::print(const std::vector<std::string>& lines, const std::string newlinePrefix)
 {
   std::for_each(lines.begin(), lines.end(),
     [&](const std::string& line)
@@ -191,6 +194,18 @@ void Console::print(const std::vector<std::string> lines, const std::string newl
       }
     }
   );
+}
+
+void Console::print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix)
+{
+  for (const auto& [first, second] : dic)
+  {
+    _textBuffer.push_back(newlinePrefix + first + "\t\t" + second);
+    if (_textBuffer.size() > _textBufferSize)
+    {
+      _textBuffer.erase(_textBuffer.begin());
+    }
+  }
 }
 
 void Console::processEvents(sf::Event& event)
@@ -304,13 +319,14 @@ void Console::draw(sf::RenderTarget& rt, sf::RenderStates states) const
   rt.draw(_bufferText, states);
 }
 
-void Console::addCommand(const std::string& command)
+void Console::addCommand(const std::string& command, const std::string& help)
 {
-  if (std::find(_commands.begin(), _commands.end(), command) == _commands.end())
+  if (_commands.contains(command))
   {
-    auto it = std::lower_bound(_commands.begin(), _commands.end(),
-      command, std::less<std::string>());
-    _commands.insert(it, command);
+    Log::warn("Command: " + command + " already exists");
   }
-  Log::info("Adding command: " + command + "\t num commands: " + std::to_string(_commands.size()));
+  else
+  {
+    _commands[command] = help;
+  }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Font.hpp>
@@ -43,20 +44,21 @@ public:
   void update(float deltaSeconds);
 
   // events
-  void addCommand(const std::string& command);
+  void addCommand(const std::string& command, const std::string& help);
 
 private:
   void updateBufferText();
   void updateOutputText();
   void updateHintText();
   void sendCommand();
-  void print(const std::string line);
-  void print(const std::vector<std::string> lines, const std::string newlinePrefix = "");
+  void print(const std::string& line);
+  void print(const std::vector<std::string>& lines, const std::string newlinePrefix = "");
+  void print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix = "");
   void draw(sf::RenderTarget& rt, sf::RenderStates states) const override;
 
 
   // commands
-  std::vector<std::string> _commands;
+  std::map<std::string, std::string> _commands;
 
   // UI
   bool _bIsOpen;
