@@ -1,5 +1,5 @@
 # sfml_sandbox
-A lightweight game engine and 2D sandbox for testing algorithms and game design with C++ on Linux.
+A light-weight C++ game engine and 2D sandbox.
 ## Build
 ### Ubuntu/Debian
  - Install [Clang 17](https://ubuntuhandbook.org/index.php/2023/09/how-to-install-clang-17-or-16-in-ubuntu-22-04-20-04/)
