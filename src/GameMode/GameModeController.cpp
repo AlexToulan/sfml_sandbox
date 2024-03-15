@@ -99,7 +99,14 @@ void GameModeController::run()
     sf::Event event;
     while (_window.pollEvent(event))
     {
-      if (_bShouldClose || event.type == sf::Event::Closed || event.KeyReleased && event.key.code == sf::Keyboard::Escape)
+      if (event.type == event.KeyReleased)
+      {
+        if (event.key.code == sf::Keyboard::Escape)
+        {
+          _bShouldClose = true;
+        }
+      }
+      if (_bShouldClose || event.type == sf::Event::Closed)
       {
         _gameModes[_currentGameModeIndex]->onEnd();
         _window.close();
