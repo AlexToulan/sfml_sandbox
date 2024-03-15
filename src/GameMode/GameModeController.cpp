@@ -1,10 +1,17 @@
+#include <string>
+
+#include "ConsoleEvents.hpp"
+#include "GameEvents.hpp"
 #include "GameModeController.hpp"
-#include "Utils/EventSystem/EventComponent.hpp"
+#include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/Logging.hpp"
 
+std::unique_ptr<EventSystem<EGameEvent>> Events::Game;
+std::unique_ptr<EventSystem<std::string>> Events::Console;
 
 GameModeController::GameModeController(const sf::Font& consoleFont)
-  : _window(sf::VideoMode(1000, 1000), "SFML Test")
+  : EventListener()
+  , _window(sf::VideoMode(1000, 1000), "SFML Test")
   , _console(consoleFont, 1000, 1000)
 {
   _currentGameModeIndex = 0;
@@ -13,7 +20,8 @@ GameModeController::GameModeController(const sf::Font& consoleFont)
 }
 
 GameModeController::GameModeController(const sf::Font& consoleFont, int screenWidth, int screenHeight, std::string windowTitle)
-  : _window(sf::VideoMode(screenWidth, screenHeight), windowTitle)
+  : EventListener()
+  , _window(sf::VideoMode(screenWidth, screenHeight), windowTitle)
   , _console(consoleFont, screenWidth, screenHeight, 1)
 {
   _currentGameModeIndex = 0;
@@ -55,14 +63,18 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 bool GameModeController::setup(unsigned int framesPerSecond, unsigned int updatesPerSecond)
 {
   Log::info("Setting up game mode controller");
+  Events::Game = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
+  Events::Console = std::make_unique<EventSystem<std::string>>("ConsoleEvents");
 
-  _console.subscribe(EventType::ADD_CONSOLE_COMMAND, &Console::addCommand);
-  _console.addCommand("exit");
-  _console.addCommand("quit");
-  _console.addCommand("restart_game_mode");
-  _console.addCommand("frames_per_second");
-  _console.addCommand("updates_per_second");
-  subscribe(EventType::CONSOLE_COMMAND, &GameModeController::consoleCommand);
+  _console.addCommand("exit", "quits the application");
+  _console.addCommand("quit", "quits the application");
+  _console.addCommand("restart_game_mode", "restarts the current game mode");
+  _console.addCommand("frames_per_second", "[int arg] sets the GPU framerate of the application");
+  _console.addCommand("updates_per_second", "[int arg] sets the CPU framerate of the application");
+  Events::Console->bind("exit", this, &GameModeController::exit);
+  Events::Console->bind("quit", this, &GameModeController::exit);
+  Events::Console->bind("restart_game_mode", this, &GameModeController::restartGameMode);
+  Events::Console->bind("frames_per_second", this, &GameModeController::setFramesPerSecond);
 
   _window.setFramerateLimit(framesPerSecond);
   _updatesPerSecond = updatesPerSecond;
@@ -125,7 +137,6 @@ void GameModeController::run()
 
 void GameModeController::teardown()
 {
-  _console.unsubscribe();
 }
 
 void GameModeController::nextGameMode()
@@ -178,29 +189,27 @@ void GameModeController::switchGameMode(int direction)
   }
 
   _gameModes[_currentGameModeIndex]->onEnd();
-  // EventComponent::flushSubscribers(); // allows event types per game mode
+  // EventSystem::flushSubscribers(); // allows event types per game mode
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
   Log::info("Switching to " + _gameModes[_currentGameModeIndex]->getName());
   _gameModes[_currentGameModeIndex]->onStart();
 }
 
-void GameModeController::consoleCommand(const EventBase& event)
+void GameModeController::exit()
 {
-  // CliConfig config = unpack<CliConfig>(event);
-  auto command = unpack<ConsoleCommand>(event);
-  if (command._name == "exit" || command._name == "quit")
-  {
-    _bShouldClose = true;
-    Log::info("bye!");
-  }
-  else if (command._name == "restart_game_mode")
-  {
-    _gameModes[_currentGameModeIndex]->onEnd();
-    _gameModes[_currentGameModeIndex]->onStart();
-  }
-  else if (command._name == "frames_per_second")
-  {
-    int framesPerSecond = std::stoi(command._arg);
+  _bShouldClose = true;
+  Log::info("bye!");
+}
+
+void GameModeController::restartGameMode()
+{
+  _gameModes[_currentGameModeIndex]->onEnd();
+  _gameModes[_currentGameModeIndex]->onStart();
+}
+
+void GameModeController::setFramesPerSecond(const std::string& fps)
+{
+    int framesPerSecond = std::stoi(fps);
     if (framesPerSecond > 0)
     {
       Log::info("frames_per_second: " + std::to_string(framesPerSecond));
@@ -208,11 +217,6 @@ void GameModeController::consoleCommand(const EventBase& event)
     }
     else
     {
-      Log::info("\tinvalid argument: \"" + command._arg + "\"");
+      Log::warn("\tinvalid argument: \"" + fps + "\"");
     }
-  }
-  /*else if (command._name == "updates_per_second")
-  {
-    
-  }*/
 }

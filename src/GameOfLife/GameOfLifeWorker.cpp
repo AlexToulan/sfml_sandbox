@@ -1,10 +1,10 @@
-#include "EventTypes.hpp"
+#include "GameMode/GameEvents.hpp"
 #include "GameOfLifeWorker.hpp"
 #include "Utils/Logging.hpp"
 #include "Utils/MathUtils.hpp"
 
 GameOfLifeWorker::GameOfLifeWorker()
-  : EventComponent()
+  : EventListener()
   , _thread()
 {
   _isRunning = false;
@@ -26,7 +26,7 @@ void GameOfLifeWorker::init(int startX, int endX, int startY, int endY, int widt
   _yRange = std::pair(startY, endY);
   _cellNeighbors = cellNeighbors;
   _activeCells = activeCells;
-  _id = Event(_yRange);
+  _id = _yRange;
 }
 
 void GameOfLifeWorker::start()
@@ -35,8 +35,8 @@ void GameOfLifeWorker::start()
   {
     Log::error("thread already running");
   }
-  subscribe(EventType::ACTIVATE_CELLS, &GameOfLifeWorker::setAliveDead);
-  subscribe(EventType::CALC_NEIGHBORS, &GameOfLifeWorker::calcNeighbors);
+  Events::Game->bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
+  Events::Game->bind(EGameEvent::CALC_NEIGHBORS, this, &GameOfLifeWorker::calcNeighbors);
   _isRunning = true;
   _thread = std::thread(&GameOfLifeWorker::run, this);
 }
@@ -45,7 +45,7 @@ void GameOfLifeWorker::stop()
 {
   if (_isRunning)
   {
-    unsubscribe();
+    Events::Game->unsubscribe(this);
     _isRunning = false;
     _thread.join();
   }
@@ -64,25 +64,25 @@ void GameOfLifeWorker::run()
           _cellNeighbors[getCellIndex(x, y)] = calcNumNeighborsAlive(x, y);
         }
       }
-      EventComponent::publish(EventType::CALC_NEIGHBORS_COMPLETE, _id);
+      Events::Game->publish(EGameEvent::CALC_NEIGHBORS_COMPLETE, _id);
       _calcNeighbors = false;
     }
     if (_setAliveDead)
     {
       classicRules();
       // crazyRules();
-      EventComponent::publish(EventType::ACTIVATE_CELLS_COMPLETE, _id);
+      Events::Game->publish(EGameEvent::ACTIVATE_CELLS_COMPLETE, _id);
       _setAliveDead = false;
     }
   }
 }
 
-void GameOfLifeWorker::calcNeighbors(const EventBase& event)
+void GameOfLifeWorker::calcNeighbors()
 {
   _calcNeighbors = true;
 }
 
-void GameOfLifeWorker::setAliveDead(const EventBase& event)
+void GameOfLifeWorker::setAliveDead()
 {
   _setAliveDead = true;
 }

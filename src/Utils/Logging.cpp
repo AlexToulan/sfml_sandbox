@@ -19,7 +19,8 @@ void Log::init(const std::string& filePath, bool showInfo, bool showWarn)
 
 void Log::info(const std::string& message, const std::source_location& location)
 {
-  logFile << "[  INFO  ]  " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+  if (logFile.is_open())
+    logFile << "[  INFO  ]  " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowInfo)
   {
     std::cout << "[  INFO  ]  " << blue()
@@ -29,7 +30,8 @@ void Log::info(const std::string& message, const std::source_location& location)
 
 void Log::warn(const std::string& message, const std::source_location& location)
 {
-  logFile << "[ WARNING ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+  if (logFile.is_open())
+    logFile << "[ WARNING ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowWarn)
   {
     std::cout << yellow() << "[ WARNING ] " << blue()
@@ -39,10 +41,11 @@ void Log::warn(const std::string& message, const std::source_location& location)
 
 void Log::error(const std::string& message, const std::source_location& location)
 {
-  logFile << "[  ERROR  ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+  if (logFile.is_open())
+    logFile << "[  ERROR  ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowError)
   {
-    std::cout << red() << "[  ERROR  ] " << blue()
+    std::cerr << red() << "[  ERROR  ] " << blue()
       << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }

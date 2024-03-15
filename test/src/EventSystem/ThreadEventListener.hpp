@@ -2,20 +2,20 @@
 
 #include <thread>
 
-#include "EventTypes.hpp"
+#include "EventsTest.hpp"
 #include "Utils/Logging.hpp"
-#include "Utils/EventSystem/EventComponent.hpp"
+#include "Utils/EventSystem/EventListener.hpp"
 
-class ThreadEventComponent : public EventComponent
+class ThreadEventListener : public EventListener
 {
 public:
-  ThreadEventComponent() : EventComponent(), _thread()
+  ThreadEventListener() : EventListener(), _thread()
   {
     _isRunning = false;
     _dataProcessed = false;
   }
 
-  virtual ~ThreadEventComponent()
+  virtual ~ThreadEventListener()
   {
     stop();
   }
@@ -23,7 +23,7 @@ public:
   void start()
   {
     _isRunning = true;
-    _thread = std::thread(&ThreadEventComponent::run, this);
+    _thread = std::thread(&ThreadEventListener::run, this);
   }
 
   void stop()
@@ -35,11 +35,11 @@ public:
     }
   }
 
-  void receiveNumbers(const EventBase& event)
+  void receiveNumbers(const std::vector<int>& nums)
   {
     std::unique_lock<decltype(_numbersMutex)> lock(_numbersMutex);
+    _inNumbers = nums;
     _dataProcessed = false;
-    copy(event, _inNumbers);
   }
 
 private:
@@ -55,7 +55,7 @@ private:
         {
           doubled.push_back(_inNumbers[i] * 2);
         }
-        EventComponent::publish(EventType::VECTOR_INT, Event(doubled));
+        Events::Test->publish(ETestType::VECTOR_INT, doubled);
         _dataProcessed = true;
       }
     }

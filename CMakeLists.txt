@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(CMakeSFMLProject LANGUAGES CXX)
 
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(BUILD_SFML_SANDBOX "Build main project" ON)
+option(BUILD_TESTS "Build unit tests" ON)
 
 # dependancies
 include(FetchContent)
+include(GoogleTest)
 
 # sfml
 FetchContent_Declare(
@@ -23,7 +25,6 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 # use gtest CMake
-include(GoogleTest)
 
 # yaml-cpp
 FetchContent_Declare(
@@ -92,34 +93,42 @@ file(GLOB_RECURSE test_files
 # add_executable(SFMLSandbox src/main.cpp ${example_game_mode_files})
 
 # main game executable
-add_executable(SFMLSandbox src/main.cpp ${sfml_helper_files} ${util_files} ${game_of_life_files} ${quad_test_files})
-target_include_directories(SFMLSandbox
-    PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/
-)
+if(BUILD_SFML_SANDBOX)
+    add_executable(SFMLSandbox src/main.cpp ${sfml_helper_files} ${util_files} ${game_of_life_files} ${quad_test_files})
+    target_include_directories(SFMLSandbox
+        PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/
+    )
 
-# DEV ONLY - COPY FILES IN RELEASE
-# create symbolic link to resources directory
-add_custom_command(TARGET SFMLSandbox PRE_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E create_symlink
-                   ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:SFMLSandbox>/resources)
+    # DEV ONLY - COPY FILES IN RELEASE
+    # create symbolic link to resources directory
+    add_custom_command(TARGET SFMLSandbox PRE_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E create_symlink
+                    ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:SFMLSandbox>/resources)
+endif()
 
 # gtest executable
-add_executable(testAll ${CMAKE_SOURCE_DIR}/test/main_testall.cpp ${test_files} ${util_files})
-target_include_directories(testAll
-    PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/
-    ${CMAKE_SOURCE_DIR}/test/src/
-)
+if (BUILD_TESTS)
+    add_executable(testAll ${CMAKE_SOURCE_DIR}/test/main_testall.cpp ${test_files} ${util_files})
+    target_include_directories(testAll
+        PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/
+        # ${util_files}
+        ${CMAKE_SOURCE_DIR}/test/src/
+    )
 
-target_link_libraries(testAll GTest::gtest_main)
-target_compile_features(testAll PRIVATE cxx_std_20)
-gtest_discover_tests(testAll)
+    target_link_libraries(testAll GTest::gtest_main)
+    target_compile_features(testAll PRIVATE cxx_std_20)
+    gtest_discover_tests(testAll DISCOVERY_TIMEOUT 600)
+    # gtest_discover_tests(testAll)
+endif()
 
 # linker
-target_compile_features(SFMLSandbox PRIVATE cxx_std_20)
-target_link_libraries(SFMLSandbox PRIVATE sfml-graphics)
-target_link_libraries(SFMLSandbox PUBLIC yaml-cpp::yaml-cpp)
+if(BUILD_SFML_SANDBOX)
+    target_compile_features(SFMLSandbox PRIVATE cxx_std_20)
+    target_link_libraries(SFMLSandbox PRIVATE sfml-graphics)
+    target_link_libraries(SFMLSandbox PUBLIC yaml-cpp::yaml-cpp)
+endif()
 
 if(WIN32)
     add_custom_command(
@@ -129,4 +138,6 @@ if(WIN32)
         VERBATIM)
 endif()
 
-install(TARGETS SFMLSandbox)
+if(BUILD_SFML_SANDBOX)
+    install(TARGETS SFMLSandbox)
+endif()

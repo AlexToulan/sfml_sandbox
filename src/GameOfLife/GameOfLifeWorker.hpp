@@ -2,9 +2,9 @@
 
 #include <thread>
 
-#include "Utils/EventSystem/EventComponent.hpp"
+#include "Utils/EventSystem/EventListener.hpp"
 
-class GameOfLifeWorker : public EventComponent
+class GameOfLifeWorker : public EventListener
 {
 public:
   GameOfLifeWorker();
@@ -17,8 +17,8 @@ public:
 private:
   // thread and events
   void run();
-  void calcNeighbors(const EventBase& event);
-  void setAliveDead(const EventBase& event);
+  void calcNeighbors();
+  void setAliveDead();
   // helper methods
   int calcNumNeighborsAlive(int x, int y);
   size_t getCellIndex(int x, int y) const;
@@ -41,5 +41,5 @@ private:
   std::atomic<bool> _isRunning;
   bool _calcNeighbors;
   bool _setAliveDead;
-  Event<std::pair<int, int>> _id;
+  std::pair<int, int> _id;
 };

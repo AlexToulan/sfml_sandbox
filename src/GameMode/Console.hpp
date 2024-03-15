@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Font.hpp>
@@ -8,7 +9,7 @@
 #include <SFML/System/NonCopyable.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "Utils/EventSystem/EventComponent.hpp"
+#include "Utils/EventSystem/EventListener.hpp"
 
 struct ConsoleCommand
 {
@@ -30,7 +31,7 @@ struct ConsoleCommand
   std::string _arg;
 };
 
-class Console final : public sf::Drawable, public EventComponent
+class Console final : public EventListener, public sf::Drawable
 {
 public:
   Console(const sf::Font& font, int screenWidth = 1000, int screenHeight = 1000, int borderThickness = 0);
@@ -43,21 +44,21 @@ public:
   void update(float deltaSeconds);
 
   // events
-  void addCommand(const EventBase& event);
-  void addCommand(const std::string command);
+  void addCommand(const std::string& command, const std::string& help);
 
 private:
   void updateBufferText();
   void updateOutputText();
   void updateHintText();
   void sendCommand();
-  void print(const std::string line);
-  void print(const std::vector<std::string> lines, const std::string newlinePrefix = "");
+  void print(const std::string& line);
+  void print(const std::vector<std::string>& lines, const std::string newlinePrefix = "");
+  void print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix = "");
   void draw(sf::RenderTarget& rt, sf::RenderStates states) const override;
 
 
   // commands
-  std::vector<std::string> _commands;
+  std::map<std::string, std::string> _commands;
 
   // UI
   bool _bIsOpen;
