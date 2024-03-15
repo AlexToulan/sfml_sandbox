@@ -1,14 +1,36 @@
 # sfml_sandbox
-A simple 2D graphics sandbox for testing algorithms and game design on Linux. Cross platform support coming soon!
+A simple 2D sandbox for testing algorithms and game design on Linux. Cross platform support coming soon!
 
 ## Build
- - If you're building for the first time run `setup.sh`
- - Download a CMake extension of your choosing
-   - (optional) Configure CMake to use Clang 17
- - Ctrl+Shift+B for normal code change build
-
+### Ubuntu/Debian
+ - Install [Clang 17](https://ubuntuhandbook.org/index.php/2023/09/how-to-install-clang-17-or-16-in-ubuntu-22-04-20-04/)
+   ```
+   wget https://apt.llvm.org/llvm.sh
+   chmod u+x llvm.sh
+   ./llvm.sh 17
+   ```
+ - Install cmake `apt install build-essential cmake`
+ - (optional) Install [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools) VSCode extension
+   - Configure CMake Tools to use Clang 17 with Debug selected
+ - Install [SFML Dependencies](https://www.sfml-dev.org/tutorials/2.6/compile-with-cmake.php)
+    ```
+    apt install \
+    libfreetype6-dev \
+    libx11-dev \
+    libxrandr-dev \
+    libgl1-mesa-dev \
+    libudev-dev \
+    libopenal-dev \
+    libflac-dev \
+    libogg-dev \
+    libvorbis-dev -y
+    ```
+ - Run `./setup.sh`
+   - (optional) For normal build development press Ctrl+Shift+B
+### Windows
+Untested
+### Mac
+Not supported
 ## Known Bugs
-### Game of Life crash bug
- - Moving the mouse outside the render window sometimes causes a crash
-### Build system and setup
+### Build/Setup
  - Need to run `setup.sh` after reboot
