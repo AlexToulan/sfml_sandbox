@@ -1,5 +1,5 @@
 # sfml_sandbox
-A simple 2D sandbox for testing algorithms and game design with C++ on Linux.
+A lightweight game engine and 2D sandbox for testing algorithms and game design with C++ on Linux.
 ## Build
 ### Ubuntu/Debian
  - Install [Clang 17](https://ubuntuhandbook.org/index.php/2023/09/how-to-install-clang-17-or-16-in-ubuntu-22-04-20-04/)
@@ -34,9 +34,14 @@ Not supported
  - Conway's Game of Life
  - Orbito
 ## Future Work
- - Windows support (if I find another reason to install it)
+ - Windows support
  - PyTorch powered AI
  - Pathfinding for AI training
 ## Known Bugs
 ### Build/Setup
  - Need to run `setup.sh` after reboot
+## Footnote
+Special thanks to the developers of thirdparty libs/tools used in sfml_sandbox
+ - [SFML](https://www.sfml-dev.org/)
+ - [ArgParse](https://github.com/morrisfranken/argparse)
+ - [GTest](https://github.com/google/googletest)
