@@ -113,7 +113,6 @@ if (BUILD_TESTS)
     target_include_directories(testAll
         PRIVATE
         ${CMAKE_SOURCE_DIR}/src/
-        # ${util_files}
         ${CMAKE_SOURCE_DIR}/test/src/
     )
 
