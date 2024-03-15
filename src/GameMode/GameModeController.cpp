@@ -54,7 +54,7 @@ void GameModeController::selectGameMode(const std::string& gameModeName)
 
 void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 {
-  Log::info(str::agg("Adding ", gameMode->getName()));
+  Log::info(Str::agg("Adding ", gameMode->getName()));
   _gameModes.push_back(std::move(gameMode));
   _bNextKey = false;
   _bPreviousKey = false;
@@ -132,7 +132,7 @@ void GameModeController::run()
     _frames++;
     if (_fpsTimer.pollSeconds() > 5.0f)
     {
-      Log::info(str::agg("FPS: ", std::to_string(_frames / 5)));
+      Log::info(Str::agg("FPS: ", std::to_string(_frames / 5)));
       _fpsTimer.start();
       _frames = 0;
     }
@@ -207,7 +207,7 @@ void GameModeController::switchGameMode(int direction)
 
   _gameModes[_currentGameModeIndex]->onEnd();
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
-  Log::info(str::agg("Switching to ", _gameModes[_currentGameModeIndex]->getName()));
+  Log::info(Str::agg("Switching to ", _gameModes[_currentGameModeIndex]->getName()));
   _gameModes[_currentGameModeIndex]->onStart();
 }
 
@@ -233,7 +233,7 @@ void GameModeController::setFramesPerSecond(const std::string& fps)
   }
   else
   {
-    Log::warn(str::agg("\tinvalid argument: \"", fps, "\""));
+    Log::warn(Str::agg("\tinvalid argument: \"", fps, "\""));
   }
 }
 
@@ -245,15 +245,15 @@ void GameModeController::setUpdatesPerSecond(const std::string& ups)
     _updatesPerSecond = updatesPerSecond;
     if (_updatesPerSecond > _framesPerSecond)
     {
-      Events::Console->publish("print", str::agg("updates_per_second: [", _updatesPerSecond,
+      Events::Console->publish("print", Str::agg("updates_per_second: [", _updatesPerSecond,
         "] can't be greater than frames_per_second: [", _framesPerSecond, "]"));
       _updatesPerSecond = _framesPerSecond;
     }
-    Log::info(str::agg("updates_per_second: ", std::to_string(_updatesPerSecond)));
+    Log::info(Str::agg("updates_per_second: ", std::to_string(_updatesPerSecond)));
     _secPerUpdate = 1.0f / (float)_updatesPerSecond;
   }
   else
   {
-    Log::warn(str::agg("\tinvalid argument: \"", ups, "\""));
+    Log::warn(Str::agg("\tinvalid argument: \"", ups, "\""));
   }
 }

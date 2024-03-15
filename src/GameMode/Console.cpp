@@ -328,7 +328,7 @@ void Console::addCommand(const std::string& command, const std::string& help)
 {
   if (_commands.contains(command))
   {
-    Log::warn(str::agg("Command: ", command ," already exists"));
+    Log::warn(Str::agg("Command: ", command ," already exists"));
   }
   else
   {

@@ -83,7 +83,7 @@ public:
     else
     {
       // users can still subscribe with duplicate delegate instances if under different event types
-      Log::warn(str::agg("key: ", key, " attempted to subscribe more than once with the same delegate instance"));
+      Log::warn(Str::agg("key: ", key, " attempted to subscribe more than once with the same delegate instance"));
       return false;
     }
     return true;
