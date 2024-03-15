@@ -1,6 +1,5 @@
 #include "Console.hpp"
 #include "Utils/Logging.hpp"
-
 #include "ConsoleEvents.hpp"
 
 Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int borderThickness)
@@ -10,7 +9,7 @@ Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int bo
   _foregroundColor = sf::Color(192, 192, 192, 255);
 
   _background.setFillColor(_backgroundColor);
-  _maxBufferLength = 128 * 1024;
+  _maxBufferLength = 1024;
 
   _bufferText.setFont(font);
   _bufferText.setFillColor(sf::Color::White);
@@ -173,6 +172,12 @@ void Console::sendCommand()
   updateOutputText();
 }
 
+void Console::printLine(const std::string& line)
+{
+  print(line);
+  Log::info(line);
+}
+
 void Console::print(const std::string& line)
 {
   _textBuffer.push_back(line);
@@ -323,7 +328,7 @@ void Console::addCommand(const std::string& command, const std::string& help)
 {
   if (_commands.contains(command))
   {
-    Log::warn("Command: " + command + " already exists");
+    Log::warn(Str::agg("Command: ", command ," already exists"));
   }
   else
   {

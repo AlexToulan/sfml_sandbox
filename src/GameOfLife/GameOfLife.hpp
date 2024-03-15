@@ -42,7 +42,6 @@ private:
   int* _cellNeighbors;
   size_t _numCells;
   bool _bIsPaused;
-  bool _bLockToFrameRate;
   float _startDelaySec;
   bool _bStartDelayComplete;
 

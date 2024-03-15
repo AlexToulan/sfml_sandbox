@@ -2,12 +2,12 @@
 #include <fstream>
 #include <iostream>
 
-
 #include "Logging.hpp"
 
 bool Log::bShowInfo = false;
 bool Log::bShowWarn = false;
 bool Log::bShowError = true;
+std::mutex Log::_consoleMutex;
 std::ofstream Log::logFile;
 
 void Log::init(const std::string& filePath, bool showInfo, bool showWarn)
@@ -19,6 +19,7 @@ void Log::init(const std::string& filePath, bool showInfo, bool showWarn)
 
 void Log::info(const std::string& message, const std::source_location& location)
 {
+  std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
     logFile << "[  INFO  ]  " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowInfo)
@@ -30,6 +31,7 @@ void Log::info(const std::string& message, const std::source_location& location)
 
 void Log::warn(const std::string& message, const std::source_location& location)
 {
+  std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
     logFile << "[ WARNING ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowWarn)
@@ -41,6 +43,7 @@ void Log::warn(const std::string& message, const std::source_location& location)
 
 void Log::error(const std::string& message, const std::source_location& location)
 {
+  std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
     logFile << "[  ERROR  ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowError)

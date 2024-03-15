@@ -33,15 +33,20 @@ private:
   void exit();
   void restartGameMode();
   void setFramesPerSecond(const std::string& fps);
+  void setUpdatesPerSecond(const std::string& ups);
 
   Console _console;
   bool _bShouldClose;
   Timer _loopTimer;
   Timer _fpsTimer;
   int _frames;
-  float _fpsSeconds;
 
+
+  float _currentSecPerUpdate;
+  float _secPerUpdate;
   int _updatesPerSecond;
+  int _framesPerSecond;
+
   sf::RenderWindow _window;
   size_t _currentGameModeIndex;
   std::vector<std::unique_ptr<GameMode>> _gameModes;

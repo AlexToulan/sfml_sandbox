@@ -1,8 +1,10 @@
 #pragma once
 
 #include <fstream>
+#include <mutex>
 #include <source_location>
 #include <string>
+#include "Str.hpp"
 
 class Log
 {
@@ -17,6 +19,7 @@ public:
   static bool bShowError;
 
 private:
+  static std::mutex _consoleMutex;
   static std::ofstream logFile;
   static const std::string red() { return std::string("\033[0;31m"); };
   static const std::string green() { return std::string("\033[1;32m"); };
