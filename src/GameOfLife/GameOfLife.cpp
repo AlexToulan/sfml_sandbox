@@ -20,7 +20,6 @@ void GameOfLife::onStart()
 {
   _bIsPaused = true;
   _bPauseKey = false;
-  _bLockToFrameRate = true;
   _startDelaySec = 1.0f;
   _bStartDelayComplete = false;
   _bStepKeyPressed = false;
@@ -94,7 +93,6 @@ void GameOfLife::processEvents(sf::Event& event)
     {
       if (event.mouseButton.button == sf::Mouse::Left)
       {
-        Log::info(std::to_string(event.mouseButton.x) + " " + std::to_string(event.mouseButton.y));
         int x = (event.mouseButton.x - 1) / _cellGrid.getCellSpacing();
         int y = (event.mouseButton.y - 1) / _cellGrid.getCellSpacing();
         setCell(x, y, !getCell(x, y));
@@ -124,10 +122,7 @@ void GameOfLife::update(float ds)
   {
     return;
   }
-  if (_bLockToFrameRate)
-  {
-    tryCalcNeighbors();
-  }
+  tryCalcNeighbors();
 }
 
 void GameOfLife::render(sf::RenderWindow& window)
@@ -147,10 +142,6 @@ void GameOfLife::render(sf::RenderWindow& window)
 void GameOfLife::activateCellsComplete(const std::pair<int, int>& range)
 {
   _rowsProcessed += range.second - range.first;
-  if (!_bIsPaused && !_bLockToFrameRate)
-  {
-    tryCalcNeighbors();
-  }
 }
 
 void GameOfLife::calcNeighborsComplete(const std::pair<int, int>& range)

@@ -83,9 +83,7 @@ public:
     else
     {
       // users can still subscribe with duplicate delegate instances if under different event types
-      // TODO: print keys: std::to_string doesn't like TKey being a string already.
-      // Log::warn("key: [" + keyToString(key) + "] attempted to subscribe more than once with the same delegate instance");
-      Log::warn("key: [key soon...] attempted to subscribe more than once with the same delegate instance");
+      Log::warn(str::agg("key: ", key, " attempted to subscribe more than once with the same delegate instance"));
       return false;
     }
     return true;
@@ -161,16 +159,6 @@ public:
 
 private:
   std::string _name;
-  template<typename T>
-  std::string keyToString(const T& key)
-  {
-    if constexpr (std::is_same_v<T, std::string>)
-    {
-      return key;
-    }
-    return std::to_string(key);
-  }
-
   std::mutex _bindingMutex;
   std::map<TKey, std::vector<std::shared_ptr<GDelegate>>> _eventBindings;
 };

@@ -54,7 +54,7 @@ void GameModeController::selectGameMode(const std::string& gameModeName)
 
 void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 {
-  Log::info("Adding " + gameMode->getName());
+  Log::info(str::agg("Adding ", gameMode->getName()));
   _gameModes.push_back(std::move(gameMode));
   _bNextKey = false;
   _bPreviousKey = false;
@@ -68,16 +68,21 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
 
   _console.addCommand("exit", "quits the application");
   _console.addCommand("quit", "quits the application");
+  _console.addCommand("print", "prints a message to the console");
   _console.addCommand("restart_game_mode", "restarts the current game mode");
   _console.addCommand("frames_per_second", "[int arg] sets the GPU framerate of the application");
   _console.addCommand("updates_per_second", "[int arg] sets the CPU framerate of the application");
   Events::Console->bind("exit", this, &GameModeController::exit);
   Events::Console->bind("quit", this, &GameModeController::exit);
+  Events::Console->bind("print", &_console, &Console::printLine);
   Events::Console->bind("restart_game_mode", this, &GameModeController::restartGameMode);
   Events::Console->bind("frames_per_second", this, &GameModeController::setFramesPerSecond);
-
-  _window.setFramerateLimit(framesPerSecond);
+  Events::Console->bind("updates_per_second", this, &GameModeController::setUpdatesPerSecond);
+  _framesPerSecond = framesPerSecond;
+  _window.setFramerateLimit(_framesPerSecond);
   _updatesPerSecond = updatesPerSecond;
+  _secPerUpdate = 1.0f / (float)_updatesPerSecond;
+  _currentSecPerUpdate = 0.0f;
   _bConsoleOpenKey = false;
   _bShouldClose = false;
 
@@ -127,7 +132,7 @@ void GameModeController::run()
     _frames++;
     if (_fpsTimer.pollSeconds() > 5.0f)
     {
-      Log::info("FPS: " + std::to_string(_frames / 5));
+      Log::info(str::agg("FPS: ", std::to_string(_frames / 5)));
       _fpsTimer.start();
       _frames = 0;
     }
@@ -135,7 +140,12 @@ void GameModeController::run()
     _window.clear();
     float ds = _loopTimer.deltaSeconds();
     _console.update(ds);
-    _gameModes[_currentGameModeIndex]->update(ds);
+    _currentSecPerUpdate += ds;
+    if (_currentSecPerUpdate >= _secPerUpdate)
+    {
+      _gameModes[_currentGameModeIndex]->update(_currentSecPerUpdate);
+      _currentSecPerUpdate -= _secPerUpdate;
+    }
     _gameModes[_currentGameModeIndex]->render(_window);
     _window.draw(_console);
     _window.display();
@@ -197,7 +207,7 @@ void GameModeController::switchGameMode(int direction)
 
   _gameModes[_currentGameModeIndex]->onEnd();
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
-  Log::info("Switching to " + _gameModes[_currentGameModeIndex]->getName());
+  Log::info(str::agg("Switching to ", _gameModes[_currentGameModeIndex]->getName()));
   _gameModes[_currentGameModeIndex]->onStart();
 }
 
@@ -215,14 +225,35 @@ void GameModeController::restartGameMode()
 
 void GameModeController::setFramesPerSecond(const std::string& fps)
 {
-    int framesPerSecond = std::stoi(fps);
-    if (framesPerSecond > 0)
+  int framesPerSecond = std::stoi(fps);
+  if (framesPerSecond > 0)
+  {
+    _framesPerSecond = framesPerSecond;
+    _window.setFramerateLimit((unsigned long)_framesPerSecond);
+  }
+  else
+  {
+    Log::warn(str::agg("\tinvalid argument: \"", fps, "\""));
+  }
+}
+
+void GameModeController::setUpdatesPerSecond(const std::string& ups)
+{
+  int updatesPerSecond = std::stoi(ups);
+  if (updatesPerSecond > 0)
+  {
+    _updatesPerSecond = updatesPerSecond;
+    if (_updatesPerSecond > _framesPerSecond)
     {
-      Log::info("frames_per_second: " + std::to_string(framesPerSecond));
-      _window.setFramerateLimit((unsigned long)framesPerSecond);
+      Events::Console->publish("print", str::agg("updates_per_second: [", _updatesPerSecond,
+        "] can't be greater than frames_per_second: [", _framesPerSecond, "]"));
+      _updatesPerSecond = _framesPerSecond;
     }
-    else
-    {
-      Log::warn("\tinvalid argument: \"" + fps + "\"");
-    }
+    Log::info(str::agg("updates_per_second: ", std::to_string(_updatesPerSecond)));
+    _secPerUpdate = 1.0f / (float)_updatesPerSecond;
+  }
+  else
+  {
+    Log::warn(str::agg("\tinvalid argument: \"", ups, "\""));
+  }
 }
