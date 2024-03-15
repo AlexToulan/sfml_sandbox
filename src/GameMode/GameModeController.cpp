@@ -189,7 +189,6 @@ void GameModeController::switchGameMode(int direction)
   }
 
   _gameModes[_currentGameModeIndex]->onEnd();
-  // EventSystem::flushSubscribers(); // allows event types per game mode
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
   Log::info("Switching to " + _gameModes[_currentGameModeIndex]->getName());
   _gameModes[_currentGameModeIndex]->onStart();
