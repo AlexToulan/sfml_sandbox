@@ -62,7 +62,6 @@ void GameOfLife::onStart()
 
 void GameOfLife::onResize(int screenX, int screenY)
 {
-  
 }
 
 void GameOfLife::onEnd()

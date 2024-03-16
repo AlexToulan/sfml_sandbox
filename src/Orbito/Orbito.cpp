@@ -258,7 +258,7 @@ void Orbito::processMouseClick(const sf::Vector2f& mousePos, bool bLeft)
 void Orbito::processMouseMove(const sf::Vector2f& mousePos)
 {
   _mousePos = mousePos;
-  
+
   _hoverCellIndex = -1;
   for (int i = 0; i < _boardSlots.size(); i++)
   {
@@ -289,7 +289,7 @@ void Orbito::cycleCells()
     _gameState = EGameState::BLACKS_TURN;
   else if (_gameState == EGameState::BLACKS_TURN)
     _gameState = EGameState::WHITES_TURN;
-    
+
   // win check
   std::vector<int> winLines;
   for (const auto& line : _winRunIdx)

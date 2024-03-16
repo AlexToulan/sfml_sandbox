@@ -76,7 +76,6 @@ void QuadTest::onStart()
 
 void QuadTest::onResize(int screenX, int screenY)
 {
-  
 }
 
 void QuadTest::processEvents(sf::Event& event)
