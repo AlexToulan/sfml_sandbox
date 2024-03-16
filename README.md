@@ -31,23 +31,29 @@ Untested
 ### Mac
 Not supported
 ## Game Modes
+Select a game mode by passing `--game_mode [game_mode_name]` (e.g. `GameOfLife`, `Orbito`). Game modes can be changed at run-time with the comma `,` or period `.` key.
 ### Conway's Game of Life
- - Scans seed from a png file
- - Space pauses the game and allows individual cell toggle with left mouse click
  - Uses a threadsafe event system to pass messages between the game mode and a pool of thread workers. Not an optimal solution as threads never sleep. This game mode is only instended as a test case for race conditions in the event system utilized. The simpler and optimal solution would be use `std::for_each(std::execution::par...`.
+ - Scans seed from a `.png` file
+ - `Space` pauses the game and allows individual cell toggling with left mouse-click
 ### Orbito
- - Place a piece and cycle the board with `space` or by clicking the button in the center of the board
+ - Click and drag a piece from a pile in the top corners to place on the board
+ - Cycle the board with `space` or by clicking the button in the center of the board
  - Get four in a row to win
- - Press `enter`/`return` to restart game
+ - Press `enter`/`return` to restart the game
 ## Console
- - Press ` (grave) to open the game console
+ - Press `grave` to open the game console
+ - The `help` command will list all available commands
+ - Navigate console history with `up` and `down` arrow keys
+ - Autocomplete commands with `tab`
+ - Complete commands will automatially show help text in the console buffer
 ## Future Work
  - Windows support
  - PyTorch powered AI
  - Pathfinding for AI training
 ## Known Bugs
 ### Build/Setup
- - Need to run `setup.sh` after reboot
+ - Need to run `setup.sh` after reboot on some machines
 ## Footnote
 Special thanks to the developers of thirdparty libs/tools used in sfml_sandbox
  - [SFML](https://www.sfml-dev.org/)
