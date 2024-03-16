@@ -33,6 +33,8 @@ Not supported
 ## Game Modes
  - Conway's Game of Life
  - Orbito
+## Console
+ - Press ` (grave) to open the game console
 ## Future Work
  - Windows support
  - PyTorch powered AI
