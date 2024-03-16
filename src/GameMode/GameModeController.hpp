@@ -28,6 +28,7 @@ public:
 private:
   void processInput();
   void switchGameMode(int direction);
+  void logFps();
 
   // events
   void exit();

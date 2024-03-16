@@ -7,12 +7,13 @@
 
 #include "GameMode/GameMode.hpp"
 
-class QuadTestGameMode : public GameMode
+class QuadTest : public GameMode
 {
 public:
-  QuadTestGameMode();
-  virtual ~QuadTestGameMode();
+  QuadTest();
+  virtual ~QuadTest();
   virtual void onStart();
+  virtual void onResize(int screenX, int screenY);
   virtual void processEvents(sf::Event& event);
   virtual void update(float ds);
   virtual void render(sf::RenderWindow& window);

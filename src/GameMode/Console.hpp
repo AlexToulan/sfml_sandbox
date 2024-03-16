@@ -42,7 +42,7 @@ public:
   void toggle();
   void processEvents(sf::Event& event);
   void update(float deltaSeconds);
-  void printLine(const std::string& line);
+  void notify(const std::string& line);
 
   // events
   void addCommand(const std::string& command, const std::string& help);
@@ -54,12 +54,12 @@ private:
   void sendCommand();
   void print(const std::string& line);
   void print(const std::vector<std::string>& lines, const std::string newlinePrefix = "");
-  void print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix = "");
+  void print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix = "", size_t secondColumnOffset = 0);
   void draw(sf::RenderTarget& rt, sf::RenderStates states) const override;
-
 
   // commands
   std::map<std::string, std::string> _commands;
+  size_t _longestCommandName;
 
   // UI
   bool _bIsOpen;
@@ -73,6 +73,12 @@ private:
   float _cursorSecondsElapsed;
   bool _bCursorOn;
   std::string _cursor;
+  // notify
+  sf::Text _notifyText;
+  sf::Vector2f _notifyAnchor;
+  float _notifySeconds;
+  float _notifyFadeSeconds;
+  std::vector<std::pair<std::string, float>> _notifyMessages;
 
   // command buffer
   sf::Text _bufferText;
