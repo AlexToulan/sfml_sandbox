@@ -31,8 +31,14 @@ Untested
 ### Mac
 Not supported
 ## Game Modes
- - Conway's Game of Life
- - Orbito
+### Conway's Game of Life
+ - Scans seed from a png file
+ - Space pauses the game and allows individual cell toggle with left mouse click
+ - Uses a threadsafe event system to pass messages between the game mode and a pool of thread workers. Not an optimal solution as threads never sleep. This game mode is only instended as a test case for race conditions in the event system utilized. The simpler and optimal solution would be use `std::for_each(std::execution::par...`.
+### Orbito
+ - Place a piece and cycle the board with `space` or by clicking the button in the center of the board
+ - Get four in a row to win
+ - Press `enter`/`return` to restart game
 ## Console
  - Press ` (grave) to open the game console
 ## Future Work
