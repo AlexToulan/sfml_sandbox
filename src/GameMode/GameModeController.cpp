@@ -125,14 +125,7 @@ void GameModeController::run()
     }
 
     processInput();
-
-    // _frames++;
-    // if (_fpsTimer.pollSeconds() > 5.0f)
-    // {
-    //   Log::info(Str::agg("FPS: ", std::to_string(_frames / 5)));
-    //   _fpsTimer.start();
-    //   _frames = 0;
-    // }
+    // logFps();
 
     _window.clear(_gameModes[_currentGameModeIndex]->getClearColor());
     float ds = _loopTimer.deltaSeconds();
@@ -192,6 +185,17 @@ void GameModeController::processInput()
     if (_bPreviousKey)
       previousGameMode();
     _bPreviousKey = false;
+  }
+}
+
+void GameModeController::logFps()
+{
+  _frames++;
+  if (_fpsTimer.pollSeconds() > 5.0f)
+  {
+    Log::info(Str::agg("FPS: ", std::to_string(_frames / 5)));
+    _fpsTimer.start();
+    _frames = 0;
   }
 }
 

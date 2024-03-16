@@ -83,8 +83,8 @@ void Orbito::onResize(int screenX, int screenY)
   _cycleButton.setPosition(halfScreenPx.x, halfScreenPx.y);
 
   sf::Vector2f boardCellSize = sf::Vector2f(_white.getRadius() * 2.2f, _white.getRadius() * 2.2f);
-  int i = 0;
   _boardSlots.fill(sf::RectangleShape(boardCellSize));
+  int i = 0;
   for (auto& cell : _boardSlots)
   {
     sf::Vector2f pos = getCellPos(i++);
@@ -109,7 +109,7 @@ void Orbito::processEvents(sf::Event& event)
     if (event.key.code == sf::Keyboard::Enter)
       Events::Console->publish("restart_game_mode");
   }
-  if (_gameState >= EGameState::WHITE_WINS)
+  if (_gameState != EGameState::WHITES_TURN && _gameState != EGameState::BLACKS_TURN)
   {
     return;
   }
