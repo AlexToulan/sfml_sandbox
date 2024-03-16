@@ -129,15 +129,15 @@ void GameModeController::run()
 
     processInput();
 
-    _frames++;
-    if (_fpsTimer.pollSeconds() > 5.0f)
-    {
-      Log::info(Str::agg("FPS: ", std::to_string(_frames / 5)));
-      _fpsTimer.start();
-      _frames = 0;
-    }
+    // _frames++;
+    // if (_fpsTimer.pollSeconds() > 5.0f)
+    // {
+    //   Log::info(Str::agg("FPS: ", std::to_string(_frames / 5)));
+    //   _fpsTimer.start();
+    //   _frames = 0;
+    // }
 
-    _window.clear();
+    _window.clear(_gameModes[_currentGameModeIndex]->getClearColor());
     float ds = _loopTimer.deltaSeconds();
     _console.update(ds);
     _currentSecPerUpdate += ds;
@@ -202,12 +202,14 @@ void GameModeController::switchGameMode(int direction)
 {
   if (_gameModes.size() < 2)
   {
+    direction = 0;
     Log::warn("No game mode to switch to. Restarting game mode.");
   }
 
   _gameModes[_currentGameModeIndex]->onEnd();
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
   Log::info(Str::agg("Switching to ", _gameModes[_currentGameModeIndex]->getName()));
+  _gameModes[_currentGameModeIndex]->onResize(_window.getSize().x, _window.getSize().y);
   _gameModes[_currentGameModeIndex]->onStart();
 }
 
@@ -219,8 +221,7 @@ void GameModeController::exit()
 
 void GameModeController::restartGameMode()
 {
-  _gameModes[_currentGameModeIndex]->onEnd();
-  _gameModes[_currentGameModeIndex]->onStart();
+  switchGameMode(0);
 }
 
 void GameModeController::setFramesPerSecond(const std::string& fps)

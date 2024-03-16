@@ -11,6 +11,7 @@ public:
   GameOfLife();
   virtual ~GameOfLife();
   virtual void onStart();
+  virtual void onResize(int screenX, int screenY);
   virtual void processEvents(sf::Event& event);
   virtual void update(float ds);
   virtual void render(sf::RenderWindow& window);

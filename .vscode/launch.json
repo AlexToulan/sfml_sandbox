@@ -5,13 +5,23 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Orbito",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/SFMLSandbox",
+      "args":[
+        "--game_mode", "Orbito",
+      ],
+      "cwd": "${workspaceFolder}/build/bin",
+      "showDisplayString": true
+    },
+    {
       "name": "Game Of Life",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args":[
         "--game_mode", "GameOfLife",
-        "--frames_per_second", "60"
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true
@@ -22,7 +32,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args": [
-        "--game_mode", "QuadTestGameMode",
+        "--game_mode", "QuadTest",
         "--frames_per_second", "30"
       ],
       "cwd": "${workspaceFolder}/build/bin",

@@ -76,6 +76,13 @@ file(GLOB_RECURSE ants_files
     src/Ants/*.hpp
     )
 
+# orbito
+file(GLOB_RECURSE orbito_files
+    src/Orbito/*.cpp
+    src/Orbito/*.hpp
+    )
+
+# tests
 file(GLOB_RECURSE test_files
     test/src/*.cpp
     test/src/*.hpp
@@ -94,7 +101,12 @@ file(GLOB_RECURSE test_files
 
 # main game executable
 if(BUILD_SFML_SANDBOX)
-    add_executable(SFMLSandbox src/main.cpp ${sfml_helper_files} ${util_files} ${game_of_life_files} ${quad_test_files})
+    add_executable(SFMLSandbox src/main.cpp
+        ${sfml_helper_files}
+        ${util_files}
+        ${quad_test_files}
+        ${game_of_life_files}
+        ${orbito_files})
     target_include_directories(SFMLSandbox
         PRIVATE
         ${CMAKE_SOURCE_DIR}/src/

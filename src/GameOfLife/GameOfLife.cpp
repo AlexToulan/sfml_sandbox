@@ -60,6 +60,11 @@ void GameOfLife::onStart()
   startWorkers(_cellGrid.getWidth(), _cellGrid.getHeight());
 }
 
+void GameOfLife::onResize(int screenX, int screenY)
+{
+  
+}
+
 void GameOfLife::onEnd()
 {
   Events::Game->unsubscribe(this);

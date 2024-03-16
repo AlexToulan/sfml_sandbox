@@ -19,6 +19,7 @@ Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int bo
 
   _outputText.setFont(font);
   _outputText.setFillColor(_foregroundColor);
+  _longestCommandName = 4; // help
 
   setSize(screenWidth, screenHeight, borderThickness);
   _prompt = " > ";
@@ -71,8 +72,17 @@ void Console::setOpen(bool isOpen)
   _bIsOpen = isOpen;
   if (_bIsOpen)
   {
-    updateBufferText();
-    updateOutputText();
+    if (_textBuffer.size() == 0)
+    {
+      // on first open
+      _commandBuffer = "help";
+      sendCommand();
+    }
+    else
+    {
+      updateBufferText();
+      updateOutputText();
+    }
   }
 }
 
@@ -151,7 +161,7 @@ void Console::sendCommand()
   if (command._name == "help")
   {
     print("commands:");
-    print(_commands, "  - ");
+    print(_commands, "  - ", _longestCommandName + 4);
   }
   else if (_commands.contains(command._name))
   {
@@ -201,11 +211,19 @@ void Console::print(const std::vector<std::string>& lines, const std::string new
   );
 }
 
-void Console::print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix)
+void Console::print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix, size_t secondColumnOffset)
 {
   for (const auto& [first, second] : dic)
   {
-    _textBuffer.push_back(newlinePrefix + first + "\t\t" + second);
+    if (secondColumnOffset == 0)
+    {
+      _textBuffer.push_back(newlinePrefix + first + "\t\t" + second);
+    }
+    else
+    {
+      std::string padding(secondColumnOffset - first.size(), ' ');
+      _textBuffer.push_back(newlinePrefix + first + padding + second);
+    }
     if (_textBuffer.size() > _textBufferSize)
     {
       _textBuffer.erase(_textBuffer.begin());
@@ -332,6 +350,7 @@ void Console::addCommand(const std::string& command, const std::string& help)
   }
   else
   {
+    _longestCommandName = std::max(_longestCommandName, command.size());
     _commands[command] = help;
   }
 }

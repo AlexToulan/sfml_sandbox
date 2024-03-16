@@ -1,19 +1,19 @@
-#include "QuadTest/QuadTestGameMode.hpp"
+#include "QuadTest/QuadTest.hpp"
 #include <source_location>
 
-QuadTestGameMode::QuadTestGameMode()
+QuadTest::QuadTest()
  : GameMode(std::source_location::current().file_name())
  , _verts(nullptr)
 {
 
 }
 
-QuadTestGameMode::~QuadTestGameMode()
+QuadTest::~QuadTest()
 {
   delete[] _verts;
 }
 
-void QuadTestGameMode::onStart()
+void QuadTest::onStart()
 {
   const int width = 100;
   const int height = 100;
@@ -74,12 +74,17 @@ void QuadTestGameMode::onStart()
   }
 }
 
-void QuadTestGameMode::processEvents(sf::Event& event)
+void QuadTest::onResize(int screenX, int screenY)
+{
+  
+}
+
+void QuadTest::processEvents(sf::Event& event)
 {
 
 }
 
-void QuadTestGameMode::update(float ds)
+void QuadTest::update(float ds)
 {
   for(int y = 0; y < _height; y++)
   {
@@ -99,12 +104,12 @@ void QuadTestGameMode::update(float ds)
   _cells.update(_verts);
 }
 
-void QuadTestGameMode::render(sf::RenderWindow& window)
+void QuadTest::render(sf::RenderWindow& window)
 {
   window.draw(_cells);
 }
 
-void QuadTestGameMode::onEnd()
+void QuadTest::onEnd()
 {
   // clearing and recreating this onStart causes a crash. window likely holds a ref to VertexBuffer
   // _cells.create(0);

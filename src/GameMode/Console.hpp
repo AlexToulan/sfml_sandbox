@@ -54,12 +54,12 @@ private:
   void sendCommand();
   void print(const std::string& line);
   void print(const std::vector<std::string>& lines, const std::string newlinePrefix = "");
-  void print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix = "");
+  void print(const std::map<std::string, std::string>& dic, const std::string newlinePrefix = "", size_t secondColumnOffset = 0);
   void draw(sf::RenderTarget& rt, sf::RenderStates states) const override;
-
 
   // commands
   std::map<std::string, std::string> _commands;
+  size_t _longestCommandName;
 
   // UI
   bool _bIsOpen;
