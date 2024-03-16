@@ -42,8 +42,10 @@ private:
   void processMouseClick(const sf::Vector2f& mousePos, bool bLeft);
   void processMouseMove(const sf::Vector2f& mousePos);
   void cycleCells();
-  int winCheckLine(const std::array<int, _boardWidth>& line) const;
+  int winCheckLine(const std::array<int, _boardWidth>& lineIdx) const;
+  void winCheck();
   void toggleAnimation(bool bOn = true);
+  void setCellHighlight(int idx, bool bHighlight);
   sf::Vector2f lerp(const sf::Vector2f& a, const sf::Vector2f& b, float t) const;
 
   // board

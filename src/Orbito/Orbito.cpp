@@ -22,17 +22,18 @@ void Orbito::onStart()
   _boardCellStates.fill(ECell::NONE);
   _white.setFillColor(sf::Color(192, 192, 192));
   _whitePile.setFillColor(sf::Color(192, 192, 192));
+  _whitePile.setOutlineColor(sf::Color(255, 255, 255));
+  _whitePile.setOutlineThickness(4.0f);
   _black.setFillColor(sf::Color(32, 32, 32));
   _blackPile.setFillColor(sf::Color(32, 32, 32));
+  _blackPile.setOutlineColor(sf::Color(255, 255, 255));
+  _blackPile.setOutlineThickness(0.0f);
   _cycleButton.setFillColor(sf::Color(222, 222, 222, 64));
   _gameState = EGameState::WHITES_TURN;
   _bSelectionMade = false;
   _bSpacePressed = false;
   toggleAnimation(false);
   _animSeconds = 0.6f;
-  for (auto& cell : _boardSlots)
-  {
-  }
 
   _cycleBoardIdx = {
     4,  0,  1,  2,
@@ -74,21 +75,21 @@ void Orbito::onResize(int screenX, int screenY)
 
   _white.setRadius(cellRadius);
   _black.setRadius(cellRadius);
-  _cycleButton.setRadius(cellRadius * 0.5f);
+  _cycleButton.setRadius(cellRadius * 0.6f);
 
   _white.setOrigin(_white.getRadius(), _white.getRadius());
   _black.setOrigin(_black.getRadius(), _black.getRadius());
   _cycleButton.setOrigin(_cycleButton.getRadius(), _cycleButton.getRadius());
   _cycleButton.setPosition(halfScreenPx.x, halfScreenPx.y);
 
-  sf::Vector2f boardCellSize = sf::Vector2f(_white.getRadius() * 2.0f, _white.getRadius() * 2.0f);
+  sf::Vector2f boardCellSize = sf::Vector2f(_white.getRadius() * 2.2f, _white.getRadius() * 2.2f);
   int i = 0;
   _boardSlots.fill(sf::RectangleShape(boardCellSize));
   for (auto& cell : _boardSlots)
   {
     sf::Vector2f pos = getCellPos(i++);
     cell.setSize(boardCellSize);
-    cell.setOrigin(_white.getRadius(), _white.getRadius());
+    cell.setOrigin(boardCellSize * 0.5f);
     cell.setPosition(pos);
     cell.setFillColor(sf::Color(222, 222, 222, 32));
     cell.setOutlineColor(sf::Color(255, 255, 255, 0));
@@ -168,8 +169,8 @@ void Orbito::render(sf::RenderWindow& window)
   window.draw(_cycleButton);
   for (const auto& cell : _boardSlots)
     window.draw(cell);
-  int i = 0;
-  for (const auto& state : _boardCellStates)
+
+  for (int i = 0; i < _boardCellStates.size(); i++)
   {
     sf::Vector2f pos = getCellPos(i);
     if (_bAnimatePieces)
@@ -177,13 +178,12 @@ void Orbito::render(sf::RenderWindow& window)
       float t = _animDelta /_animSeconds;
       pos = lerp(pos, getCellPos(_cycleBoardIdx[i]), t * t * 0.7f);
     }
-    i++;
-    if (state == ECell::WHITE)
+    if (_boardCellStates[i] == ECell::WHITE)
     {
       _white.setPosition(pos);
       window.draw(_white);
     }
-    else if (state == ECell::BLACK)
+    else if (_boardCellStates[i] == ECell::BLACK)
     {
       _black.setPosition(pos);
       window.draw(_black);
@@ -258,17 +258,15 @@ void Orbito::processMouseMove(const sf::Vector2f& mousePos)
   _hoverCellIndex = -1;
   for (int i = 0; i < _boardSlots.size(); i++)
   {
-    sf::Color hoverColor = _boardSlots[i].getOutlineColor();
     if (_boardSlots[i].getGlobalBounds().contains(mousePos) && _boardCellStates[i] == ECell::NONE)
     {
-      hoverColor.a = 127;
+      setCellHighlight(i, true);
       _hoverCellIndex = i;
     }
     else
     {
-      hoverColor.a = 0;
+      setCellHighlight(i, false);
     }
-    _boardSlots[i].setOutlineColor(hoverColor);
   }
 }
 
@@ -286,26 +284,59 @@ void Orbito::cycleCells()
 
   if (_gameState == EGameState::WHITES_TURN)
   {
+    _whitePile.setOutlineThickness(0.0f);
+    _blackPile.setOutlineThickness(4.0f);
     _gameState = EGameState::BLACKS_TURN;
     Events::Console->publish<std::string>("notify", "Black's Turn");
   }
   else if (_gameState == EGameState::BLACKS_TURN)
   {
+    _whitePile.setOutlineThickness(4.0f);
+    _blackPile.setOutlineThickness(0.0f);
     _gameState = EGameState::WHITES_TURN;
     Events::Console->publish<std::string>("notify", "White's Turn");
   }
 
-  // win check
+  winCheck();
+}
+
+int Orbito::winCheckLine(const std::array<int, _boardWidth>& lineIdx) const
+{
+  int sum = _boardCellStates[lineIdx[0]] + _boardCellStates[lineIdx[1]]
+    + _boardCellStates[lineIdx[2]] + _boardCellStates[lineIdx[3]];
+
+  if (sum == _boardWidth)
+    return 1;
+  if (sum == -_boardWidth)
+    return -1;
+  return 0;
+}
+
+void Orbito::winCheck()
+{
   std::vector<int> winLines;
-  for (const auto& line : _winRunIdx)
+  for (const auto& lineIdx : _winRunIdx)
   {
-    int check = winCheckLine(line);
+    int check = winCheckLine(lineIdx);
     if (check != 0)
     {
       winLines.push_back(check);
+      for (auto idx : lineIdx)
+      {
+        setCellHighlight(idx, true);
+      }
     }
   }
-  if (winLines.size() > 0)
+  if (winLines.size() == 0)
+  {
+    // no winning lines and no empty spaces
+    if (std::find(_boardCellStates.begin(), _boardCellStates.end(), 0) == _boardCellStates.end())
+    {
+      _gameState = EGameState::TIE;
+      Events::Console->publish<std::string>("notify", "TIE!!!");
+    }
+  }
+  else
   {
     int sumWinChecks = std::reduce(winLines.begin(), winLines.end());
     std::string message;
@@ -321,28 +352,24 @@ void Orbito::cycleCells()
     }
     else
     {
-      message = "!!!TIE!!!";
+      message = "TIE!!!";
       _gameState = EGameState::TIE;
     }
     Events::Console->publish("notify", message);
   }
 }
 
-int Orbito::winCheckLine(const std::array<int, _boardWidth>& line) const
-{
-  int sum = _boardCellStates[line[0]] + _boardCellStates[line[1]]
-    + _boardCellStates[line[2]] + _boardCellStates[line[3]];
-  if (sum == _boardWidth)
-    return 1;
-  if (sum == -_boardWidth)
-    return -1;
-  return 0;
-}
-
 void Orbito::toggleAnimation(bool bOn)
 {
   _bAnimatePieces = bOn;
   _animDelta = 0.0f;
+}
+
+void Orbito::setCellHighlight(int idx, bool bHighlight)
+{
+  sf::Color color = _boardSlots[idx].getOutlineColor();
+  color.a = bHighlight ? 127 : 0;
+  _boardSlots[idx].setOutlineColor(color);
 }
 
 sf::Vector2f Orbito::lerp(const sf::Vector2f& a, const sf::Vector2f& b, float t) const
