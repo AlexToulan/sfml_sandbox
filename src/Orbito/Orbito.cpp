@@ -24,15 +24,15 @@ void Orbito::onStart()
   _whitePile.setFillColor(sf::Color(192, 192, 192));
   _black.setFillColor(sf::Color(32, 32, 32));
   _blackPile.setFillColor(sf::Color(32, 32, 32));
-  _hover.setFillColor(sf::Color(0, 0, 0, 0));
-  _hover.setOutlineThickness(4.0f);
-  _hover.setOutlineColor(sf::Color(32, 64, 192, 127));
   _cycleButton.setFillColor(sf::Color(222, 222, 222, 64));
   _gameState = EGameState::WHITES_TURN;
   _bSelectionMade = false;
   _bSpacePressed = false;
   toggleAnimation(false);
   _animSeconds = 0.6f;
+  for (auto& cell : _boardSlots)
+  {
+  }
 
   _cycleBoardIdx = {
     4,  0,  1,  2,
@@ -74,28 +74,25 @@ void Orbito::onResize(int screenX, int screenY)
 
   _white.setRadius(cellRadius);
   _black.setRadius(cellRadius);
-  _hover.setRadius(cellRadius * 1.05f);
   _cycleButton.setRadius(cellRadius * 0.5f);
 
   _white.setOrigin(_white.getRadius(), _white.getRadius());
   _black.setOrigin(_black.getRadius(), _black.getRadius());
-  _hover.setOrigin(_hover.getRadius(), _hover.getRadius());
   _cycleButton.setOrigin(_cycleButton.getRadius(), _cycleButton.getRadius());
-
-  _hover.setPosition(-_hover.getRadius() * 2.0f, -_hover.getRadius() * 2.0f);
   _cycleButton.setPosition(halfScreenPx.x, halfScreenPx.y);
 
-  sf::Vector2f boardCellSize = sf::Vector2f(_hover.getRadius() * 2.0f, _hover.getRadius() * 2.0f);
-  _boardSlots.fill(sf::RectangleShape(boardCellSize));
+  sf::Vector2f boardCellSize = sf::Vector2f(_white.getRadius() * 2.0f, _white.getRadius() * 2.0f);
   int i = 0;
+  _boardSlots.fill(sf::RectangleShape(boardCellSize));
   for (auto& cell : _boardSlots)
   {
-    sf::Vector2f pos = getCellPos(i);
-    i++;
-    cell.setOrigin(_hover.getRadius(), _hover.getRadius());
+    sf::Vector2f pos = getCellPos(i++);
+    cell.setSize(boardCellSize);
+    cell.setOrigin(_white.getRadius(), _white.getRadius());
     cell.setPosition(pos);
-    cell.setFillColor(sf::Color(0, 0, 0, 0));
     cell.setFillColor(sf::Color(222, 222, 222, 32));
+    cell.setOutlineColor(sf::Color(255, 255, 255, 0));
+    cell.setOutlineThickness(4.0f);
   }
 
   _whitePile.setRadius(cellRadius);
@@ -192,7 +189,6 @@ void Orbito::render(sf::RenderWindow& window)
       window.draw(_black);
     }
   }
-  window.draw(_hover);
   if (_bWhiteSelected)
   {
     _white.setPosition(_mousePos);
@@ -262,15 +258,18 @@ void Orbito::processMouseMove(const sf::Vector2f& mousePos)
   _hoverCellIndex = -1;
   for (int i = 0; i < _boardSlots.size(); i++)
   {
+    sf::Color hoverColor = _boardSlots[i].getOutlineColor();
     if (_boardSlots[i].getGlobalBounds().contains(mousePos) && _boardCellStates[i] == ECell::NONE)
     {
-      _hover.setPosition(_boardSlots[i].getPosition());
+      hoverColor.a = 127;
       _hoverCellIndex = i;
-      return;
     }
+    else
+    {
+      hoverColor.a = 0;
+    }
+    _boardSlots[i].setOutlineColor(hoverColor);
   }
-
-  _hover.setPosition(-_hover.getRadius() * 2.0f, -_hover.getRadius() * 2.0f);
 }
 
 void Orbito::cycleCells()
@@ -286,9 +285,15 @@ void Orbito::cycleCells()
   }
 
   if (_gameState == EGameState::WHITES_TURN)
+  {
     _gameState = EGameState::BLACKS_TURN;
+    Events::Console->publish<std::string>("notify", "Black's Turn");
+  }
   else if (_gameState == EGameState::BLACKS_TURN)
+  {
     _gameState = EGameState::WHITES_TURN;
+    Events::Console->publish<std::string>("notify", "White's Turn");
+  }
 
   // win check
   std::vector<int> winLines;
@@ -303,21 +308,23 @@ void Orbito::cycleCells()
   if (winLines.size() > 0)
   {
     int sumWinChecks = std::reduce(winLines.begin(), winLines.end());
+    std::string message;
     if (sumWinChecks >= ECell::WHITE)
     {
-      Log::info("White Wins!");
+      message = "White Wins!";
       _gameState = EGameState::WHITE_WINS;
     }
     else if (sumWinChecks <= ECell::BLACK)
     {
-      Log::info("Black Wins!");
+      message = "Black Wins!";
       _gameState = EGameState::BLACK_WINS;
     }
     else
     {
-      Log::info("!!!TIE!!!");
+      message = "!!!TIE!!!";
       _gameState = EGameState::TIE;
     }
+    Events::Console->publish("notify", message);
   }
 }
 

@@ -79,5 +79,4 @@ private:
   // pieces
   sf::CircleShape _white;
   sf::CircleShape _black;
-  sf::CircleShape _hover;
 };

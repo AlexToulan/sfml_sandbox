@@ -19,7 +19,12 @@ Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int bo
 
   _outputText.setFont(font);
   _outputText.setFillColor(_foregroundColor);
+
+  _notifyText.setFont(font);
+  _notifyText.setFillColor(_foregroundColor);
   _longestCommandName = 4; // help
+  _notifySeconds = 5.0f;
+  _notifyFadeSeconds = 1.0f;
 
   setSize(screenWidth, screenHeight, borderThickness);
   _prompt = " > ";
@@ -29,6 +34,7 @@ Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int bo
   _cursorSeconds = 0.5f;
   _cursorSecondsElapsed = _cursorSeconds;
   _historyIndex = 0;
+
 }
 
 Console::~Console()
@@ -60,6 +66,9 @@ void Console::setSize(int screenWidth, int screenHeight, int borderThickness)
   _bufferHintText.setPosition(_bufferText.getPosition());
   _outputText.setCharacterSize(_charSize);
   _outputText.setPosition(_anchor.x, _anchor.y);
+  _notifyText.setCharacterSize(_charSize * 1.4f);
+
+  _notifyAnchor = sf::Vector2f(margin, screenHeight - margin);
 }
 
 bool Console::isOpen()
@@ -182,8 +191,9 @@ void Console::sendCommand()
   updateOutputText();
 }
 
-void Console::printLine(const std::string& line)
+void Console::notify(const std::string& line)
 {
+  _notifyMessages.push_back(std::pair(line, _notifySeconds + _notifyFadeSeconds));
   print(line);
   Log::info(line);
 }
@@ -328,12 +338,36 @@ void Console::update(float deltaSeconds)
       _bufferText.setString(_prompt + _commandBuffer + _cursor);
     }
   }
+
+  auto it = std::remove_if(_notifyMessages.begin(), _notifyMessages.end(),
+  [&](auto& notify)
+  {
+    notify.second -= deltaSeconds;
+    return notify.second <= 0.0f;
+  });
+
+  _notifyMessages.erase(it, _notifyMessages.end());
 }
 
 void Console::draw(sf::RenderTarget& rt, sf::RenderStates states) const
 {
   if (!_bIsOpen)
   {
+    // notify text
+    sf::Color color;
+    sf::Vector2f pos = _notifyAnchor;
+    sf::Text text = _notifyText;
+    for (int i = 0; i < _notifyMessages.size(); i++)
+    {
+      pos.y = _notifyAnchor.y - (_notifyMessages.size() - i) * _notifyText.getCharacterSize();
+      text.setPosition(pos);
+      text.setString(_notifyMessages[i].first);
+      color = _foregroundColor;
+      if (_notifyMessages[i].second < _notifyFadeSeconds)
+        color.a = 255 * _notifyMessages[i].second / _notifyFadeSeconds;
+      text.setFillColor(color);
+      rt.draw(text, states);
+    }
     return;
   }
   rt.draw(_background, states);

@@ -68,13 +68,13 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
 
   _console.addCommand("exit", "quits the application");
   _console.addCommand("quit", "quits the application");
-  _console.addCommand("print", "prints a message to the console");
+  _console.addCommand("notify", "prints a message at the bottom of the window for 5 seconds");
   _console.addCommand("restart_game_mode", "restarts the current game mode");
   _console.addCommand("frames_per_second", "[int arg] sets the GPU framerate of the application");
   _console.addCommand("updates_per_second", "[int arg] sets the CPU framerate of the application");
   Events::Console->bind("exit", this, &GameModeController::exit);
   Events::Console->bind("quit", this, &GameModeController::exit);
-  Events::Console->bind("print", &_console, &Console::printLine);
+  Events::Console->bind("notify", &_console, &Console::notify);
   Events::Console->bind("restart_game_mode", this, &GameModeController::restartGameMode);
   Events::Console->bind("frames_per_second", this, &GameModeController::setFramesPerSecond);
   Events::Console->bind("updates_per_second", this, &GameModeController::setUpdatesPerSecond);
@@ -117,11 +117,8 @@ void GameModeController::run()
         _window.close();
         return;
       }
-      if (_console.isOpen())
-      {
-        _console.processEvents(event);
-      }
-      else
+      _console.processEvents(event);
+      if (!_console.isOpen())
       {
         _gameModes[_currentGameModeIndex]->processEvents(event);
       }
@@ -246,7 +243,7 @@ void GameModeController::setUpdatesPerSecond(const std::string& ups)
     _updatesPerSecond = updatesPerSecond;
     if (_updatesPerSecond > _framesPerSecond)
     {
-      Events::Console->publish("print", Str::agg("updates_per_second: [", _updatesPerSecond,
+      Events::Console->publish("notify", Str::agg("updates_per_second: [", _updatesPerSecond,
         "] can't be greater than frames_per_second: [", _framesPerSecond, "]"));
       _updatesPerSecond = _framesPerSecond;
     }

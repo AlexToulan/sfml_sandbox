@@ -42,7 +42,7 @@ public:
   void toggle();
   void processEvents(sf::Event& event);
   void update(float deltaSeconds);
-  void printLine(const std::string& line);
+  void notify(const std::string& line);
 
   // events
   void addCommand(const std::string& command, const std::string& help);
@@ -73,6 +73,12 @@ private:
   float _cursorSecondsElapsed;
   bool _bCursorOn;
   std::string _cursor;
+  // notify
+  sf::Text _notifyText;
+  sf::Vector2f _notifyAnchor;
+  float _notifySeconds;
+  float _notifyFadeSeconds;
+  std::vector<std::pair<std::string, float>> _notifyMessages;
 
   // command buffer
   sf::Text _bufferText;
