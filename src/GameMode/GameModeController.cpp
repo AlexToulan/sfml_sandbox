@@ -111,6 +111,13 @@ void GameModeController::run()
           _bShouldClose = true;
         }
       }
+      if (event.type == event.Resized)
+      {
+        sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+        _window.setView(sf::View(visibleArea));
+        _console.setSize(event.size.width, event.size.height, 1);
+        _gameModes[_currentGameModeIndex]->onResize(event.size.width, event.size.height);
+      }
       if (_bShouldClose || event.type == sf::Event::Closed)
       {
         _gameModes[_currentGameModeIndex]->onEnd();
