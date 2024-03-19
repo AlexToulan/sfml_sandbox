@@ -4,12 +4,22 @@
 #include "Utils/MathUtils.hpp"
 #include "Utils/Yaml.hpp"
 
+#include <algorithm>
 #include <source_location>
 
 GameOfLife::GameOfLife()
  : EventListener()
  , GameMode(std::source_location::current().file_name())
+ , _activeCells(nullptr)
+ , _cellNeighbors(nullptr)
 {
+  _numCellsX = 200;
+  _numCellsY = 200;
+  _numThreads = std::thread::hardware_concurrency();
+  _threads.resize(_numThreads);
+  _rowsPerThread = _numCellsY / _numThreads;
+  if (_numCellsY % _numThreads != 0)
+    _rowsPerThread++;
 }
 
 GameOfLife::~GameOfLife()
@@ -25,7 +35,6 @@ void GameOfLife::onStart()
   _bStepKeyPressed = false;
 
   const sf::Color inactive = sf::Color(1, 7, 22);
-
   _swatch = std::unique_ptr<sf::Color[]>(new sf::Color[9]
   {
     inactive,
@@ -38,42 +47,40 @@ void GameOfLife::onStart()
     sf::Color(39, 118, 222),
     sf::Color(46, 137, 255),
   });
-
-  // _cellGrid.setup(100, 100, 10, 1, inactive);
-  _cellGrid.setup(200, 200, 5, 1, inactive);
-
+  _cellGrid.setCellColor(inactive);
+  _cellGrid.update();
   _numCells = _cellGrid.getWidth() * _cellGrid.getHeight();
-  // _activeCells = std::make_shared<bool[]>(_numCells);
-  // _cellNeighbors = std::make_shared<int[]>(_numCells);
-  _activeCells = new bool[_numCells] { false };
-  _cellNeighbors = new int[_numCells] { 0 };
 
-  _rowsProcessed = _cellGrid.getHeight();
-  Events::Game->bind(EGameEvent::ACTIVATE_CELLS_COMPLETE, this, &GameOfLife::activateCellsComplete);
-  Events::Game->bind(EGameEvent::CALC_NEIGHBORS_COMPLETE, this, &GameOfLife::calcNeighborsComplete);
-  
+  if (_activeCells == nullptr)
+    _activeCells = std::make_unique<bool[]>(_numCells);
+  if (_cellNeighbors == nullptr)
+    _cellNeighbors = std::make_unique<uint8_t[]>(_numCells);
 
-  // don't start workers till after we stop changing cells
+  std::fill(_activeCells.get(), _activeCells.get() + _numCells, false);
+  std::fill(_cellNeighbors.get(), _cellNeighbors.get() + _numCells, 0);
+
   // basicSeed();
   // seedFromConfig("pulsar");
   seedFromConfig("glider_gun");
-  startWorkers(_cellGrid.getWidth(), _cellGrid.getHeight());
+  // run once to init
+  startThreads();
 }
 
-void GameOfLife::onResize(int screenX, int screenY)
+sf::Vector2f GameOfLife::onResize(int screenX, int screenY)
 {
+  float minScreen = std::min(screenX, screenY);
+  float minCells = std::min(_numCellsX, _numCellsY);
+
+  _cellGrid.onResize(_numCellsX, _numCellsY, minScreen / minCells, 1.0f);
+  return sf::Vector2f(std::max(screenX - screenY, 0), std::max(screenY - screenX, 0)) * 0.5f;
 }
 
 void GameOfLife::onEnd()
 {
-  Events::Game->unsubscribe(this);
-  for (size_t i = 0; i < _workers.size(); i++)
+  for (auto& thread : _threads)
   {
-    _workers[i]->stop();
+    thread.join();
   }
-  delete[] _activeCells;
-  delete[] _cellNeighbors;
-  _workers.clear();
 }
 
 void GameOfLife::processEvents(sf::Event& event)
@@ -84,13 +91,11 @@ void GameOfLife::processEvents(sf::Event& event)
     if (!_bPauseKey)
     {
       _bIsPaused = !_bIsPaused;
-      if (!_bIsPaused)
-        tryCalcNeighbors();
+      Events::Game->publish(EGameEvent::TOGGLE_PAUSE, _bIsPaused);
     }
   }
   _bPauseKey = pauseKey;
-  
-  // TODO: fix crash bug cause by mouse leaving render window
+
   if (_bIsPaused)
   {
     if (event.type == sf::Event::MouseButtonPressed)
@@ -102,11 +107,12 @@ void GameOfLife::processEvents(sf::Event& event)
         setCell(x, y, !getCell(x, y));
       }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter) && !_bStepKeyPressed)
+    bool bEnter = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter);
+    if (bEnter && !_bStepKeyPressed)
     {
-      tryCalcNeighbors();
+      // restartWorkers();
     }
-    _bStepKeyPressed = event.type == sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter);
+    _bStepKeyPressed = bEnter;
   }
 }
 
@@ -119,74 +125,118 @@ void GameOfLife::update(float ds)
     if (_bStartDelayComplete && _bIsPaused)
     {
       _bIsPaused = false;
+      Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
     }
   }
+
+  for(auto& thread : _threads)
+  {
+    thread.join();
+  }
+  _cellGrid.update();
 
   if (_bIsPaused)
   {
     return;
   }
-  tryCalcNeighbors();
+
+  startThreads();
 }
 
 void GameOfLife::render(sf::RenderWindow& window)
 {
-  // update colors
-  sf::Color color = _swatch[0];
-  for (size_t i = 0; i < _numCells; i++)
-  {
-    color = _activeCells[i] ? _swatch[8] : _swatch[0];
-    _cellGrid.setCellColor(i, color);
-  }
-
-  _cellGrid.update();
   window.draw(_cellGrid);
 }
 
-void GameOfLife::activateCellsComplete(const std::pair<int, int>& range)
+void GameOfLife::startThreads()
 {
-  _rowsProcessed += range.second - range.first;
-}
-
-void GameOfLife::calcNeighborsComplete(const std::pair<int, int>& range)
-{
-  _rowsProcessed += range.second - range.first;
-  
-  if (_rowsProcessed == _cellGrid.getHeight())
+  for (int i = 0; i < _numThreads; i++)
   {
-    _rowsProcessed = 0;
-    Events::Game->publish(EGameEvent::ACTIVATE_CELLS);
+    _threads[i] = std::thread(&GameOfLife::classicRules, this, int(i * _rowsPerThread),
+      std::min((i + 1) * _rowsPerThread, (int)_numCellsY));
   }
 }
 
-void GameOfLife::startWorkers(int width, int height)
+void GameOfLife::classicRules(int startY, int endY)
 {
-  int numWorkers = 10;
-  int yStride = _cellGrid.getHeight() / numWorkers;
-  for (size_t i = 0; i < numWorkers; i++)
+  std::unique_lock<std::mutex> lock(cvMutex);
+  calcNumNeighborsAlive(startY, endY);
+  // still not using this right
+  // cv.notify_all();
+  // cv.wait(lock);
+  for (int i = startY * _numCellsX; i < endY * _numCellsX; i++)
   {
-    _workers.push_back(std::unique_ptr<GameOfLifeWorker>(new GameOfLifeWorker()));
-    _workers[i]->init(0, _cellGrid.getWidth(), yStride * i, yStride * (i + 1), width, height,
-      _activeCells, _cellNeighbors); // yuck
-    _workers[i]->start();
-  }
-
-  if (!_bIsPaused)
-  {
-    Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
+    if (_activeCells[i])
+    {
+      if (_cellNeighbors[i] < 2)
+        _activeCells[i] = false;
+      if (_cellNeighbors[i] > 3)
+        _activeCells[i] = false;
+    }
+    else
+    {
+      if (_cellNeighbors[i] == 3)
+        _activeCells[i] = true;
+    }
   }
 }
 
-bool GameOfLife::tryCalcNeighbors()
+void GameOfLife::calcNumNeighborsAlive(int startY, int endY)
 {
-  if (_rowsProcessed == _cellGrid.getHeight())
+  for (int y = startY; y < endY; y++)
   {
-    _rowsProcessed = 0;
-    Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
-    return true;
+    for (int x = 0; x < _numCellsX; x++)
+    {
+      _cellNeighbors[_cellGrid.getCellIndex(x, y)] = getNumNeighborsAlive(x, y);
+    }
   }
-  Log::warn("couldn't restart game of life");
-  return false;
+}
+
+int GameOfLife::getNumNeighborsAlive(int x, int y)
+{
+  // wrap field!
+  int numNeighborsAlive = 0;
+  for (int ny = y - 1; ny <= y + 1; ny++)
+  {
+    for (int nx = x - 1; nx <= x + 1; nx++)
+    {
+      if (nx == x && ny == y)
+        continue;
+      if (getCell(mu::wrap(nx, 0, (int)_numCellsX - 1), mu::wrap(ny, 0, (int)_numCellsY - 1)))
+        numNeighborsAlive++;
+    }
+  }
+  return numNeighborsAlive;
+}
+
+void GameOfLife::activateCellsComplete()
+{
+  // if( ++_numWorkersActivatedCells == _workers.size())
+  // {
+  //   if (!_bIsPaused)
+  //     Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
+  //   _numWorkersActivatedCells = 0;
+  //   // _cellGridMutex.lock();
+  //   // TODO: Thread color set
+  //   sf::Color color = _swatch[0];
+  //   for (size_t i = 0; i < _numCells; i++)
+  //   {
+  //     color = _activeCells[i] ? _swatch[8] : _swatch[0];
+  //     _cellGrid.setCellColor(i, color);
+  //   }
+  //   _cellGrid.update();
+  // // _cellGridMutex.unlock();
+  // }
+}
+
+void GameOfLife::calcNeighborsComplete()
+{
+  // if( ++_numWorkersCalcNeighborsCells == _workers.size())
+  // {
+  //   if (!_bIsPaused)
+  //     Events::Game->publish(EGameEvent::ACTIVATE_CELLS);
+  //   _numWorkersCalcNeighborsCells = 0;
+  // }
 }
 
 void GameOfLife::basicSeed()
@@ -295,7 +345,7 @@ void GameOfLife::saveSeed(const std::vector<bool>& seed, int width, int height, 
   image.saveToFile(fileName);
 }
 
-bool GameOfLife::getCell(int x, int y)
+bool GameOfLife::getCell(int x, int y) const
 {
   return _activeCells[_cellGrid.getCellIndex(x, y)];
 }
@@ -305,11 +355,9 @@ void GameOfLife::setCell(int x, int y, bool alive)
   size_t index = _cellGrid.getCellIndex(x, y);
   _activeCells[index] = alive;
   sf::Color color = _swatch[0];
-  int neighborDelta = 0;
   if (alive)
   {
     color = _swatch[8];
-    neighborDelta = 1;
   }
   _cellGrid.setCellColor(x, y, color);
 }

@@ -18,15 +18,17 @@ GameOfLifeWorker::~GameOfLifeWorker()
 }
 
 void GameOfLifeWorker::init(int startX, int endX, int startY, int endY, int width, int height,
-  bool* activeCells, int* cellNeighbors)
+  const std::shared_ptr<bool[]>& activeCells, const std::shared_ptr<uint8_t[]>& cellNeighbors)
 {
   _width = width;
   _height = height;
   _xRange = std::pair(startX, endX);
   _yRange = std::pair(startY, endY);
-  _cellNeighbors = cellNeighbors;
   _activeCells = activeCells;
+  _cellNeighbors = cellNeighbors;
   _id = _yRange;
+  secPerUpdate(1.0f / 30.0f);
+  togglePause(false);
 }
 
 void GameOfLifeWorker::start()
@@ -37,7 +39,10 @@ void GameOfLifeWorker::start()
   }
   Events::Game->bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
   Events::Game->bind(EGameEvent::CALC_NEIGHBORS, this, &GameOfLifeWorker::calcNeighbors);
+  Events::Game->bind(EGameEvent::TOGGLE_PAUSE, this, &GameOfLifeWorker::togglePause);
+  Events::Game->bind(EGameEvent::SECONDS_PER_UPDATE, this, &GameOfLifeWorker::secPerUpdate);
   _isRunning = true;
+  _loopTimer.reset();
   _thread = std::thread(&GameOfLifeWorker::run, this);
 }
 
@@ -57,6 +62,7 @@ void GameOfLifeWorker::run()
   {
     if (_calcNeighbors)
     {
+      _loopTimer.start();
       for (int y = _yRange.first; y < _yRange.second; y++)
       {
         for (int x = _xRange.first; x < _xRange.second; x++)
@@ -64,15 +70,23 @@ void GameOfLifeWorker::run()
           _cellNeighbors[getCellIndex(x, y)] = calcNumNeighborsAlive(x, y);
         }
       }
-      Events::Game->publish(EGameEvent::CALC_NEIGHBORS_COMPLETE, _id);
+      Events::Game->publish(EGameEvent::CALC_NEIGHBORS_COMPLETE);
       _calcNeighbors = false;
     }
     if (_setAliveDead)
     {
       classicRules();
       // crazyRules();
-      Events::Game->publish(EGameEvent::ACTIVATE_CELLS_COMPLETE, _id);
+      Events::Game->publish(EGameEvent::ACTIVATE_CELLS_COMPLETE);
       _setAliveDead = false;
+      _bShouldSleep = true;
+      _loopTimer.stop();
+    }
+    if (_bShouldSleep || _bPaused)
+    {
+      _bShouldSleep = false;
+      // std::this_thread::sleep_for(_targetLoopTime);
+      std::this_thread::sleep_for(_targetLoopTime - _loopTimer.getMicroSecDuration());
     }
   }
 }
@@ -85,6 +99,16 @@ void GameOfLifeWorker::calcNeighbors()
 void GameOfLifeWorker::setAliveDead()
 {
   _setAliveDead = true;
+}
+
+void GameOfLifeWorker::togglePause(const bool& bPause)
+{
+  _bPaused = bPause;
+}
+
+void GameOfLifeWorker::secPerUpdate(const float& secPerUpdate)
+{
+  _targetLoopTime = std::chrono::microseconds(int64_t(secPerUpdate * 1e+6));
 }
 
 int GameOfLifeWorker::calcNumNeighborsAlive(int x, int y)

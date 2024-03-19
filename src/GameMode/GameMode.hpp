@@ -9,7 +9,7 @@ public:
   GameMode(const std::string& filePath);
   virtual ~GameMode();
   virtual void onStart() = 0;
-  virtual void onResize(int screenX, int screenY) = 0;
+  virtual sf::Vector2f onResize(int screenX, int screenY) = 0;
   virtual void processEvents(sf::Event& event) = 0;
   // called before render passing the seconds elapsed during the previous loop
   virtual void update(float deltaSeconds) = 0;

@@ -1,9 +1,12 @@
 #pragma once
 
 #include "Utils/EventSystem/EventListener.hpp"
-#include "GameOfLifeWorker.hpp"
+// #include "GameOfLifeWorker.hpp"
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
+
+#include <condition_variable>
+#include <thread>
 
 class GameOfLife : public EventListener, public GameMode
 {
@@ -11,7 +14,7 @@ public:
   GameOfLife();
   virtual ~GameOfLife();
   virtual void onStart();
-  virtual void onResize(int screenX, int screenY);
+  virtual sf::Vector2f onResize(int screenX, int screenY);
   virtual void processEvents(sf::Event& event);
   virtual void update(float ds);
   virtual void render(sf::RenderWindow& window);
@@ -19,29 +22,37 @@ public:
 
 private:
   // helper methods
-  bool tryCalcNeighbors();
   void basicSeed();
   bool seedFromConfig(std::string configName);
   void setSeed(const std::vector<bool>& seed, int width, int height, int center_x, int center_y);
   void saveSeed(const std::vector<bool>& seed, int width, int height, std::string fileName);
-  bool getCell(int x, int y);
+  bool getCell(int x, int y) const;
   void setCell(int x, int y, bool alive);
 
-  void startWorkers(int width, int height);
-  void activateCellsComplete(const std::pair<int, int>& range);
-  void calcNeighborsComplete(const std::pair<int, int>& range);
-  
-  std::atomic<int> _rowsProcessed;
-  std::vector<std::unique_ptr<GameOfLifeWorker>> _workers;
+  void startThreads();
+  void classicRules(int startY, int endY);
+  void calcNumNeighborsAlive(int startY, int endY);
+  int getNumNeighborsAlive(int x, int y);
+  void activateCellsComplete();
+  void calcNeighborsComplete();
 
-  std::unique_ptr<sf::Color[]> _swatch;
+  // threads
+  std::vector<std::thread> _threads;
+  int _numThreads;
+  int _rowsPerThread;
+  std::condition_variable cv;
+  std::mutex cvMutex;
+
+  // grid
   CellGrid _cellGrid;
-  // TODO: use this once we have C++20
-  // std::shared_ptr<bool[]> _activeCells;
-  // std::shared_ptr<int[]> _cellNeighbors;
-  bool* _activeCells;
-  int* _cellNeighbors;
+  std::unique_ptr<sf::Color[]> _swatch;
+  std::unique_ptr<bool[]> _activeCells;
+  std::unique_ptr<uint8_t[]> _cellNeighbors;
   size_t _numCells;
+  size_t _numCellsX;
+  size_t _numCellsY;
+
+  // pause
   bool _bIsPaused;
   float _startDelaySec;
   bool _bStartDelayComplete;

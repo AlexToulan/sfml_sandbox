@@ -10,7 +10,7 @@ public:
   ~CellGrid();
   virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
   void update();
-  void setup(int width = 10, int height = 10, int cellSpacing = 10, int padding = 0, sf::Color color = sf::Color::Black);
+  void onResize(int width = 10, int height = 10, float cellSpacing = 10, float padding = 0);
   void setCellColor(sf::Color = sf::Color::Black);
   void setCellColor(int i, sf::Color = sf::Color::Black);
   void setCellColor(int x, int y, sf::Color = sf::Color::Black);
@@ -24,9 +24,10 @@ public:
 private:
   int _width;
   int _height;
-  int _cellSpacing;
-  int _padding;
-  int _cellSize;
+  int _numCells;
+  float _cellSpacing;
+  float _padding;
+  float _cellSize;
   int _vertsPerQuat;
 
   std::unique_ptr<sf::Vertex[]> _verts;

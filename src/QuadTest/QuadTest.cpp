@@ -74,8 +74,9 @@ void QuadTest::onStart()
   }
 }
 
-void QuadTest::onResize(int screenX, int screenY)
+sf::Vector2f QuadTest::onResize(int screenX, int screenY)
 {
+  return sf::Vector2f();
 }
 
 void QuadTest::processEvents(sf::Event& event)

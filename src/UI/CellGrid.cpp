@@ -3,6 +3,7 @@
 
 CellGrid::CellGrid()
  : _verts(nullptr)
+ , _cells(sf::PrimitiveType::Quads, sf::VertexBuffer::Usage::Stream)
 {
 
 }
@@ -21,39 +22,33 @@ void CellGrid::update()
   _cells.update(_verts.get());
 }
 
-void CellGrid::setup(int width, int height, int cellSpacing, int padding, sf::Color color)
+void CellGrid::onResize(int width, int height, float cellSpacing, float padding)
 {
-  _width = width;
-  _height = height;
-  _cellSpacing = cellSpacing;
+  _width = std::max(width, 1);
+  _height = std::max(height, 1);
+  _numCells = _width * _height;
+
+  _cellSpacing = std::max(cellSpacing, 1.0f);
   _padding = padding;
   _cellSize = _cellSpacing - _padding * 2; // padding on all sides
   _vertsPerQuat = 4;
-  int numCells = _width * _height;
+  int numQuads = _numCells * _vertsPerQuat;
 
-  if (_cells.getVertexCount() == 0)
+  if (_cells.getVertexCount() != numQuads)
   {
-    _cells = sf::VertexBuffer(sf::PrimitiveType::Quads, sf::VertexBuffer::Usage::Stream);
-    _cells.create(numCells * _vertsPerQuat);
+    _cells.create(numQuads);
+    _verts = std::unique_ptr<sf::Vertex[]>(new sf::Vertex[numQuads]());
   }
-
-  if (_verts == nullptr)
-    _verts = std::unique_ptr<sf::Vertex[]>(new sf::Vertex[numCells * _vertsPerQuat]());
 
   for(int y = 0; y < _height; y++)
   {
     for(int x = 0; x < _width; x++) // use x for the inner loop for cache performance
     {
       int quadPos = getCellIndex(x, y) * _vertsPerQuat;
-      int quadColor = quadPos;
       _verts[quadPos++].position = sf::Vector2((float)x * _cellSpacing + _padding,             (float)y * _cellSpacing + _padding);
       _verts[quadPos++].position = sf::Vector2((float)x * _cellSpacing + _padding + _cellSize, (float)y * _cellSpacing + _padding);
       _verts[quadPos++].position = sf::Vector2((float)x * _cellSpacing + _padding + _cellSize, (float)y * _cellSpacing + _padding + _cellSize);
       _verts[quadPos++].position = sf::Vector2((float)x * _cellSpacing + _padding,             (float)y * _cellSpacing + _padding + _cellSize);
-      _verts[quadColor++].color = color;
-      _verts[quadColor++].color = color;
-      _verts[quadColor++].color = color;
-      _verts[quadColor++].color = color;
     }
   }
   update();
@@ -61,12 +56,9 @@ void CellGrid::setup(int width, int height, int cellSpacing, int padding, sf::Co
 
 void CellGrid::setCellColor(sf::Color color)
 {
-  for(int y = 0; y < _height; y++)
+  for(int i = 0; i < _numCells; i++)
   {
-    for(int x = 0; x < _width; x++)
-    {
-      setCellColor(color);
-    }
+    setCellColor(i, color);
   }
 }
 

@@ -113,10 +113,10 @@ void GameModeController::run()
       }
       if (event.type == event.Resized)
       {
-        sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+        auto offset = _gameModes[_currentGameModeIndex]->onResize(event.size.width, event.size.height);
+        sf::FloatRect visibleArea(-offset.x, -offset.y, event.size.width, event.size.height);
         _window.setView(sf::View(visibleArea));
         _console.setSize(event.size.width, event.size.height, 1);
-        _gameModes[_currentGameModeIndex]->onResize(event.size.width, event.size.height);
       }
       if (_bShouldClose || event.type == sf::Event::Closed)
       {
@@ -260,6 +260,7 @@ void GameModeController::setUpdatesPerSecond(const std::string& ups)
     }
     Log::info(Str::agg("updates_per_second: ", std::to_string(_updatesPerSecond)));
     _secPerUpdate = 1.0f / (float)_updatesPerSecond;
+    Events::Game->publish(EGameEvent::SECONDS_PER_UPDATE, _secPerUpdate);
   }
   else
   {
