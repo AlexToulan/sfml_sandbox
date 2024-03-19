@@ -132,7 +132,7 @@ void GameModeController::run()
     }
 
     processInput();
-    // logFps();
+    logFps();
 
     _window.clear(_gameModes[_currentGameModeIndex]->getClearColor());
     float ds = _loopTimer.deltaSeconds();
@@ -200,7 +200,7 @@ void GameModeController::logFps()
   _frames++;
   if (_fpsTimer.pollSeconds() > 5.0f)
   {
-    Log::info(Str::agg("FPS: ", std::to_string(_frames / 5)));
+    Events::Console->publish("notify", Str::agg("FPS: ", std::to_string(_frames / 5)));
     _fpsTimer.start();
     _frames = 0;
   }

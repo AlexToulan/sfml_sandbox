@@ -28,6 +28,7 @@ private:
   void saveSeed(const std::vector<bool>& seed, int width, int height, std::string fileName);
   bool getCell(int x, int y) const;
   void setCell(int x, int y, bool alive);
+  void setCell(int i, bool alive);
 
   void startThreads();
   void classicRules(int startY, int endY);
@@ -41,7 +42,9 @@ private:
   int _numThreads;
   int _rowsPerThread;
   std::condition_variable cv;
-  std::mutex cvMutex;
+  std::mutex cvm;
+  bool _bThreadsStarted;
+  std::atomic<int> _calcNeighborsComplete;
 
   // grid
   CellGrid _cellGrid;
