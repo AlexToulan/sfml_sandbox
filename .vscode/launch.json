@@ -21,7 +21,9 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/SFMLSandbox",
       "args":[
-        "--game_mode", "GameOfLife"
+        "--game_mode", "GameOfLife",
+        "--frames_per_second", "60",
+        "--updates_per_second", "30",
       ],
       "cwd": "${workspaceFolder}/build/bin",
       "showDisplayString": true

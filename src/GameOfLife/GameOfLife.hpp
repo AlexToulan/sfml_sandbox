@@ -4,6 +4,7 @@
 // #include "GameOfLifeWorker.hpp"
 #include "GameMode/GameMode.hpp"
 #include "UI/CellGrid.hpp"
+#include "Utils/Timer.hpp"
 
 #include <condition_variable>
 #include <thread>
@@ -23,7 +24,7 @@ public:
 private:
   // helper methods
   void basicSeed();
-  bool seedFromConfig(std::string configName);
+  bool seedFromConfig(std::string configName, int offsetX = 0, int offsetY = 0);
   void setSeed(const std::vector<bool>& seed, int width, int height, int center_x, int center_y);
   void saveSeed(const std::vector<bool>& seed, int width, int height, std::string fileName);
   bool getCell(int x, int y) const;
@@ -39,12 +40,19 @@ private:
 
   // threads
   std::vector<std::thread> _threads;
+  std::vector<std::pair<int, int>> _threadParams;
+  bool _bThreadsStarted;
+  bool _bShutdownThreads;
   int _numThreads;
   int _rowsPerThread;
   std::condition_variable cv;
   std::mutex cvm;
-  bool _bThreadsStarted;
   std::atomic<int> _calcNeighborsComplete;
+  std::atomic<int> _cellActivationInProgress;
+  std::atomic<bool> _gridUpdated;
+  std::map<int, Timer> _threadTimers;
+  Timer _loopTimer;
+  std::chrono::microseconds _lastLoopTime;
 
   // grid
   CellGrid _cellGrid;
