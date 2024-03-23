@@ -32,24 +32,31 @@ private:
   void setCell(int i, bool alive);
 
   void startThreads();
+  void stopThreads();
   void classicRules(int startY, int endY);
+  void threadSync();
   void calcNumNeighborsAlive(int startY, int endY);
   int getNumNeighborsAlive(int x, int y);
-  void activateCellsComplete();
-  void calcNeighborsComplete();
+  void setCellsClassicRules(int startY, int endY);
 
   // threads
+  std::thread _threadSync;
   std::vector<std::thread> _threads;
   std::vector<std::pair<int, int>> _threadParams;
   bool _bThreadsStarted;
   bool _bShutdownThreads;
-  int _numThreads;
+  size_t _numThreads;
   int _rowsPerThread;
-  std::condition_variable cv;
-  std::mutex cvm;
-  std::atomic<int> _calcNeighborsComplete;
-  std::atomic<int> _cellActivationInProgress;
-  std::atomic<bool> _gridUpdated;
+
+  std::mutex cnMut;
+  std::mutex scMut;
+  std::condition_variable cnCv;
+  std::condition_variable scCv;
+  std::atomic<int> _threadsWorking;
+  int _threadsCalcNeighbors;
+  int _threadsSettingCells;
+  bool _calcNeighborComplete;
+  bool _setCellsComplete;
   std::map<int, Timer> _threadTimers;
   Timer _loopTimer;
   std::chrono::microseconds _lastLoopTime;

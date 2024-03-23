@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <iostream>
 #include <mutex>
 #include <source_location>
 #include <string>
@@ -10,6 +11,14 @@ class Log
 {
 public:
   Log() = delete;
+
+  template<typename ...VArgs>
+  static void debug(VArgs ...vargs)
+  {
+    std::scoped_lock lock(_consoleMutex);
+    std::cout << cyan() << "[ DEBUG ]  " << reset() << Str::agg(vargs...) << std::endl;
+  }
+
   static void init(const std::string& filePath, bool showInfo, bool showWarn);
   static void info(const std::string& message, const std::source_location& location = std::source_location::current());
   static void warn(const std::string& message, const std::source_location& location = std::source_location::current());

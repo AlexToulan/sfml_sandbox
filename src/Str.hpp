@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <string>
 #include <sstream>
 
@@ -9,9 +10,16 @@ public:
   template<typename ...VArgs>
   static std::string agg(VArgs ...vargs)
   {
+    // derp use std::format
     std::ostringstream ss;
     _agg(ss, vargs...);
     return ss.str();
+  }
+
+  template<typename ...VArgs>
+  static std::string format(std::string& f, VArgs ...vargs)
+  {
+    return std::format(f, vargs...);
   }
 
 private:
