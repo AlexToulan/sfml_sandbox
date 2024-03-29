@@ -10,6 +10,11 @@ bool Log::bShowError = true;
 std::mutex Log::_consoleMutex;
 std::ofstream Log::logFile;
 
+Log::Log(std::source_location location)
+{
+  _source = location;
+}
+
 void Log::init(const std::string& filePath, bool showInfo, bool showWarn)
 {
   logFile = std::ofstream(filePath, std::ofstream::trunc);
@@ -17,38 +22,47 @@ void Log::init(const std::string& filePath, bool showInfo, bool showWarn)
   bShowWarn = showWarn;
 }
 
-void Log::info(const std::string& message, const std::source_location& location)
+void Log::debug(const std::string& message)
 {
-  std::scoped_lock lock(_consoleMutex);
-  if (logFile.is_open())
-    logFile << "[  INFO  ]  " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
   if (bShowInfo)
   {
-    std::cout << "[  INFO  ]  " << blue()
-      << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
+    std::scoped_lock lock(_consoleMutex);
+    std::cout << cyan() << "[ DEBUG ]  " << reset() << " > " << message << std::endl;
   }
 }
 
-void Log::warn(const std::string& message, const std::source_location& location)
+void Log::info(const std::string& message)
 {
   std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
-    logFile << "[ WARNING ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+    logFile << "[  INFO  ]  " << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
+  if (bShowInfo)
+  {
+    std::cout << cyan() << "[  INFO  ]  " << blue()
+      << _source.file_name() << ":" << _source.line() << std::endl << reset() << " > " << message << std::endl;
+  }
+}
+
+void Log::warn(const std::string& message)
+{
+  std::scoped_lock lock(_consoleMutex);
+  if (logFile.is_open())
+    logFile << "[ WARNING ] " << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
   if (bShowWarn)
   {
     std::cout << yellow() << "[ WARNING ] " << blue()
-      << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
+      << _source.file_name() << ":" << _source.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }
 
-void Log::error(const std::string& message, const std::source_location& location)
+void Log::error(const std::string& message)
 {
   std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
-    logFile << "[  ERROR  ] " << location.file_name() << ":" << location.line() << " " << "> " << message << std::endl;
+    logFile << "[  ERROR  ] " << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
   if (bShowError)
   {
     std::cerr << red() << "[  ERROR  ] " << blue()
-      << location.file_name() << ":" << location.line() << std::endl << reset() << " > " << message << std::endl;
+      << _source.file_name() << ":" << _source.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }

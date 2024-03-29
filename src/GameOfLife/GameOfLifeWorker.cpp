@@ -33,7 +33,7 @@ void GameOfLifeWorker::start()
 {
   if (_isRunning)
   {
-    Log::error("thread already running");
+    Log().error("thread already running");
   }
   Events::Game->bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
   Events::Game->bind(EGameEvent::CALC_NEIGHBORS, this, &GameOfLifeWorker::calcNeighbors);
