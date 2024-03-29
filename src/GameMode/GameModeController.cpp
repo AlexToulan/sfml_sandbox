@@ -48,13 +48,13 @@ void GameModeController::selectGameMode(const std::string& gameModeName)
   switchGameMode(targetGameModeIndex - _currentGameModeIndex);
   if (_gameModes[_currentGameModeIndex]->getName() != gameModeName)
   {
-    Log::error(gameModeName + " not found");
+    Log().error(gameModeName + " not found");
   }
 }
 
 void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 {
-  Log::info(Str::agg("Adding ", gameMode->getName()));
+  Log().info(Str::format("Adding game mode: {}", gameMode->getName()));
   _gameModes.push_back(std::move(gameMode));
   _bNextKey = false;
   _bPreviousKey = false;
@@ -62,7 +62,7 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 
 bool GameModeController::setup(unsigned int framesPerSecond, unsigned int updatesPerSecond)
 {
-  Log::info("Setting up game mode controller");
+  Log().info("Setting up game mode controller");
   Events::Game = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
   Events::Console = std::make_unique<EventSystem<std::string>>("ConsoleEvents");
 
@@ -88,7 +88,7 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
 
   if (_gameModes.size() == 0)
   {
-    Log::warn("No game modes to run");
+    Log().warn("No game modes to run");
     return false;
   }
 
@@ -155,13 +155,13 @@ void GameModeController::teardown()
 
 void GameModeController::nextGameMode()
 {
-  Log::info("Next game mode");
+  Log().info("Next game mode");
   switchGameMode(1);
 }
 
 void GameModeController::previousGameMode()
 {
-  Log::info("Previous game mode");
+  Log().info("Previous game mode");
   switchGameMode(-1);
 }
 
@@ -200,7 +200,7 @@ void GameModeController::logFps()
   _frames++;
   if (_fpsTimer.pollSeconds() > 5.0f)
   {
-    Log::info(Str::agg("FPS: ", std::to_string(_frames / 5)));
+    Log().info("FPS: {}", _frames / 5);
     _fpsTimer.start();
     _frames = 0;
   }
@@ -211,12 +211,12 @@ void GameModeController::switchGameMode(int direction)
   if (_gameModes.size() < 2)
   {
     direction = 0;
-    Log::warn("No game mode to switch to. Restarting game mode.");
+    Log().warn("No game mode to switch to. Restarting game mode.");
   }
 
   _gameModes[_currentGameModeIndex]->onEnd();
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
-  Log::info(Str::agg("Switching to ", _gameModes[_currentGameModeIndex]->getName()));
+  Log().info("Switching game mode: {}", _gameModes[_currentGameModeIndex]->getName());
   _gameModes[_currentGameModeIndex]->onResize(_window.getSize().x, _window.getSize().y);
   _gameModes[_currentGameModeIndex]->onStart();
 }
@@ -224,7 +224,7 @@ void GameModeController::switchGameMode(int direction)
 void GameModeController::exit()
 {
   _bShouldClose = true;
-  Log::info("bye!");
+  Log().info("bye!");
 }
 
 void GameModeController::restartGameMode()
@@ -242,7 +242,7 @@ void GameModeController::setFramesPerSecond(const std::string& fps)
   }
   else
   {
-    Log::warn(Str::agg("\tinvalid argument: \"", fps, "\""));
+    Log().warn("\tinvalid argument: {}", fps);
   }
 }
 
@@ -254,15 +254,16 @@ void GameModeController::setUpdatesPerSecond(const std::string& ups)
     _updatesPerSecond = updatesPerSecond;
     if (_updatesPerSecond > _framesPerSecond)
     {
-      Events::Console->publish("notify", Str::agg("updates_per_second: [", _updatesPerSecond,
-        "] can't be greater than frames_per_second: [", _framesPerSecond, "]"));
+      Events::Console->publish("notify",
+        Str::format("updates_per_second: [{}] can't be greater than frames_per_second: [{}]",
+        _updatesPerSecond, _framesPerSecond));
       _updatesPerSecond = _framesPerSecond;
     }
-    Log::info(Str::agg("updates_per_second: ", std::to_string(_updatesPerSecond)));
+    Log().info("updates_per_second: {}", _updatesPerSecond);
     _secPerUpdate = 1.0f / (float)_updatesPerSecond;
   }
   else
   {
-    Log::warn(Str::agg("\tinvalid argument: \"", ups, "\""));
+    Log().warn("\tinvalid argument: {}", ups);
   }
 }

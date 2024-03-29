@@ -185,7 +185,7 @@ bool GameOfLife::tryCalcNeighbors()
     Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
     return true;
   }
-  Log::warn("couldn't restart game of life");
+  Log().warn("couldn't restart game of life");
   return false;
 }
 
@@ -221,7 +221,7 @@ bool GameOfLife::seedFromConfig(std::string configName)
   YAML::Node config = YAML::LoadFile(yamlFileName);
   if (!config["imageName"] || !config["cellSize"] || !config["cellAliveColor"] || !config["cellDeadColor"])
   {
-    Log::error("Could not load " + yamlFileName);
+    Log().error("Could not load " + yamlFileName);
     return false;
   }
 
@@ -233,7 +233,7 @@ bool GameOfLife::seedFromConfig(std::string configName)
   sf::Image image;
   if (!image.loadFromFile(imageName))
   {
-    Log::error("Could not load " + imageName);
+    Log().error("Could not load " + imageName);
     return false;
   }
 

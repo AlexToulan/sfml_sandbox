@@ -6,6 +6,8 @@
 #include "Utils/CliConfig.hpp"
 #include <memory>
 
+std::string consoleFontPath = "resources/Fonts/UbuntuMono-Regular.ttf";
+
 int main(int argc, char* argv[])
 {
   int returnCode = 0;
@@ -15,9 +17,9 @@ int main(int argc, char* argv[])
     args.print();
   
   sf::Font consoleFont;
-  if (!consoleFont.loadFromFile("resources/Fonts/UbuntuMono-Regular.ttf"))
+  if (!consoleFont.loadFromFile(consoleFontPath))
   {
-    Log::error("failed to load console font");
+    Log().error("failed to load console font \"{}\"", consoleFontPath);
     return 2;
   }
   GameModeController controller(consoleFont, 1000, 1000, "Game Mode Test");
@@ -33,7 +35,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    Log::error("GameModeController failed to setup.");
+    Log().error("GameModeController failed to setup.");
     returnCode = 1;
   }
   controller.teardown();
