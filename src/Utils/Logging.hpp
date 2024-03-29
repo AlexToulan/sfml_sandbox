@@ -5,29 +5,54 @@
 #include <mutex>
 #include <source_location>
 #include <string>
-#include "Str.hpp"
+#include <tuple>
+
+#include "Utils/Str.hpp"
 
 class Log
 {
 public:
-  Log() = delete;
-
-  template<typename ...VArgs>
-  static void debug(VArgs ...vargs)
-  {
-    std::scoped_lock lock(_consoleMutex);
-    std::cout << cyan() << "[ DEBUG ]  " << reset() << Str::agg(vargs...) << std::endl;
-  }
+  Log(std::source_location location = std::source_location::current());
+  Log(const Log& other) = delete;
+  Log(Log&& other) = delete;
+  Log operator=(const Log& other) = delete;
 
   static void init(const std::string& filePath, bool showInfo, bool showWarn);
-  static void info(const std::string& message, const std::source_location& location = std::source_location::current());
-  static void warn(const std::string& message, const std::source_location& location = std::source_location::current());
-  static void error(const std::string& message, const std::source_location& location = std::source_location::current());
+
+  void debug(const std::string& message);
+  template <typename ... VArgs>
+  void debug(const std::string_view& format, VArgs... vargs)
+  {
+    debug(Str::format(format, vargs...));
+  }
+  
+  void info(const std::string& message);
+  template <typename ... VArgs>
+  void info(const std::string_view& format, VArgs... vargs)
+  {
+    info(Str::format(format, vargs...));
+  }
+
+  void warn(const std::string& message);
+  template <typename ... VArgs>
+  void warn(const std::string_view& format, VArgs... vargs)
+  {
+    warn(Str::format(format, vargs...));
+  }
+
+  void error(const std::string& message);
+  template <typename ... VArgs>
+  void error(const std::string_view& format, VArgs... vargs)
+  {
+    error(Str::format(format, vargs...));
+  }
+
   static bool bShowInfo;
   static bool bShowWarn;
   static bool bShowError;
 
 private:
+  std::source_location _source;
   static std::mutex _consoleMutex;
   static std::ofstream logFile;
   static const std::string red() { return std::string("\033[0;31m"); };

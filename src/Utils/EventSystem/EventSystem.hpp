@@ -23,12 +23,12 @@ public:
   EventSystem(std::string name = "EventSystem")
   {
     _name = name;
-    Log::info("EventSystem(): " + _name);
+    Log().info("EventSystem(): {}", _name);
   }
 
   ~EventSystem()
   {
-    Log::info("~EventSystem(): " + _name);
+    Log().info("~EventSystem(): {}", _name);
   }
 
   /// @brief Publishes an event on the calling thread.
@@ -46,7 +46,7 @@ public:
       {
         if (del.unique())
         {
-          Log::error("EventListener destroyed without unsubscribing from event system bindings.");
+          Log().error("EventListener destroyed without unsubscribing from event system bindings.");
           succ = false;
         }
         else
@@ -83,7 +83,7 @@ public:
     else
     {
       // users can still subscribe with duplicate delegate instances if under different event types
-      Log::warn(Str::agg("key: ", key, " attempted to subscribe more than once with the same delegate instance"));
+      Log().error("key: {} attempted to subscribe more than once with the same delegate instance", key);
       return false;
     }
     return true;

@@ -48,6 +48,7 @@ Select a game mode by passing `--game_mode [game_mode_name]` (e.g. `GameOfLife`,
  - Autocomplete commands with `tab`
  - Complete commands will automatially show help text in the console buffer
 ## Future Work
+ - Break engine out into separate repo
  - Windows support
  - PyTorch powered AI
  - Pathfinding for AI training

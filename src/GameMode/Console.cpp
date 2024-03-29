@@ -195,7 +195,7 @@ void Console::notify(const std::string& line)
 {
   _notifyMessages.push_back(std::pair(line, _notifySeconds + _notifyFadeSeconds));
   print(line);
-  Log::info(line);
+  Log().info(line);
 }
 
 void Console::print(const std::string& line)
@@ -380,7 +380,7 @@ void Console::addCommand(const std::string& command, const std::string& help)
 {
   if (_commands.contains(command))
   {
-    Log::warn(Str::agg("Command: ", command ," already exists"));
+    Log().warn("Command: {} already exists", command);
   }
   else
   {

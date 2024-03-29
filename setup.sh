@@ -2,6 +2,7 @@
 
 # clean
 rm -rf build
+mkdir build
 
 # set clang version
 export CC="/usr/bin/clang-17"

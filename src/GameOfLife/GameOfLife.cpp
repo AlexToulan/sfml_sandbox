@@ -230,7 +230,6 @@ void GameOfLife::threadSync()
   {
     if (_threadsCalcNeighbors == _numThreads)
     {
-      Log::debug("cn");
       cnCv.notify_all();
       std::lock_guard<std::mutex> un(cnMut);
       _calcNeighborComplete = true;
@@ -239,7 +238,6 @@ void GameOfLife::threadSync()
     }
     if (_threadsSettingCells == _numThreads)
     {
-      Log::debug("sc");
       scCv.notify_all();
       std::lock_guard<std::mutex> un(scMut);
       _calcNeighborComplete = false;
@@ -328,7 +326,7 @@ bool GameOfLife::seedFromConfig(std::string configName, int offsetX, int offsetY
   YAML::Node config = YAML::LoadFile(yamlFileName);
   if (!config["imageName"] || !config["cellSize"] || !config["cellAliveColor"] || !config["cellDeadColor"])
   {
-    Log::error("Could not load " + yamlFileName);
+    Log().error("Could not load " + yamlFileName);
     return false;
   }
 
@@ -340,7 +338,7 @@ bool GameOfLife::seedFromConfig(std::string configName, int offsetX, int offsetY
   sf::Image image;
   if (!image.loadFromFile(imageName))
   {
-    Log::error("Could not load " + imageName);
+    Log().error("Could not load " + imageName);
     return false;
   }
 
