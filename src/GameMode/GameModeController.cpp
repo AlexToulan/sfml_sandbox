@@ -113,10 +113,10 @@ void GameModeController::run()
       }
       if (event.type == event.Resized)
       {
-        sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+        auto offset = _gameModes[_currentGameModeIndex]->onResize(event.size.width, event.size.height);
+        sf::FloatRect visibleArea(-offset.x, -offset.y, event.size.width, event.size.height);
         _window.setView(sf::View(visibleArea));
         _console.setSize(event.size.width, event.size.height, 1);
-        _gameModes[_currentGameModeIndex]->onResize(event.size.width, event.size.height);
       }
       if (_bShouldClose || event.type == sf::Event::Closed)
       {
@@ -132,7 +132,7 @@ void GameModeController::run()
     }
 
     processInput();
-    // logFps();
+    logFps();
 
     _window.clear(_gameModes[_currentGameModeIndex]->getClearColor());
     float ds = _loopTimer.deltaSeconds();
@@ -200,7 +200,7 @@ void GameModeController::logFps()
   _frames++;
   if (_fpsTimer.pollSeconds() > 5.0f)
   {
-    Log().info("FPS: {}", _frames / 5);
+    Events::Console->publish("notify", Str::format("FPS: {}", _frames / 5));
     _fpsTimer.start();
     _frames = 0;
   }

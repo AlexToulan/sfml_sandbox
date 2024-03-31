@@ -12,7 +12,7 @@ public:
   Orbito();
   virtual ~Orbito();
   virtual void onStart();
-  virtual void onResize(int screenX, int screenY);
+  virtual sf::Vector2f onResize(int screenX, int screenY);
   virtual void processEvents(sf::Event& event);
   virtual void update(float ds);
   virtual void render(sf::RenderWindow& window);
@@ -46,7 +46,6 @@ private:
   void winCheck();
   void toggleAnimation(bool bOn = true);
   void setCellHighlight(int idx, bool bHighlight);
-  sf::Vector2f lerp(const sf::Vector2f& a, const sf::Vector2f& b, float t) const;
 
   // board
   EGameState _gameState;

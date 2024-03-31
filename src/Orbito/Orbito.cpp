@@ -1,5 +1,6 @@
 #include "GameMode/ConsoleEvents.hpp"
 #include "Utils/Logging.hpp"
+#include "Utils/MathUtils.hpp"
 #include "Orbito.hpp"
 
 #include <numeric>
@@ -58,7 +59,7 @@ void Orbito::onStart()
   }};
 }
 
-void Orbito::onResize(int screenX, int screenY)
+sf::Vector2f Orbito::onResize(int screenX, int screenY)
 {
   _screenSize = sf::Vector2i(screenX, screenY);
   sf::Vector2i halfScreenPx = _screenSize / 2;
@@ -100,6 +101,8 @@ void Orbito::onResize(int screenX, int screenY)
   _blackPile.setRadius(cellRadius);
   _whitePile.setPosition(16.0f, 16.0f);
   _blackPile.setPosition(screenX - _blackPile.getLocalBounds().width - 16.0f, 16.0f);
+
+  return sf::Vector2f();
 }
 
 void Orbito::processEvents(sf::Event& event)
@@ -176,7 +179,7 @@ void Orbito::render(sf::RenderWindow& window)
     if (_bAnimatePieces)
     {
       float t = _animDelta /_animSeconds;
-      pos = lerp(pos, getCellPos(_cycleBoardIdx[i]), t * t * 0.7f);
+      pos = mu::lerp(pos, getCellPos(_cycleBoardIdx[i]), t * t);
     }
     if (_boardCellStates[i] == ECell::WHITE)
     {
@@ -372,7 +375,3 @@ void Orbito::setCellHighlight(int idx, bool bHighlight)
   _boardSlots[idx].setOutlineColor(color);
 }
 
-sf::Vector2f Orbito::lerp(const sf::Vector2f& a, const sf::Vector2f& b, float t) const
-{
-  return a + t * (b - a);
-}

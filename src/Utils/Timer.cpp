@@ -2,13 +2,18 @@
 
 Timer::Timer()
 {
-  start();
-  stop();
+  reset();
 }
 
 Timer::~Timer()
 {
   
+}
+
+void Timer::reset()
+{
+  start();
+  stop();
 }
 
 void Timer::start()
@@ -38,4 +43,9 @@ float Timer::deltaSeconds()
   float seconds = getSeconds();
   start();
   return seconds;
+}
+
+std::chrono::microseconds Timer::getMicroSecDuration()
+{
+  return std::chrono::duration_cast<std::chrono::microseconds>(_end - _start);
 }

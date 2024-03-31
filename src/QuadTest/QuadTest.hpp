@@ -13,7 +13,7 @@ public:
   QuadTest();
   virtual ~QuadTest();
   virtual void onStart();
-  virtual void onResize(int screenX, int screenY);
+  virtual sf::Vector2f onResize(int screenX, int screenY);
   virtual void processEvents(sf::Event& event);
   virtual void update(float ds);
   virtual void render(sf::RenderWindow& window);
