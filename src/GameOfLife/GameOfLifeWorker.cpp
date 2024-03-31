@@ -10,6 +10,7 @@ GameOfLifeWorker::GameOfLifeWorker()
   _isRunning = false;
   _calcNeighbors = false;
   _setAliveDead = false;
+  _bShouldSleep = false;
 }
 
 GameOfLifeWorker::~GameOfLifeWorker()
@@ -17,17 +18,15 @@ GameOfLifeWorker::~GameOfLifeWorker()
   stop();
 }
 
-void GameOfLifeWorker::init(int startX, int endX, int startY, int endY, int width, int height,
+void GameOfLifeWorker::init(std::pair<int, int> yRange, int width, int height,
   const std::shared_ptr<bool[]>& activeCells, const std::shared_ptr<uint8_t[]>& cellNeighbors)
 {
   _width = width;
   _height = height;
-  _xRange = std::pair(startX, endX);
-  _yRange = std::pair(startY, endY);
+  _yRange = yRange;
   _activeCells = activeCells;
   _cellNeighbors = cellNeighbors;
-  _id = _yRange;
-  secPerUpdate(1.0f / 30.0f);
+  _targetLoopTime = std::chrono::microseconds(10);
   togglePause(false);
 }
 
@@ -35,12 +34,12 @@ void GameOfLifeWorker::start()
 {
   if (_isRunning)
   {
-    Log().error("thread already running");
+    Log().error("can't start a thread that's already running");
+    return;
   }
-  Events::Game->bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
   Events::Game->bind(EGameEvent::CALC_NEIGHBORS, this, &GameOfLifeWorker::calcNeighbors);
+  Events::Game->bind(EGameEvent::ACTIVATE_CELLS, this, &GameOfLifeWorker::setAliveDead);
   Events::Game->bind(EGameEvent::TOGGLE_PAUSE, this, &GameOfLifeWorker::togglePause);
-  Events::Game->bind(EGameEvent::SECONDS_PER_UPDATE, this, &GameOfLifeWorker::secPerUpdate);
   _isRunning = true;
   _loopTimer.reset();
   _thread = std::thread(&GameOfLifeWorker::run, this);
@@ -54,38 +53,45 @@ void GameOfLifeWorker::stop()
     _isRunning = false;
     _thread.join();
   }
+  else
+  {
+    Log().error("can't stop a thread that isn't running");
+  }
 }
+
+void GameOfLifeWorker::setTargetLoopTime(std::chrono::microseconds targetLoopTime)
+{
+  _targetLoopTime = targetLoopTime;
+}   
 
 void GameOfLifeWorker::run()
 {
   while (_isRunning)
   {
+    if (_bPaused)
+    {
+      std::this_thread::sleep_for(_targetLoopTime);
+      continue;
+    }
     if (_calcNeighbors)
     {
       _loopTimer.start();
-      for (int y = _yRange.first; y < _yRange.second; y++)
-      {
-        for (int x = _xRange.first; x < _xRange.second; x++)
-        {
-          _cellNeighbors[getCellIndex(x, y)] = calcNumNeighborsAlive(x, y);
-        }
-      }
+      calcNumNeighborsAlive();
       Events::Game->publish(EGameEvent::CALC_NEIGHBORS_COMPLETE);
       _calcNeighbors = false;
     }
     if (_setAliveDead)
     {
-      classicRules();
+      setCellsClassicRules();
       // crazyRules();
       Events::Game->publish(EGameEvent::ACTIVATE_CELLS_COMPLETE);
       _setAliveDead = false;
       _bShouldSleep = true;
       _loopTimer.stop();
     }
-    if (_bShouldSleep || _bPaused)
+    if (_bShouldSleep)
     {
       _bShouldSleep = false;
-      // std::this_thread::sleep_for(_targetLoopTime);
       std::this_thread::sleep_for(_targetLoopTime - _loopTimer.getMicroSecDuration());
     }
   }
@@ -106,12 +112,19 @@ void GameOfLifeWorker::togglePause(const bool& bPause)
   _bPaused = bPause;
 }
 
-void GameOfLifeWorker::secPerUpdate(const float& secPerUpdate)
+void GameOfLifeWorker::calcNumNeighborsAlive()
 {
-  _targetLoopTime = std::chrono::microseconds(int64_t(secPerUpdate * 1e+6));
+  int i = _yRange.first * _width;
+  for (int y = _yRange.first; y < _yRange.second; y++)
+  {
+    for (int x = 0; x < _width; x++)
+    {
+      _cellNeighbors[i++] = getNumNeighborsAlive(x, y);
+    }
+  }
 }
 
-int GameOfLifeWorker::calcNumNeighborsAlive(int x, int y)
+int GameOfLifeWorker::getNumNeighborsAlive(int x, int y)
 {
   // wrap field!
   int numNeighborsAlive = 0;
@@ -133,25 +146,19 @@ size_t GameOfLifeWorker::getCellIndex(int x, int y) const
   return y * _width + x;
 }
 
-void GameOfLifeWorker::classicRules()
+void GameOfLifeWorker::setCellsClassicRules()
 {
-  for (int y = _yRange.first; y < _yRange.second; y++)
+  for (auto i = _yRange.first * _width; i < _yRange.second * _width; i++)
   {
-    for (int x = _xRange.first; x < _xRange.second; x++)
+    if (_activeCells[i])
     {
-      int cellIndex = getCellIndex(x, y);
-      if (_activeCells[cellIndex])
-      {
-        if (_cellNeighbors[cellIndex] < 2)
-          _activeCells[cellIndex] = false;
-        if (_cellNeighbors[cellIndex] > 3)
-          _activeCells[cellIndex] = false;
-      }
-      else
-      {
-        if (_cellNeighbors[cellIndex] == 3)
-          _activeCells[cellIndex] = true;
-      }
+      if (_cellNeighbors[i] < 2 || _cellNeighbors[i] > 3)
+        _activeCells[i] = false;
+    }
+    else
+    {
+      if (_cellNeighbors[i] == 3)
+        _activeCells[i] = true;
     }
   }
 }
@@ -162,7 +169,7 @@ void GameOfLifeWorker::crazyRules()
   int upper = 3;
   for (int y = _yRange.first; y < _yRange.second; y++)
   {
-    for (int x = _xRange.first; x < _xRange.second; x++)
+    for (int x = 0; x < _width; x++)
     {
       int cellIndex = getCellIndex(x, y);
       if (_activeCells[cellIndex])

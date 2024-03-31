@@ -35,6 +35,9 @@ GameOfLife::GameOfLife()
     _threadParams.emplace_back(startY, endY);
     startY = endY;
   }
+
+  _inactiveColor = sf::Color(1, 7, 22);
+  _activeColor = sf::Color(46, 137, 255);
 }
 
 GameOfLife::~GameOfLife()
@@ -43,6 +46,9 @@ GameOfLife::~GameOfLife()
 
 void GameOfLife::onStart()
 {
+  Events::Game->bind(EGameEvent::CALC_NEIGHBORS_COMPLETE, this, &GameOfLife::calcNeighborComplete);
+  Events::Game->bind(EGameEvent::ACTIVATE_CELLS_COMPLETE, this, &GameOfLife::setCellsComplete);
+
   _bIsPaused = true;
   _bPauseKey = false;
   _startDelaySec = 2.0f;
@@ -50,27 +56,14 @@ void GameOfLife::onStart()
   _bStepKeyPressed = false;
   _bThreadsStarted = false;
 
-  const sf::Color inactive = sf::Color(1, 7, 22);
-  _swatch = std::unique_ptr<sf::Color[]>(new sf::Color[9]
-  {
-    inactive,
-    sf::Color(2, 20, 46),
-    sf::Color(6, 34, 72),
-    sf::Color(11, 49, 99),
-    sf::Color(18, 66, 128),
-    sf::Color(24, 83, 158),
-    sf::Color(31, 100, 190),
-    sf::Color(39, 118, 222),
-    sf::Color(46, 137, 255),
-  });
-  _cellGrid.setCellColor(inactive);
+  _cellGrid.setCellColor(_inactiveColor);
   _cellGrid.update();
   _numCells = _cellGrid.getWidth() * _cellGrid.getHeight();
 
   if (_activeCells == nullptr)
-    _activeCells = std::make_unique<bool[]>(_numCells);
+    _activeCells = std::make_shared<bool[]>(_numCells);
   if (_cellNeighbors == nullptr)
-    _cellNeighbors = std::make_unique<uint8_t[]>(_numCells);
+    _cellNeighbors = std::make_shared<uint8_t[]>(_numCells);
 
   std::fill(_activeCells.get(), _activeCells.get() + _numCells, false);
   std::fill(_cellNeighbors.get(), _cellNeighbors.get() + _numCells, 0);
@@ -93,6 +86,7 @@ sf::Vector2f GameOfLife::onResize(int screenX, int screenY)
 
 void GameOfLife::onEnd()
 {
+  Events::Game->unsubscribe(this);
   stopThreads();
 }
 
@@ -104,6 +98,7 @@ void GameOfLife::processEvents(sf::Event& event)
     if (!_bPauseKey)
     {
       _bIsPaused = !_bIsPaused;
+      Events::Game->publish(EGameEvent::TOGGLE_PAUSE, _bIsPaused);
     }
   }
   _bPauseKey = pauseKey;
@@ -117,6 +112,7 @@ void GameOfLife::processEvents(sf::Event& event)
         int x = (event.mouseButton.x - 1) / _cellGrid.getCellSpacing();
         int y = (event.mouseButton.y - 1) / _cellGrid.getCellSpacing();
         setCell(x, y, !getCell(x, y));
+        _cellGrid.update();
       }
     }
     bool bEnter = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter);
@@ -130,6 +126,15 @@ void GameOfLife::processEvents(sf::Event& event)
 
 void GameOfLife::update(float ds)
 {
+  _loopTimer.stop();
+  _lastLoopTime = _loopTimer.getMicroSecDuration();
+  _loopTimer.start();
+
+  for (auto& thread : _threads)
+  {
+    thread->setTargetLoopTime(_lastLoopTime);
+  }
+
   if (!_bStartDelayComplete)
   {
     _startDelaySec -= ds;
@@ -137,15 +142,8 @@ void GameOfLife::update(float ds)
     if (_bStartDelayComplete && _bIsPaused)
     {
       _bIsPaused = false;
+      Events::Game->publish(EGameEvent::TOGGLE_PAUSE, _bIsPaused);
     }
-  }
-
-  _loopTimer.stop();
-  _lastLoopTime = _loopTimer.getMicroSecDuration();
-  _loopTimer.start();
-  if (_threadsSettingCells == 0)
-  {
-    _cellGrid.update();
   }
 }
 
@@ -156,23 +154,21 @@ void GameOfLife::render(sf::RenderWindow& window)
 
 void GameOfLife::startThreads()
 {
+  _numCalcNeighborComplete = 0;
+  _numSetCellsComplete = 0;
   _bThreadsStarted = true;
   _bShutdownThreads = false;
-  _calcNeighborComplete = false;
-  _setCellsComplete = false;
-
-  _threadsCalcNeighbors = 0;
-  _threadsSettingCells = 0;
-  _threadsWorking = _numThreads;
-  _lastLoopTime = std::chrono::milliseconds(100);
+  _lastLoopTime = std::chrono::milliseconds(10); // 100 ups
   _threads.clear();
-  _threadTimers.clear();
-  _threadSync = std::thread(&GameOfLife::threadSync, this);
-  for (const auto& pair : _threadParams)
+  for (const auto& yRange : _threadParams)
   {
-    _threads.emplace_back(&GameOfLife::classicRules, this, pair.first, pair.second);
-    _threadTimers[pair.first] = Timer();
+    _threads.emplace_back(std::make_unique<GameOfLifeWorker>());
+    _threads.back()->init(yRange, _cellGrid.getWidth(), _cellGrid.getHeight(),
+      _activeCells, _cellNeighbors);
+    _threads.back()->start();
   }
+  Events::Game->publish(EGameEvent::TOGGLE_PAUSE, _bIsPaused);
+  Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
 }
 
 void GameOfLife::stopThreads()
@@ -180,118 +176,35 @@ void GameOfLife::stopThreads()
   _bShutdownThreads = true;
   if (_bThreadsStarted)
   {
-    for (auto& thread : _threads)
-    {
-      thread.join();
-    }
+    _threads.clear();
   }
-  _threadSync.join();
   _bThreadsStarted = false;
 }
 
-void GameOfLife::classicRules(int startY, int endY)
+void GameOfLife::calcNeighborComplete()
 {
-  while (!_bShutdownThreads)
+  if (++_numCalcNeighborComplete == _numThreads)
   {
-    if (_bIsPaused)
-    {
-      _threadsWorking--;
-      std::this_thread::sleep_for(_lastLoopTime);
-      _threadsWorking++;
-      continue;
-    }
-
-    _threadTimers[startY].start();
-    {
-      calcNumNeighborsAlive(startY, endY);
-      {
-        std::unique_lock<std::mutex> un(cnMut);
-        _threadsCalcNeighbors++;
-        cnCv.wait(un, [this] { return _calcNeighborComplete; });
-      }
-      setCellsClassicRules(startY, endY);
-      {
-        std::unique_lock<std::mutex> un(scMut);
-        _threadsSettingCells++;
-        scCv.wait(un, [this] { return _setCellsComplete; });
-      }
-    }
-    _threadTimers[startY].stop();
-
-    _threadsWorking--;
-    std::this_thread::sleep_for(_lastLoopTime - _threadTimers[startY].getMicroSecDuration());
-    _threadsWorking++;
+    _numCalcNeighborComplete = 0;
+    Events::Game->publish(EGameEvent::ACTIVATE_CELLS);
   }
 }
 
-void GameOfLife::threadSync()
+void GameOfLife::setCellsComplete()
 {
-  while (!_bShutdownThreads)
+  if (++_numSetCellsComplete == _numThreads)
   {
-    if (_threadsCalcNeighbors == _numThreads)
-    {
-      cnCv.notify_all();
-      std::lock_guard<std::mutex> un(cnMut);
-      _calcNeighborComplete = true;
-      _setCellsComplete = false;
-      _threadsCalcNeighbors = 0;
-    }
-    if (_threadsSettingCells == _numThreads)
-    {
-      scCv.notify_all();
-      std::lock_guard<std::mutex> un(scMut);
-      _calcNeighborComplete = false;
-      _setCellsComplete = true;
-      _threadsSettingCells = 0;
-    }
+    _numSetCellsComplete = 0;
+    for (int i = 0; i < _numCells; i++)
+      _cellGrid.setCellColor(i, _activeCells[i] ? _activeColor : _inactiveColor);
+    _cellGrid.update();
+    Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
   }
 }
 
-void GameOfLife::setCellsClassicRules(int startY, int endY)
+void GameOfLife::updateCellGrid()
 {
-  for (auto i = startY * _numCellsX; i < endY * _numCellsX; i++)
-  {
-    if (_activeCells[i])
-    {
-      if (_cellNeighbors[i] < 2)
-        setCell(i, false);
-      if (_cellNeighbors[i] > 3)
-        setCell(i, false);
-    }
-    else
-    {
-      if (_cellNeighbors[i] == 3)
-        setCell(i, true);
-    }
-  }
-}
 
-void GameOfLife::calcNumNeighborsAlive(int startY, int endY)
-{
-  for (int y = startY; y < endY; y++)
-  {
-    for (int x = 0; x < _numCellsX; x++)
-    {
-      _cellNeighbors[_cellGrid.getCellIndex(x, y)] = getNumNeighborsAlive(x, y);
-    }
-  }
-}
-
-int GameOfLife::getNumNeighborsAlive(int x, int y)
-{
-  // wrap field!
-  int numNeighborsAlive = 0;
-  for (int ny = y - 1; ny <= y + 1; ny++)
-  {
-    for (int nx = x - 1; nx <= x + 1; nx++)
-    {
-      if (nx == x && ny == y)
-        continue;
-      if (getCell(mu::wrap(nx, 0, (int)_numCellsX - 1), mu::wrap(ny, 0, (int)_numCellsY - 1)))
-        numNeighborsAlive++;
-    }
-  }
-  return numNeighborsAlive;
 }
 
 void GameOfLife::basicSeed()
@@ -350,7 +263,7 @@ bool GameOfLife::seedFromConfig(std::string configName, int offsetX, int offsetY
   {
     for (int x = halfCellSize; x < image.getSize().x; x += cellSize)
     {
-      // add dead cell color for corruption detection?
+      // read dead cell color from image for corruption detection?
       seed.push_back(image.getPixel(x, y) == cellAliveColor);
       // only on first pass
       if (y == halfCellSize)
@@ -405,14 +318,13 @@ bool GameOfLife::getCell(int x, int y) const
   return _activeCells[_cellGrid.getCellIndex(x, y)];
 }
 
-
 void GameOfLife::setCell(int i, bool alive)
 {
   _activeCells[i] = alive;
-  sf::Color color = _swatch[0];
+  sf::Color color = _inactiveColor;
   if (alive)
   {
-    color = _swatch[8];
+    color = _activeColor;
   }
   _cellGrid.setCellColor(i, color);
 }

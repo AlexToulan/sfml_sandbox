@@ -26,7 +26,7 @@ void Log::debug(const std::string& message)
   if (bShowInfo)
   {
     std::scoped_lock lock(_consoleMutex);
-    std::cout << cyan() << "[ DEBUG ]  " << reset() << " > " << message << std::endl;
+    std::cout << cyan() << debugTag() << reset() << " > " << message << std::endl;
   }
 }
 
@@ -34,10 +34,10 @@ void Log::info(const std::string& message)
 {
   std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
-    logFile << "[  INFO  ]  " << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
+    logFile << infoTag() << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
   if (bShowInfo)
   {
-    std::cout << cyan() << "[  INFO  ]  " << blue()
+    std::cout << cyan() << infoTag() << blue()
       << _source.file_name() << ":" << _source.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }
@@ -46,10 +46,10 @@ void Log::warn(const std::string& message)
 {
   std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
-    logFile << "[ WARNING ] " << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
+    logFile << warnTag() << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
   if (bShowWarn)
   {
-    std::cout << yellow() << "[ WARNING ] " << blue()
+    std::cout << yellow() << warnTag() << blue()
       << _source.file_name() << ":" << _source.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }
@@ -58,10 +58,10 @@ void Log::error(const std::string& message)
 {
   std::scoped_lock lock(_consoleMutex);
   if (logFile.is_open())
-    logFile << "[  ERROR  ] " << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
+    logFile << errorTag() << _source.file_name() << ":" << _source.line() << " " << "> " << message << std::endl;
   if (bShowError)
   {
-    std::cerr << red() << "[  ERROR  ] " << blue()
+    std::cerr << red() << errorTag() << blue()
       << _source.file_name() << ":" << _source.line() << std::endl << reset() << " > " << message << std::endl;
   }
 }

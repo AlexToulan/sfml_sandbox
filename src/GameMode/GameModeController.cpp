@@ -261,7 +261,6 @@ void GameModeController::setUpdatesPerSecond(const std::string& ups)
     }
     Log().info("updates_per_second: {}", _updatesPerSecond);
     _secPerUpdate = 1.0f / (float)_updatesPerSecond;
-    Events::Game->publish(EGameEvent::SECONDS_PER_UPDATE, _secPerUpdate);
   }
   else
   {
