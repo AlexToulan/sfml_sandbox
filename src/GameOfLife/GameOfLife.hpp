@@ -48,13 +48,13 @@ private:
   bool _bShutdownThreads;
   size_t _numThreads;
   int _rowsPerThread;
-
   std::atomic<int> _numCalcNeighborComplete;
   std::atomic<int> _numSetCellsComplete;
   Timer _loopTimer;
   std::chrono::microseconds _lastLoopTime;
 
   // grid
+  std::mutex _cellGridLock;
   CellGrid _cellGrid;
   sf::Color _inactiveColor;
   sf::Color _activeColor;
@@ -71,5 +71,4 @@ private:
 
   // input
   bool _bPauseKey;
-  bool _bStepKeyPressed;
 };

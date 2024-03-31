@@ -53,7 +53,6 @@ void GameOfLife::onStart()
   _bPauseKey = false;
   _startDelaySec = 2.0f;
   _bStartDelayComplete = false;
-  _bStepKeyPressed = false;
   _bThreadsStarted = false;
 
   _cellGrid.setCellColor(_inactiveColor);
@@ -68,10 +67,7 @@ void GameOfLife::onStart()
   std::fill(_activeCells.get(), _activeCells.get() + _numCells, false);
   std::fill(_cellNeighbors.get(), _cellNeighbors.get() + _numCells, 0);
 
-  // basicSeed();
-  // seedFromConfig("pulsar");
   seedFromConfig("glider_gun", -20);
-  // run once to init
   startThreads();
 }
 
@@ -115,12 +111,6 @@ void GameOfLife::processEvents(sf::Event& event)
         _cellGrid.update();
       }
     }
-    bool bEnter = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter);
-    if (bEnter && !_bStepKeyPressed)
-    {
-      // restartWorkers();
-    }
-    _bStepKeyPressed = bEnter;
   }
 }
 
@@ -149,7 +139,17 @@ void GameOfLife::update(float ds)
 
 void GameOfLife::render(sf::RenderWindow& window)
 {
-  window.draw(_cellGrid);
+  // window.draw(_cellGrid);
+  // uncomment to test screen tearing
+  if (_cellGridLock.try_lock())
+  {
+    window.draw(_cellGrid);
+    _cellGridLock.unlock();
+  }
+  else
+  {
+    Log().debug("lock failed");
+  }
 }
 
 void GameOfLife::startThreads()
@@ -195,16 +195,20 @@ void GameOfLife::setCellsComplete()
   if (++_numSetCellsComplete == _numThreads)
   {
     _numSetCellsComplete = 0;
-    for (int i = 0; i < _numCells; i++)
-      _cellGrid.setCellColor(i, _activeCells[i] ? _activeColor : _inactiveColor);
-    _cellGrid.update();
+    updateCellGrid();
     Events::Game->publish(EGameEvent::CALC_NEIGHBORS);
   }
 }
 
 void GameOfLife::updateCellGrid()
 {
-
+  _cellGridLock.lock();
+  for (int i = 0; i < _numCells; i++)
+  {
+    _cellGrid.setCellColor(i, _activeCells[i] ? _activeColor : _inactiveColor);
+  }
+  _cellGrid.update();
+  _cellGridLock.unlock();
 }
 
 void GameOfLife::basicSeed()
