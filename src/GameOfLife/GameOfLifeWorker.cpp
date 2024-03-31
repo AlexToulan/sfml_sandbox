@@ -92,7 +92,7 @@ void GameOfLifeWorker::run()
     if (_bShouldSleep)
     {
       _bShouldSleep = false;
-      std::this_thread::sleep_for(_targetLoopTime - _loopTimer.getMicroSecDuration() - std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(_targetLoopTime - _loopTimer.getMicroSecDuration());
     }
   }
 }

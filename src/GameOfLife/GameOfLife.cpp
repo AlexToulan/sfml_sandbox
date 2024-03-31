@@ -139,17 +139,17 @@ void GameOfLife::update(float ds)
 
 void GameOfLife::render(sf::RenderWindow& window)
 {
-  // window.draw(_cellGrid);
+  window.draw(_cellGrid);
   // uncomment to test screen tearing
-  if (_cellGridLock.try_lock())
-  {
-    window.draw(_cellGrid);
-    _cellGridLock.unlock();
-  }
-  else
-  {
-    Log().debug("lock failed");
-  }
+  // if (_cellGridLock.try_lock())
+  // {
+  //   window.draw(_cellGrid);
+  //   _cellGridLock.unlock();
+  // }
+  // else
+  // {
+  //   Log().debug("lock failed");
+  // }
 }
 
 void GameOfLife::startThreads()
