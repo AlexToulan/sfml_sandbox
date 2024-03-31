@@ -1,15 +1,19 @@
+#include "GameMode/GameModeController.hpp"
 #include "GameOfLife/GameOfLife.hpp"
 #include "QuadTest/QuadTest.hpp"
 #include "Orbito/Orbito.hpp"
-#include "GameMode/GameModeController.hpp"
+
 #include "Utils/Logging.hpp"
 #include "Utils/CliConfig.hpp"
+#include "Utils/Platform.hpp"
+
 #include <memory>
 
 std::string consoleFontPath = "resources/Fonts/UbuntuMono-Regular.ttf";
 
 int main(int argc, char* argv[])
 {
+  Platform::config();
   int returnCode = 0;
   auto args = argparse::parse<CliConfig>(argc, argv);
   Log::init(args.log_file_path, args.log_info, args.log_warn);
