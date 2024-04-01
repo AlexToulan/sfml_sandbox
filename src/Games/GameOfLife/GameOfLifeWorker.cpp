@@ -1,4 +1,4 @@
-#include "GameMode/GameEvents.hpp"
+#include "GameEvents.hpp"
 #include "GameOfLifeWorker.hpp"
 #include "Utils/Logging.hpp"
 #include "Utils/MathUtils.hpp"

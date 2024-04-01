@@ -1,7 +1,8 @@
 #include "GameMode/GameModeController.hpp"
-#include "GameOfLife/GameOfLife.hpp"
-#include "QuadTest/QuadTest.hpp"
-#include "Orbito/Orbito.hpp"
+#include "Games/GameOfLife/GameOfLife.hpp"
+#include "Games/Orbito/Orbito.hpp"
+#include "Games/Pathfinding/Pathfinding.hpp"
+#include "Games/QuadTest/QuadTest.hpp"
 
 #include "Utils/Logging.hpp"
 #include "Utils/CliConfig.hpp"
@@ -31,6 +32,7 @@ int main(int argc, char* argv[])
   controller.addGameMode(std::make_unique<QuadTest>());
   controller.addGameMode(std::make_unique<GameOfLife>());
   controller.addGameMode(std::make_unique<Orbito>());
+  controller.addGameMode(std::make_unique<Pathfinding>());
 
   if (controller.setup(args.frames_per_second, args.updates_per_second))
   {

@@ -5,6 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Pathfinding",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/SFMLSandbox",
+      "args":[
+        "--game_mode", "Pathfinding",
+      ],
+      "cwd": "${workspaceFolder}/build/bin",
+      "showDisplayString": true
+    },
+    {
       "name": "Orbito",
       "type": "cppdbg",
       "request": "launch",

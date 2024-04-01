@@ -50,6 +50,7 @@ file(GLOB_RECURSE util_files
     src/Utils/EventSystem/*.cpp
     )
 
+# sfml dependant tools
 file(GLOB_RECURSE sfml_helper_files
     src/GameMode/*.hpp
     src/GameMode/*.cpp
@@ -57,63 +58,31 @@ file(GLOB_RECURSE sfml_helper_files
     src/UI/*.cpp
     )
 
-# game modes
-# quad test
-file(GLOB_RECURSE quad_test_files
-    src/QuadTest/*.cpp
-    src/QuadTest/*.hpp
+# games
+file(GLOB_RECURSE game_files
+    src/Games/*.cpp
+    src/Games/*.hpp
     )
 
-# game of life
-file(GLOB_RECURSE game_of_life_files
-    src/GameOfLife/*.cpp
-    src/GameOfLife/*.hpp
-    )
-
-# ANTS!
-file(GLOB_RECURSE ants_files
-    src/Ants/*.cpp
-    src/Ants/*.hpp
-    )
-
-# orbito
-file(GLOB_RECURSE orbito_files
-    src/Orbito/*.cpp
-    src/Orbito/*.hpp
-    )
-
-# tests
-file(GLOB_RECURSE test_files
-    test/src/*.cpp
-    test/src/*.hpp
-    )
-
-
-# If you'd like to add another gamemode create a directory such as "src/Example/".
-# Glob the files in the directory and reference the source in the add_executable command.
-
-# file(GLOB_RECURSE example_game_mode_files
-#     src/Example/*.cpp
-#     src/Example/*.hpp
-#     )
-
-# add_executable(SFMLSandbox src/main.cpp ${example_game_mode_files})
+# To add another game-mode create a directory such as "src/Games/[GameModeName]" constaining your
+# GameMode class. Any resources can be provided in "resources/[GameModeName]". Include the file in
+# main.cpp and add it to the GameModeController with
+# GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode).
 
 # main game executable
 if(BUILD_SFML_SANDBOX)
     add_executable(SFMLSandbox src/main.cpp
         ${sfml_helper_files}
         ${util_files}
-        ${quad_test_files}
-        ${game_of_life_files}
-        ${orbito_files})
+        ${game_files}
+    )
     target_include_directories(SFMLSandbox
         PRIVATE
         ${CMAKE_SOURCE_DIR}/src/
     )
 
-    # DEV ONLY - COPY FILES IN RELEASE
-    # create symbolic link to resources directory
+    # DEV ONLY - TODO: COPY FILES IN RELEASE
+    # creates a symbolic link to resources directory
     add_custom_command(TARGET SFMLSandbox PRE_BUILD
                     COMMAND ${CMAKE_COMMAND} -E create_symlink
                     ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:SFMLSandbox>/resources)
