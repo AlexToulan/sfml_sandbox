@@ -70,5 +70,9 @@
     "mutex": "cpp",
     "variant": "cpp",
     "shared_mutex": "cpp"
-  }
+  },
+  "cSpell.words": [
+    "Boid",
+    "Boids"
+  ]
 }

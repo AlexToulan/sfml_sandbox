@@ -31,6 +31,7 @@ void Pathfinding::update(float ds)
 
 void Pathfinding::render(sf::RenderWindow& window)
 {
+  _boids.render();
 }
 
 void Pathfinding::onEnd()

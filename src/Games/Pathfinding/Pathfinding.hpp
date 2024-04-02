@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameMode/GameMode.hpp"
+#include "Boids.hpp"
 
 class Pathfinding : public GameMode
 {
@@ -15,5 +16,5 @@ public:
   virtual void onEnd();
 
 private:
-
+  Boids _boids;
 };
