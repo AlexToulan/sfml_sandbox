@@ -1,13 +1,13 @@
 #pragma once
 
 #include "GameMode/GameMode.hpp"
-#include "Boids.hpp"
+#include "BoidManager.hpp"
 
-class Pathfinding : public GameMode
+class Boids : public GameMode
 {
 public:
-  Pathfinding();
-  virtual ~Pathfinding();
+  Boids();
+  virtual ~Boids();
   virtual void onStart();
   virtual sf::Vector2f onResize(int screenX, int screenY);
   virtual void processEvents(sf::Event& event);
@@ -16,5 +16,7 @@ public:
   virtual void onEnd();
 
 private:
-  Boids _boids;
+  BoidManager _boids;
+
+  bool _bLeftMouse;
 };

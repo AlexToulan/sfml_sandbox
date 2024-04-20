@@ -3,7 +3,7 @@
 namespace mu
 {
   template<class T>
-  T wrap(T value, T min, T max)
+  T wrap(const T& value, const T& min, const T& max)
   {
     if (value < min)
       return max;
