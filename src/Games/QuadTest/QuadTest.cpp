@@ -1,8 +1,8 @@
-#include "QuadTest/QuadTest.hpp"
+#include "QuadTest.hpp"
 #include <source_location>
 
 QuadTest::QuadTest()
- : GameMode(std::source_location::current().file_name())
+ : GameMode()
  , _verts(nullptr)
 {
 

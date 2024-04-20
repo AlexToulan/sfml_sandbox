@@ -9,7 +9,7 @@
 
 Orbito::Orbito()
   : EventListener()
-  , GameMode(std::source_location::current().file_name())
+  , GameMode()
 {
 }
 

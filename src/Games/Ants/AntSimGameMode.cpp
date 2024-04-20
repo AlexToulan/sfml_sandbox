@@ -1,4 +1,4 @@
-#include "Ants/AntSimGameMode.hpp"
+#include "AntSimGameMode.hpp"
 
 AntSimGameMode::AntSimGameMode()
 {

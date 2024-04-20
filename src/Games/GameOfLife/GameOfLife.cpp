@@ -1,5 +1,5 @@
-#include "GameOfLife/GameOfLife.hpp"
-#include "GameMode/GameEvents.hpp"
+#include "GameOfLife.hpp"
+#include "GameEvents.hpp"
 #include "Utils/Logging.hpp"
 #include "Utils/MathUtils.hpp"
 #include "Utils/Timer.hpp"
@@ -9,12 +9,15 @@
 #include <shared_mutex>
 #include <source_location>
 
+std::unique_ptr<EventSystem<EGameEvent>> Events::Game;
+
 GameOfLife::GameOfLife()
  : EventListener()
- , GameMode(std::source_location::current().file_name())
+ , GameMode()
  , _activeCells(nullptr)
  , _cellNeighbors(nullptr)
 {
+  Events::Game = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
   _numCellsX = 200;
   _numCellsY = 200;
   _numThreads = std::max(std::thread::hardware_concurrency() / 2, 2u);

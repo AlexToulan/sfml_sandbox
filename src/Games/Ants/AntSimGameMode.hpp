@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utils/GameMode/GameMode.hpp"
+#include "GameMode/GameMode.hpp"
 
 class AntSimGameMode //  : public GameMode
 {

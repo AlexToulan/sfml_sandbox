@@ -1,12 +1,10 @@
 #include <string>
 
 #include "ConsoleEvents.hpp"
-#include "GameEvents.hpp"
 #include "GameModeController.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/Logging.hpp"
 
-std::unique_ptr<EventSystem<EGameEvent>> Events::Game;
 std::unique_ptr<EventSystem<std::string>> Events::Console;
 
 GameModeController::GameModeController(const sf::Font& consoleFont)
@@ -63,7 +61,6 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 bool GameModeController::setup(unsigned int framesPerSecond, unsigned int updatesPerSecond)
 {
   Log().info("Setting up game mode controller");
-  Events::Game = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
   Events::Console = std::make_unique<EventSystem<std::string>>("ConsoleEvents");
 
   _console.addCommand("exit", "quits the application");

@@ -1,10 +1,10 @@
 #include "GameMode.hpp"
 
-GameMode::GameMode()
-{
-  _clearColor = sf::Color::Black;
-  _resourcesPath = "resources/Unknown/";
-}
+// GameMode::GameMode()
+// {
+//   _clearColor = sf::Color::Black;
+//   _resourcesPath = "resources/Unknown/";
+// }
 
 GameMode::GameMode(const std::string& filePath)
 {
