@@ -33,7 +33,7 @@ Not supported
 ## Game Modes
 Select a game mode by passing `--game_mode [game_mode_name]` (e.g. `GameOfLife`, `Orbito`). Game modes can be changed at run-time with the comma `,` or period `.` key.
 ### Conway's Game of Life
- - Uses a threadsafe event system to pass messages between the game mode and a pool of thread workers. Not an optimal solution as threads never sleep. This game mode is only instended as a test case for race conditions in the event system utilized. The simpler and optimal solution would be use `std::for_each(std::execution::par...`.
+ - Uses a threadsafe event system to pass messages between the game mode and a pool of thread workers.
  - Scans seed from a `.png` file
  - `Space` pauses the game and allows individual cell toggling with left mouse-click
 ### Orbito
