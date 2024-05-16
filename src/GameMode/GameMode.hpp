@@ -11,7 +11,7 @@ public:
   // called when the game-mode starts
   virtual void onStart() = 0;
   // returns the view adjustment for window resizing
-  virtual sf::Vector2f onResize(int screenX, int screenY) = 0;
+  virtual sf::Vector2f onResize(int screenX, int screenY);
   // processes input events from sfml
   virtual void processEvents(sf::Event& event) = 0;
   // called before render, passes the accumulated seconds elapsed since the previous update call
