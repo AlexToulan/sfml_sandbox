@@ -1,7 +1,8 @@
 # sfml_sandbox
 A light-weight C++ game engine and 2D sandbox.
 ## Build
-### Ubuntu/Debian
+### Simulation Envirnment
+#### Ubuntu/Debian
  - Install [Clang 17](https://ubuntuhandbook.org/index.php/2023/09/how-to-install-clang-17-or-16-in-ubuntu-22-04-20-04/)
    ```
    wget https://apt.llvm.org/llvm.sh
@@ -26,10 +27,17 @@ A light-weight C++ game engine and 2D sandbox.
     ```
  - Run `./setup.sh`
    - (optional) For normal build development press Ctrl+Shift+B
-### Windows
+#### Windows
 Untested
-### Mac
+#### Mac
 Not supported
+### ML
+#### Ubuntu/Debian
+ - Install [PyTorch](https://pytorch.org/)
+   ```
+   sudo apt install python3-pip
+   pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   ```
 ## Game Modes
 Select a game mode by passing `--game_mode [game_mode_name]` (e.g. `GameOfLife`, `Orbito`). Game modes can be changed at run-time with the comma `,` or period `.` key.
 ### Conway's Game of Life
