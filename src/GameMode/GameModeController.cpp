@@ -15,6 +15,7 @@ GameModeController::GameModeController(const sf::Font& consoleFont)
   _currentGameModeIndex = 0;
   _frames = 0;
   _bShouldClose = false;
+  _originalScreenSize = sf::Vector2i(1000, 1000);
 }
 
 GameModeController::GameModeController(const sf::Font& consoleFont, int screenWidth, int screenHeight, std::string windowTitle)
@@ -25,6 +26,7 @@ GameModeController::GameModeController(const sf::Font& consoleFont, int screenWi
   _currentGameModeIndex = 0;
   _frames = 0;
   _bShouldClose = false;
+  _originalScreenSize = sf::Vector2i(screenWidth, screenHeight);
 }
 
 GameModeController::~GameModeController()
@@ -112,7 +114,9 @@ void GameModeController::run()
       {
         auto offset = _gameModes[_currentGameModeIndex]->onResize(event.size.width, event.size.height);
         sf::FloatRect visibleArea(-offset.x, -offset.y, event.size.width, event.size.height);
-        _window.setView(sf::View(visibleArea));
+        auto view = sf::View(visibleArea);
+        // view.zoom(std::max(event.size.width, event.size.height) / 1000.0f);
+        _window.setView(view);
         _console.setSize(event.size.width, event.size.height, 1);
       }
       if (_bShouldClose || event.type == sf::Event::Closed)
@@ -140,6 +144,21 @@ void GameModeController::run()
       _gameModes[_currentGameModeIndex]->update(_currentSecPerUpdate);
       _currentSecPerUpdate -= _secPerUpdate;
     }
+    sf::Vertex _windowBorder[] =
+    {
+      sf::Vertex(sf::Vector2f(0.0f, 0.0f)),
+      sf::Vertex(sf::Vector2f(1000.0f, 0.0f)),
+
+      sf::Vertex(sf::Vector2f(1000.0f, 0.0f)),
+      sf::Vertex(sf::Vector2f(1000.0f, 1000.0f)),
+
+      sf::Vertex(sf::Vector2f(1000.0f, 1000.0f)),
+      sf::Vertex(sf::Vector2f(0.0f, 1000.0f)),
+
+      sf::Vertex(sf::Vector2f(0.0f, 1000.0f)),
+      sf::Vertex(sf::Vector2f(0.0f, 0.0f))
+    };
+    _window.draw(_windowBorder, 8, sf::Lines);
     _gameModes[_currentGameModeIndex]->render(_window);
     _window.draw(_console);
     _window.display();

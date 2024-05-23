@@ -9,21 +9,15 @@ Boids::~Boids()
 {
 
 }
-
+ 
 void Boids::onStart()
 {
+  _clearColor = sf::Color(32, 32, 32);
   _bLeftMouse = false;
   _boids.loadAssets(_resourcesPath);
   srand(0);
   for (int i = 0; i < 5; i++)
     _boids.addBoid(sf::Vector2f(500, 500) + vu::randomDir() * 5.0f, -90.0f);
-}
-
-sf::Vector2f Boids::onResize(int screenX, int screenY)
-{
-  _screenSize = sf::Vector2i(screenX, screenY);
-  Log().debug("{} {}", _screenSize.x, _screenSize.y);
-  return sf::Vector2f(std::max(screenX - screenY, 0), std::max(screenY - screenX, 0)) * 0.5f;
 }
 
 void Boids::processEvents(sf::Event& event)
@@ -32,7 +26,7 @@ void Boids::processEvents(sf::Event& event)
   {
     if (event.mouseButton.button == sf::Mouse::Left)
     {
-      _boids.addBoid(sf::Vector2f(event.mouseButton.x, event.mouseButton.y));
+      _boids.addBoid(sf::Vector2f(event.mouseButton.x - _viewOffset.x, event.mouseButton.y - _viewOffset.y));
     }
   }
 }

@@ -1,6 +1,6 @@
 #include "GameMode.hpp"
 
-GameMode::GameMode(const std::string& filePath)
+GameMode::GameMode(sf::Vector2i originalScreenSize, const std::string& filePath)
 {
   _clearColor = sf::Color::Black;
   size_t start = filePath.find_last_of("/") + 1;
@@ -8,6 +8,7 @@ GameMode::GameMode(const std::string& filePath)
   _name = filePath.substr(start, end - start);
 
   _resourcesPath = "resources/" + _name + "/";
+  _originalScreenSize = originalScreenSize;
 }
 
 GameMode::~GameMode()
@@ -17,8 +18,7 @@ GameMode::~GameMode()
 
 sf::Vector2f GameMode::onResize(int screenX, int screenY)
 {
-  _screenSize = sf::Vector2i(screenX, screenY);
-  return sf::Vector2f(std::max(screenX - screenY, 0), std::max(screenY - screenX, 0)) * 0.5f;
+  return resizeCenter(screenX, screenY);
 }
 
 std::string GameMode::getName() const
@@ -29,4 +29,11 @@ std::string GameMode::getName() const
 sf::Color GameMode::getClearColor() const
 {
   return _clearColor;
+}
+
+sf::Vector2f GameMode::resizeCenter(int screenX, int screenY)
+{
+  _screenSize = sf::Vector2i(screenX, screenY);
+  _viewOffset = sf::Vector2f(screenX - _originalScreenSize.x, screenY - _originalScreenSize.y) * 0.5f;
+  return _viewOffset;
 }
