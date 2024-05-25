@@ -13,7 +13,7 @@
 class GameOfLife : public EventListener, public GameMode
 {
 public:
-  GameOfLife();
+  GameOfLife(sf::Vector2u originalScreenSize = sf::Vector2u(1000, 1000));
   virtual ~GameOfLife();
   virtual void onStart();
   virtual sf::Vector2f onResize(int screenX, int screenY);

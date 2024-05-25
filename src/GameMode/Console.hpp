@@ -64,7 +64,7 @@ private:
   // UI
   bool _bIsOpen;
   int _charSize;
-  sf::Vector2u _anchor;
+  sf::Vector2i _anchor;
   sf::RectangleShape _background;
   sf::Color _backgroundColor;
   sf::Color _foregroundColor;
@@ -73,6 +73,7 @@ private:
   float _cursorSecondsElapsed;
   bool _bCursorOn;
   std::string _cursor;
+  sf::Vector2i _originalScreenSize;
   // notify
   sf::Text _notifyText;
   sf::Vector2f _notifyAnchor;

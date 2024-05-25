@@ -9,7 +9,7 @@
 class Orbito : public EventListener, public GameMode
 {
 public:
-  Orbito();
+  Orbito(sf::Vector2u originalScreenSize = sf::Vector2u(1000, 1000));
   virtual ~Orbito();
   virtual void onStart();
   virtual sf::Vector2f onResize(int screenX, int screenY);

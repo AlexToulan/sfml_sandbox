@@ -110,10 +110,7 @@ void GameModeController::run()
       }
       if (event.type == event.Resized)
       {
-        auto offset = _gameModes[_currentGameModeIndex]->onResize(event.size.width, event.size.height);
-        sf::FloatRect visibleArea(-offset.x, -offset.y, event.size.width, event.size.height);
-        _window.setView(sf::View(visibleArea));
-        _console.setSize(event.size.width, event.size.height, 1);
+        resize(sf::Vector2u(event.size.width, event.size.height));
       }
       if (_bShouldClose || event.type == sf::Event::Closed)
       {
@@ -127,8 +124,11 @@ void GameModeController::run()
         _gameModes[_currentGameModeIndex]->processEvents(event);
       }
     }
-
-    processInput();
+    if (!_console.isOpen())
+    {
+      processInput();
+    }
+    toggleConsole();
     logFps();
 
     _window.clear(_gameModes[_currentGameModeIndex]->getClearColor());
@@ -162,7 +162,7 @@ void GameModeController::previousGameMode()
   switchGameMode(-1);
 }
 
-void GameModeController::processInput()
+void GameModeController::toggleConsole()
 {
   bool grave = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Grave);
   if (grave && !_bConsoleOpenKey)
@@ -171,7 +171,10 @@ void GameModeController::processInput()
     _bConsoleOpenKey = true;
   }
   _bConsoleOpenKey = grave;
+}
 
+void GameModeController::processInput()
+{
   // cycle game modes
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Period))
     _bNextKey = true;
@@ -192,17 +195,6 @@ void GameModeController::processInput()
   }
 }
 
-void GameModeController::logFps()
-{
-  _frames++;
-  if (_fpsTimer.pollSeconds() > 5.0f)
-  {
-    Events::Console->publish("notify", Str::format("FPS: {}", _frames / 5));
-    _fpsTimer.start();
-    _frames = 0;
-  }
-}
-
 void GameModeController::switchGameMode(int direction)
 {
   if (_gameModes.size() < 2)
@@ -214,8 +206,29 @@ void GameModeController::switchGameMode(int direction)
   _gameModes[_currentGameModeIndex]->onEnd();
   _currentGameModeIndex = (_currentGameModeIndex + direction) % _gameModes.size();
   Log().info("Switching game mode: {}", _gameModes[_currentGameModeIndex]->getName());
-  _gameModes[_currentGameModeIndex]->onResize(_window.getSize().x, _window.getSize().y);
+  _window.setSize(_gameModes[_currentGameModeIndex]->getOriginalScreenSize());
+  resize(_gameModes[_currentGameModeIndex]->getOriginalScreenSize());
   _gameModes[_currentGameModeIndex]->onStart();
+}
+
+void GameModeController::resize(sf::Vector2u screenSize)
+{
+  auto offset = _gameModes[_currentGameModeIndex]->onResize(screenSize.x, screenSize.y);
+  sf::FloatRect visibleArea(-offset.x, -offset.y, screenSize.x, screenSize.y);
+  auto view = sf::View(visibleArea);
+  _window.setView(view);
+  _console.setSize(screenSize.x, screenSize.y, 1);
+}
+
+void GameModeController::logFps()
+{
+  _frames++;
+  if (_fpsTimer.pollSeconds() > 5.0f)
+  {
+    Events::Console->publish("notify", Str::format("FPS: {}", _frames / 5));
+    _fpsTimer.start();
+    _frames = 0;
+  }
 }
 
 void GameModeController::exit()

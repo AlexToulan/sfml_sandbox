@@ -27,12 +27,13 @@ int main(int argc, char* argv[])
     Log().error("failed to load console font \"{}\"", consoleFontPath);
     return 2;
   }
-  GameModeController controller(consoleFont, 1000, 1000, "Game Mode Test");
+  sf::Vector2u screenSize = sf::Vector2u(1000, 1000);
+  GameModeController controller(consoleFont, screenSize.x, screenSize.y, "Game Mode Test");
 
-  controller.addGameMode(std::make_unique<QuadTest>());
-  controller.addGameMode(std::make_unique<GameOfLife>());
-  controller.addGameMode(std::make_unique<Orbito>());
-  controller.addGameMode(std::make_unique<Boids>());
+  controller.addGameMode(std::make_unique<QuadTest>(screenSize));
+  controller.addGameMode(std::make_unique<GameOfLife>(screenSize));
+  controller.addGameMode(std::make_unique<Orbito>(screenSize));
+  controller.addGameMode(std::make_unique<Boids>(sf::Vector2u(2000, 1000)));
 
   if (controller.setup(args.frames_per_second, args.updates_per_second))
   {

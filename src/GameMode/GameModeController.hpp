@@ -26,8 +26,10 @@ public:
   void previousGameMode();
 
 private:
+  void toggleConsole();
   void processInput();
   void switchGameMode(int direction);
+  void resize(sf::Vector2u screenSize);
   void logFps();
 
   // events

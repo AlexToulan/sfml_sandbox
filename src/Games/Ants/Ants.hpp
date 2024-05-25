@@ -2,11 +2,11 @@
 
 #include "GameMode/GameMode.hpp"
 
-class AntSimGameMode //  : public GameMode
+class Ants //  : public GameMode
 {
 public:
-  AntSimGameMode();
-  virtual ~AntSimGameMode();
+  Ants();
+  virtual ~Ants();
   // virtual void onStart();
   // virtual void processEvents(sf::Event& event);
   // virtual void update(float ds);
