@@ -15,7 +15,6 @@ GameModeController::GameModeController(const sf::Font& consoleFont)
   _currentGameModeIndex = 0;
   _frames = 0;
   _bShouldClose = false;
-  _originalScreenSize = sf::Vector2u(1000, 1000);
 }
 
 GameModeController::GameModeController(const sf::Font& consoleFont, int screenWidth, int screenHeight, std::string windowTitle)
@@ -26,7 +25,6 @@ GameModeController::GameModeController(const sf::Font& consoleFont, int screenWi
   _currentGameModeIndex = 0;
   _frames = 0;
   _bShouldClose = false;
-  _originalScreenSize = sf::Vector2u(screenWidth, screenHeight);
 }
 
 GameModeController::~GameModeController()

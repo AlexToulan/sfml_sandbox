@@ -50,7 +50,6 @@ private:
   int _updatesPerSecond;
   int _framesPerSecond;
 
-  sf::Vector2u _originalScreenSize;
   sf::RenderWindow _window;
   size_t _currentGameModeIndex;
   std::vector<std::unique_ptr<GameMode>> _gameModes;

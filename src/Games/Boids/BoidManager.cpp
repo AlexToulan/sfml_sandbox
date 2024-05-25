@@ -14,6 +14,7 @@ BoidManager::BoidManager()
   _attractForce = 1.0f;
   _repelForce = 10.0f;
   _targetSpeed = 100.0f;
+  _areaSize = sf::Vector2f(1000.0f, 1000.0f);
 }
 
 BoidManager::~BoidManager()
@@ -92,8 +93,8 @@ void BoidManager::update(float ds)
     // TODO: add drag based on turning angle
     // _physics[i].drag(ds, 0.4f);
     _physics[i].move(_positions[i], ds);
-    _positions[i].x = mu::wrap(_positions[i].x, 0.0f, 1000.0f);
-    _positions[i].y = mu::wrap(_positions[i].y, 0.0f, 1000.0f);
+    _positions[i].x = mu::wrap(_positions[i].x, 0.0f, _areaSize.x);
+    _positions[i].y = mu::wrap(_positions[i].y, 0.0f, _areaSize.y);
   }
 }
 
@@ -119,4 +120,9 @@ void BoidManager::clear()
   _positions.clear();
   _rotations.clear();
   _physics.clear();
+}
+
+void BoidManager::setAreaSize(sf::Vector2u size)
+{
+  _areaSize = sf::Vector2f(size.x, size.y);
 }

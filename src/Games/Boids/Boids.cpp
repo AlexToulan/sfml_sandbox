@@ -15,9 +15,11 @@ void Boids::onStart()
   _clearColor = sf::Color(32, 32, 32);
   _bLeftMouse = false;
   _boids.loadAssets(_resourcesPath);
+  _boids.setAreaSize(_originalScreenSize);
   srand(0);
+  auto center = sf::Vector2f(getOriginalScreenSize().x * 0.5f, getOriginalScreenSize().y * 0.5f);
   for (int i = 0; i < 5; i++)
-    _boids.addBoid(sf::Vector2f(500, 500) + vu::randomDir() * 5.0f, -90.0f);
+    _boids.addBoid(center + vu::randomDir() * 5.0f, -90.0f);
 }
 
 void Boids::processEvents(sf::Event& event)

@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
   controller.addGameMode(std::make_unique<QuadTest>(screenSize));
   controller.addGameMode(std::make_unique<GameOfLife>(screenSize));
   controller.addGameMode(std::make_unique<Orbito>(screenSize));
-  controller.addGameMode(std::make_unique<Boids>(screenSize));
+  controller.addGameMode(std::make_unique<Boids>(sf::Vector2u(2000, 1000)));
 
   if (controller.setup(args.frames_per_second, args.updates_per_second))
   {
