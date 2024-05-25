@@ -6,7 +6,7 @@
 class GameMode
 {
 public:
-  GameMode(sf::Vector2i originalScreenSize = sf::Vector2i(1000, 1000), const std::string& filePath = std::source_location::current().file_name());
+  GameMode(sf::Vector2u originalScreenSize = sf::Vector2u(1000, 1000), const std::string& filePath = std::source_location::current().file_name());
   virtual ~GameMode();
   // called when the game-mode starts
   virtual void onStart() = 0;
@@ -23,13 +23,15 @@ public:
 
   std::string getName() const;
   sf::Color getClearColor() const;
+  sf::Vector2u getOriginalScreenSize() const;
 
 protected:
+  sf::Vector2f resizeStretch(int screenX, int screenY);
   sf::Vector2f resizeCenter(int screenX, int screenY);
 
   std::string _resourcesPath;
-  sf::Vector2i _originalScreenSize;
-  sf::Vector2i _screenSize;
+  sf::Vector2u _originalScreenSize;
+  sf::Vector2u _screenSize;
   sf::Vector2f _viewOffset;
   sf::Color _clearColor;
 

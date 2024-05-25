@@ -25,7 +25,7 @@ Console::Console(const sf::Font& font, int screenWidth, int screenHeight, int bo
   _longestCommandName = 4; // help
   _notifySeconds = 5.0f;
   _notifyFadeSeconds = 1.0f;
-
+  _originalScreenSize = sf::Vector2i(screenWidth, screenHeight);
   setSize(screenWidth, screenHeight, borderThickness);
   _prompt = " > ";
   _cursor = "_";
@@ -52,12 +52,13 @@ void Console::setSize(int screenWidth, int screenHeight, int borderThickness)
     _background.setOutlineThickness(borderThickness);
     _background.setOutlineColor(_foregroundColor);
   }
-  _background.setPosition(borderThickness, borderThickness + screenHeight - screenHeight / 2);
+  float offsetX = std::max((screenWidth - _originalScreenSize.x) * 0.5f, 0.0f);
+  _background.setPosition(borderThickness - offsetX, borderThickness + screenHeight / 2);
 
   _charSize = 16u;
   float margin = borderThickness + 4.0f;
 
-  _anchor = sf::Vector2u(margin, margin + screenHeight / 2);
+  _anchor = sf::Vector2i(margin - offsetX, margin + screenHeight / 2);
   _commandHistorySize = 128;
   _textBufferSize = (screenHeight - _anchor.y) / _charSize - 1;
   _bufferText.setCharacterSize(_charSize);

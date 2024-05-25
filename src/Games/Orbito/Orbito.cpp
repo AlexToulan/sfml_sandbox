@@ -7,9 +7,9 @@
 #include <source_location>
 #include <vector>
 
-Orbito::Orbito()
+Orbito::Orbito(sf::Vector2u originalScreenSize)
   : EventListener()
-  , GameMode()
+  , GameMode(originalScreenSize)
 {
 }
 
@@ -61,8 +61,8 @@ void Orbito::onStart()
 
 sf::Vector2f Orbito::onResize(int screenX, int screenY)
 {
-  _screenSize = sf::Vector2i(screenX, screenY);
-  sf::Vector2i halfScreenPx = _screenSize / 2;
+  resizeStretch(screenX, screenY);
+  sf::Vector2u halfScreenPx = _screenSize / 2u;
   float cellSizePx = std::min(screenX, screenY) / float(_boardWidth + 2);
   float halfBoardSizePx = (_boardWidth - 1.0f) * 0.5f * cellSizePx;
   _cellSize = sf::Transform();
@@ -102,7 +102,7 @@ sf::Vector2f Orbito::onResize(int screenX, int screenY)
   _whitePile.setPosition(16.0f, 16.0f);
   _blackPile.setPosition(screenX - _blackPile.getLocalBounds().width - 16.0f, 16.0f);
 
-  return sf::Vector2f();
+  return _viewOffset;
 }
 
 void Orbito::processEvents(sf::Event& event)

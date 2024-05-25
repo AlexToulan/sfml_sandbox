@@ -1,7 +1,7 @@
 #include "Boids.hpp"
 
-Boids::Boids()
- : GameMode()
+Boids::Boids(sf::Vector2u originalScreenSize)
+ : GameMode(originalScreenSize)
 {
 }
 
@@ -9,7 +9,7 @@ Boids::~Boids()
 {
 
 }
- 
+
 void Boids::onStart()
 {
   _clearColor = sf::Color(32, 32, 32);

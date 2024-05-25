@@ -11,9 +11,9 @@
 
 std::unique_ptr<EventSystem<EGameEvent>> Events::Game;
 
-GameOfLife::GameOfLife()
+GameOfLife::GameOfLife(sf::Vector2u originalScreenSize)
  : EventListener()
- , GameMode()
+ , GameMode(originalScreenSize)
  , _activeCells(nullptr)
  , _cellNeighbors(nullptr)
 {

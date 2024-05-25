@@ -10,7 +10,7 @@
 class QuadTest : public GameMode
 {
 public:
-  QuadTest();
+  QuadTest(sf::Vector2u originalScreenSize = sf::Vector2u(1000, 1000));
   virtual ~QuadTest();
   virtual void onStart();
   virtual sf::Vector2f onResize(int screenX, int screenY);

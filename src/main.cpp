@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     Log().error("failed to load console font \"{}\"", consoleFontPath);
     return 2;
   }
-  sf::Vector2i screenSize = sf::Vector2i(1000, 1000);
+  sf::Vector2u screenSize = sf::Vector2u(1000, 1000);
   GameModeController controller(consoleFont, screenSize.x, screenSize.y, "Game Mode Test");
 
   controller.addGameMode(std::make_unique<QuadTest>(screenSize));

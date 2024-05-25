@@ -1,8 +1,8 @@
 #include "QuadTest.hpp"
 #include <source_location>
 
-QuadTest::QuadTest()
- : GameMode()
+QuadTest::QuadTest(sf::Vector2u originalScreenSize)
+ : GameMode(originalScreenSize)
  , _verts(nullptr)
 {
 

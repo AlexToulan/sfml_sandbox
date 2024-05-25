@@ -6,7 +6,7 @@
 class Boids : public GameMode
 {
 public:
-  Boids();
+  Boids(sf::Vector2u originalScreenSize = sf::Vector2u(1000, 1000));
   virtual ~Boids();
   virtual void onStart();
   virtual void processEvents(sf::Event& event);
