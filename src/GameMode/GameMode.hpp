@@ -26,6 +26,7 @@ public:
   sf::Vector2u getOriginalScreenSize() const;
 
 protected:
+  sf::Vector2f getMousePos(int x, int y);
   sf::Vector2f resizeStretch(int screenX, int screenY);
   sf::Vector2f resizeCenter(int screenX, int screenY);
 

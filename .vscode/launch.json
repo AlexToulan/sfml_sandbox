@@ -5,6 +5,27 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Run",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/SFMLSandbox",
+      "cwd": "${workspaceFolder}/build/bin",
+      "showDisplayString": true
+    },
+    {
+      "name": "Pathfinding",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/SFMLSandbox",
+      "args":[
+        "--game_mode", "Pathfinding",
+        "--frames_per_second", "120",
+        "--updates_per_second", "60",
+      ],
+      "cwd": "${workspaceFolder}/build/bin",
+      "showDisplayString": true
+    },
+    {
       "name": "Boids",
       "type": "cppdbg",
       "request": "launch",

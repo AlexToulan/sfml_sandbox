@@ -28,7 +28,7 @@ void Boids::processEvents(sf::Event& event)
   {
     if (event.mouseButton.button == sf::Mouse::Left)
     {
-      _boids.addBoid(sf::Vector2f(event.mouseButton.x - _viewOffset.x, event.mouseButton.y - _viewOffset.y));
+      _boids.addBoid(getMousePos(event.mouseButton.x, event.mouseButton.y));
     }
   }
 }

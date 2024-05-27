@@ -2,6 +2,7 @@
 
 #include "ConsoleEvents.hpp"
 #include "GameModeController.hpp"
+#include "GameModeSelect.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/Logging.hpp"
 
@@ -67,12 +68,14 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
   _console.addCommand("quit", "quits the application");
   _console.addCommand("notify", "prints a message at the bottom of the window for 5 seconds");
   _console.addCommand("restart_game_mode", "restarts the current game mode");
+  _console.addCommand("select_game_mode", "[string arg] selects a game mode");
   _console.addCommand("frames_per_second", "[int arg] sets the GPU framerate of the application");
   _console.addCommand("updates_per_second", "[int arg] sets the CPU framerate of the application");
   Events::Console->bind("exit", this, &GameModeController::exit);
   Events::Console->bind("quit", this, &GameModeController::exit);
   Events::Console->bind("notify", &_console, &Console::notify);
   Events::Console->bind("restart_game_mode", this, &GameModeController::restartGameMode);
+  Events::Console->bind("select_game_mode", this, &GameModeController::selectGameMode);
   Events::Console->bind("frames_per_second", this, &GameModeController::setFramesPerSecond);
   Events::Console->bind("updates_per_second", this, &GameModeController::setUpdatesPerSecond);
   _framesPerSecond = framesPerSecond;
@@ -89,7 +92,26 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
     return false;
   }
 
-  _gameModes[_currentGameModeIndex]->onStart();
+  // populate game-modes into selection menu
+  GameModeSelect* gameModeSelect = nullptr;
+  for (const auto& gm : _gameModes)
+  {
+    if (gm->getName() == "GameModeSelect")
+    {
+      gameModeSelect = dynamic_cast<GameModeSelect*>(gm.get());
+      break;
+    }
+  }
+  if (gameModeSelect != nullptr)
+  {
+    for (const auto& gm : _gameModes)
+    {
+      if (gm->getName() != "GameModeSelect")
+      {
+        gameModeSelect->addGameMode(gm->getName());
+      }
+    }
+  }
   return true;
 }
 

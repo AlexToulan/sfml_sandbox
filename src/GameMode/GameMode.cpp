@@ -37,6 +37,11 @@ sf::Vector2u GameMode::getOriginalScreenSize() const
   return _originalScreenSize;
 }
 
+sf::Vector2f GameMode::getMousePos(int x, int y)
+{
+  return sf::Vector2f(x - _viewOffset.x, y - _viewOffset.y);
+}
+
 sf::Vector2f GameMode::resizeStretch(int screenX, int screenY)
 {
   _screenSize = sf::Vector2u(screenX, screenY);
