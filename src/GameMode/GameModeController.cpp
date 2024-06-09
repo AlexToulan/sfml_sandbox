@@ -8,20 +8,22 @@
 
 std::unique_ptr<EventSystem<std::string>> Events::Console;
 
-GameModeController::GameModeController(const sf::Font& consoleFont)
+GameModeController::GameModeController(const sf::Font& consoleFont, const sf::Font& hoverInfoFont)
   : EventListener()
   , _window(sf::VideoMode(1000, 1000), "SFML Test")
   , _console(consoleFont, 1000, 1000)
+  , _hoverInfo(hoverInfoFont)
 {
   _currentGameModeIndex = 0;
   _frames = 0;
   _bShouldClose = false;
 }
 
-GameModeController::GameModeController(const sf::Font& consoleFont, int screenWidth, int screenHeight, std::string windowTitle)
+GameModeController::GameModeController(const sf::Font& consoleFont, const sf::Font& hoverInfoFont, int screenWidth, int screenHeight, std::string windowTitle)
   : EventListener()
   , _window(sf::VideoMode(screenWidth, screenHeight), windowTitle)
   , _console(consoleFont, screenWidth, screenHeight, 1)
+  , _hoverInfo(hoverInfoFont)
 {
   _currentGameModeIndex = 0;
   _frames = 0;
@@ -85,6 +87,7 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
   _currentSecPerUpdate = 0.0f;
   _bConsoleOpenKey = false;
   _bShouldClose = false;
+  _hoverInfo.setup();
 
   if (_gameModes.size() == 0)
   {
@@ -163,6 +166,7 @@ void GameModeController::run()
       _currentSecPerUpdate -= _secPerUpdate;
     }
     _gameModes[_currentGameModeIndex]->render(_window);
+    _window.draw(_hoverInfo);
     _window.draw(_console);
     _window.display();
   }

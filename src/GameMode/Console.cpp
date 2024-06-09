@@ -197,7 +197,7 @@ void Console::notify(const std::string& line)
   _notifyMessages.push_back(std::pair(line, _notifySeconds + _notifyFadeSeconds));
   print(line);
   updateOutputText();
-  Log().info(line);
+  // Log().info(line);
 }
 
 void Console::print(const std::string& line)

@@ -54,6 +54,12 @@ namespace vu
   // {
   //   return (b - a) * t + a;
   // }
+
+  template <typename R, typename T>
+  sf::Vector2<R> cast(const sf::Vector2<T>& in)
+  {
+    return sf::Vector2<R>((R)in.x, (R)in.y);
+  }
 }
 
 // operators

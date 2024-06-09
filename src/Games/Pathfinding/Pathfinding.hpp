@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameMode/GameMode.hpp"
+#include "Grid.hpp"
 
 class Pathfinding : public GameMode
 {
@@ -14,5 +15,6 @@ public:
   virtual void onEnd();
 
 private:
+  Grid _grid;
   bool _bLeftMouse;
 };

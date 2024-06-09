@@ -12,9 +12,6 @@
 
 #include <memory>
 
-std::string consoleFontPath = "resources/Fonts/UbuntuMono-Regular.ttf";
-std::string menuFontPath = "resources/Fonts/Ubuntu-Bold.ttf";
-
 bool loadFont(std::string fontName, sf::Font& outFont)
 {
   std::string fontPath = Str::format("resources/Fonts/{}.ttf", fontName);
@@ -36,13 +33,14 @@ int main(int argc, char* argv[])
     args.print();
   
   sf::Font consoleFont;
+  sf::Font hoverInfoFont;
   sf::Font menuFont;
-  if (!loadFont("UbuntuMono-Regular", consoleFont) || !loadFont("Ubuntu-Bold", menuFont))
+  if (!loadFont("UbuntuMono-Regular", consoleFont) || !loadFont("Ubuntu-Regular", hoverInfoFont) || !loadFont("Ubuntu-Bold", menuFont))
   {
     return 2;
   }
   sf::Vector2u screenSize = sf::Vector2u(1000, 1000);
-  GameModeController controller(consoleFont, screenSize.x, screenSize.y, "SFML Sandbox");
+  GameModeController controller(consoleFont, hoverInfoFont, screenSize.x, screenSize.y, "SFML Sandbox");
 
   controller.addGameMode(std::make_unique<GameModeSelect>(menuFont, screenSize));
   // controller.addGameMode(std::make_unique<QuadTest>(screenSize));

@@ -4,18 +4,19 @@
 #include <string>
 #include <vector>
 
+#include "Console.hpp"
+#include "GameMode/GameMode.hpp"
+#include "UI/HoverInfo.hpp"
 #include "Utils/CliConfig.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/EventSystem/EventListener.hpp"
 #include "Utils/Timer.hpp"
-#include "GameMode/GameMode.hpp"
-#include "Console.hpp"
 
 class GameModeController : public EventListener
 {
 public:
-  GameModeController(const sf::Font& consoleFont);
-  GameModeController(const sf::Font& consoleFont, int screenWidth, int screenHeight, std::string windowTitle);
+  GameModeController(const sf::Font& consoleFont, const sf::Font& hoverInfoFont);
+  GameModeController(const sf::Font& consoleFont, const sf::Font& hoverInfoFont, int screenWidth, int screenHeight, std::string windowTitle);
   virtual ~GameModeController();
   bool setup(unsigned int framesPerSecond, unsigned int updatesPerSecond);
   void addGameMode(std::unique_ptr<GameMode> gameMode);
@@ -39,6 +40,7 @@ private:
   void setUpdatesPerSecond(const std::string& ups);
 
   Console _console;
+  HoverInfo _hoverInfo;
   bool _bShouldClose;
   Timer _loopTimer;
   Timer _fpsTimer;
