@@ -9,7 +9,7 @@
 #include <shared_mutex>
 #include <source_location>
 
-std::unique_ptr<EventSystem<EGameEvent>> Events::Game;
+std::unique_ptr<Events::GameEventSystem> Events::Game;
 
 GameOfLife::GameOfLife(sf::Vector2u originalScreenSize)
  : EventListener()
@@ -17,7 +17,7 @@ GameOfLife::GameOfLife(sf::Vector2u originalScreenSize)
  , _activeCells(nullptr)
  , _cellNeighbors(nullptr)
 {
-  Events::Game = std::make_unique<EventSystem<EGameEvent>>("GameEvents");
+  Events::Game = std::make_unique<Events::GameEventSystem>("GameEvents");
   _numCellsX = 200;
   _numCellsY = 200;
   _numThreads = std::max(std::thread::hardware_concurrency() / 2, 2u);

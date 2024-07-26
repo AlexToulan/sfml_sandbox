@@ -9,6 +9,9 @@
 #elif defined(__APPLE__)
 #endif
 
+// sfml_sandbox hashing algorithms depend on CHAR_BIT (a byte) being 8 bits
+static_assert(8 == CHAR_BIT);
+
 namespace Platform
 {
   #if defined(_WIN32) // note the underscore: without it, it's not msdn official!

@@ -20,8 +20,9 @@ namespace Events
 {
   // TODO: Not a huge fan of this but it works for now. Possibility of overriding original instance
   // flushing all event bindings and leaving orphaned bindings in event listeners; nbd they are only
-  // used for referance tracking and can be pruned.
-  extern std::unique_ptr<EventSystem<EGameEvent>> Game;
+  // used for reference tracking and can be pruned.
+  typedef EventSystem<EGameEvent> GameEventSystem;
+  extern std::unique_ptr<GameEventSystem> Game;
 }
 // TODO: consider using this to ensure one instance.
 // namespace GameEventSystem

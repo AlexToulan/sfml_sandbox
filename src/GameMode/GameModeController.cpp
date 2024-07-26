@@ -1,12 +1,14 @@
 #include <string>
 
 #include "ConsoleEvents.hpp"
+#include "DebugEvents.hpp"
 #include "GameModeController.hpp"
 #include "GameModeSelect.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/Logging.hpp"
 
-std::unique_ptr<EventSystem<std::string>> Events::Console;
+std::unique_ptr<Events::ConsoleEventSystem> Events::Console;
+std::unique_ptr<Events::DebugEventSystem> Events::Debug;
 
 GameModeController::GameModeController(const sf::Font& consoleFont, const sf::Font& hoverInfoFont)
   : EventListener()
@@ -64,7 +66,8 @@ void GameModeController::addGameMode(std::unique_ptr<GameMode> gameMode)
 bool GameModeController::setup(unsigned int framesPerSecond, unsigned int updatesPerSecond)
 {
   Log().info("Setting up game mode controller");
-  Events::Console = std::make_unique<EventSystem<std::string>>("ConsoleEvents");
+  Events::Console = std::make_unique<Events::ConsoleEventSystem>("ConsoleEvents");
+  Events::Debug = std::make_unique<Events::DebugEventSystem>("DebugDrawEvents");
 
   _console.addCommand("exit", "quits the application");
   _console.addCommand("quit", "quits the application");
@@ -80,6 +83,7 @@ bool GameModeController::setup(unsigned int framesPerSecond, unsigned int update
   Events::Console->bind("select_game_mode", this, &GameModeController::selectGameMode);
   Events::Console->bind("frames_per_second", this, &GameModeController::setFramesPerSecond);
   Events::Console->bind("updates_per_second", this, &GameModeController::setUpdatesPerSecond);
+  Events::Debug->bind(EDebugEvents::LINE, &_debugDraw, &DebugDraw::line);
   _framesPerSecond = framesPerSecond;
   _window.setFramerateLimit(_framesPerSecond);
   _updatesPerSecond = updatesPerSecond;
@@ -163,9 +167,11 @@ void GameModeController::run()
     if (_currentSecPerUpdate >= _secPerUpdate)
     {
       _gameModes[_currentGameModeIndex]->update(_currentSecPerUpdate);
+      _debugDraw.update(_currentSecPerUpdate);
       _currentSecPerUpdate -= _secPerUpdate;
     }
     _gameModes[_currentGameModeIndex]->render(_window);
+    _window.draw(_debugDraw);
     _window.draw(_hoverInfo);
     _window.draw(_console);
     _window.display();

@@ -7,6 +7,7 @@
 #include "Console.hpp"
 #include "GameMode/GameMode.hpp"
 #include "UI/HoverInfo.hpp"
+#include "UI/DebugDraw.hpp"
 #include "Utils/CliConfig.hpp"
 #include "Utils/EventSystem/EventSystem.hpp"
 #include "Utils/EventSystem/EventListener.hpp"
@@ -40,6 +41,7 @@ private:
   void setUpdatesPerSecond(const std::string& ups);
 
   Console _console;
+  DebugDraw _debugDraw;
   HoverInfo _hoverInfo;
   bool _bShouldClose;
   Timer _loopTimer;

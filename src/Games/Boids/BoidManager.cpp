@@ -89,7 +89,7 @@ void BoidManager::update(float ds)
     _physics[i].applyForce();
     // TODO: lerp towards neighbor velocity
     _physics[i].vel = mu::lerp(_physics[i].vel, _targetSpeed, ds);
-    _rotations[i] = atan2(_physics[i].dir.y, _physics[i].dir.x) * vu::toDegrees();
+    _rotations[i] = atan2(_physics[i].dir.y, _physics[i].dir.x) * vu::to_degrees;
     // TODO: add drag based on turning angle
     // _physics[i].drag(ds, 0.4f);
     _physics[i].move(_positions[i], ds);

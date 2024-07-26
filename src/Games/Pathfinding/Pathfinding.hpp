@@ -1,7 +1,11 @@
 #pragma once
 
+#include <memory>
+
+#include "Agent.hpp"
 #include "GameMode/GameMode.hpp"
-#include "Grid.hpp"
+#include "PathGraph.hpp"
+#include "RayPath.hpp"
 
 class Pathfinding : public GameMode
 {
@@ -15,6 +19,8 @@ public:
   virtual void onEnd();
 
 private:
-  Grid _grid;
+  Agent _testAgent;
+  std::shared_ptr<PathGraph> _graph;
+  RayPath _rayPath;
   bool _bLeftMouse;
 };
