@@ -64,6 +64,12 @@ file(GLOB_RECURSE game_files
     src/Games/*.hpp
     )
 
+# tests
+file(GLOB_RECURSE test_files
+    test/src/*.cpp
+    test/src/*.hpp
+    )
+
 # To add another game-mode create a directory such as "src/Games/[GameModeName]" constaining your
 # GameMode class. Any resources can be provided in "resources/[GameModeName]". Include the file in
 # main.cpp and add it to the GameModeController with
@@ -94,13 +100,12 @@ if (BUILD_TESTS)
     target_include_directories(testAll
         PRIVATE
         ${CMAKE_SOURCE_DIR}/src/
-        ${CMAKE_SOURCE_DIR}/test/src/
+        ${CMAKE_SOURCE_DIR}/test/
     )
 
     target_link_libraries(testAll GTest::gtest_main)
     target_compile_features(testAll PRIVATE cxx_std_20)
     gtest_discover_tests(testAll DISCOVERY_TIMEOUT 600)
-    # gtest_discover_tests(testAll)
 endif()
 
 # linker

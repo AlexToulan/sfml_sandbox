@@ -10,4 +10,4 @@ export CXX="/usr/bin/clang++-17"
 
 # cmake
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
+cmake --build build -j24
