@@ -64,6 +64,12 @@ file(GLOB_RECURSE game_files
     src/Games/*.hpp
     )
 
+# tests
+file(GLOB_RECURSE test_files
+    test/src/*.cpp
+    test/src/*.hpp
+    )
+
 # To add another game-mode create a directory such as "src/Games/[GameModeName]" constaining your
 # GameMode class. Any resources can be provided in "resources/[GameModeName]". Include the file in
 # main.cpp and add it to the GameModeController with

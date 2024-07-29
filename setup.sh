@@ -11,4 +11,4 @@ export CMAKE_GENERATOR=Ninja
 
 # cmake
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build -j10
+cmake --build build -j24
