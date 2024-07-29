@@ -14,7 +14,7 @@ include(GoogleTest)
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 2.6.1)
+    GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
 # gtest - requires cmake 3.13 or later
@@ -105,8 +105,7 @@ if (BUILD_TESTS)
 
     target_link_libraries(testAll GTest::gtest_main)
     target_compile_features(testAll PRIVATE cxx_std_20)
-    gtest_discover_tests(testAll
-        DISCOVERY_TIMEOUT 600)
+    gtest_discover_tests(testAll DISCOVERY_TIMEOUT 600)
 endif()
 
 # linker
