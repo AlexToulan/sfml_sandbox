@@ -5,6 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Run Tests (gen xml)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/testAll",
+      "args":[
+        "--gtest_output=xml"
+      ],
+      "cwd": "${workspaceFolder}/build/bin",
+      "showDisplayString": true
+    },
+    {
       "name": "Run",
       "type": "cppdbg",
       "request": "launch",

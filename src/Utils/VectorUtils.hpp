@@ -5,9 +5,10 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "Utils/MathUtils.hpp"
+#include "Logging.hpp"
 
 
-// operators
+// sf::Vector2 operators
 template <typename T>
 sf::Vector2<T> operator *(const sf::Vector2<T>& left, const sf::Vector2<T>& right)
 {
@@ -52,9 +53,9 @@ namespace vu
   const float to_degrees = 180.0f / 3.1415926f;
   const float to_radians = 3.1415926f / 180.0f;
 
-  static float dot(const sf::Vector2f& a, const sf::Vector2f& b)
+  static float dot(const sf::Vector2f& aStart, const sf::Vector2f& aEnd)
   {
-    return a.x * b.x + a.y * b.y;
+    return aStart.x * aEnd.x + aStart.y * aEnd.y;
   }
 
   static float lengthSquared(const sf::Vector2f& vec)
@@ -85,9 +86,9 @@ namespace vu
     return { l, sf::Vector2f(vec / (l + vu::epsilon)) };
   }
 
-  // static sf::Vector2f lerp(const sf::Vector2f& a, sf::Vector2f& b, float t)
+  // static sf::Vector2f lerp(const sf::Vector2f& start, sf::Vector2f& end, float t)
   // {
-  //   return (b - a) * t + a;
+  //   return (end - start) * t + start;
   // }
 
   template <typename R, typename T>
@@ -95,49 +96,72 @@ namespace vu
   {
     return sf::Vector2<R>((R)in.x, (R)in.y);
   }
-}
 
-namespace ray
-{
   struct Hit
   {
-    Hit(bool c = false, sf::Vector2f p = sf::Vector2f())
+    Hit(bool bStart = false, sf::Vector2f p = sf::Vector2f())
     {
-      collision = c;
+      collision = bStart;
       point = p;
     }
     bool collision;
+    float det;
     sf::Vector2f point;
   };
 
-  static Hit cast(Hit& outHit, const sf::Vector2f& a, const sf::Vector2f& b, const sf::Vector2f& c, const sf::Vector2f& d)
+  static void rayCast(vu::Hit& outHit, const sf::Vector2f& aStart, const sf::Vector2f& aEnd, const sf::Vector2f& bStart, const sf::Vector2f& bEnd)
   {
-    outHit.collision = false;
-    float a1 = b.y - a.y;
-    float b1 = a.x - b.x;
- 
-    float a2 = d.y - c.y;
-    float b2 = c.x - d.x;
-    float determinant = a1 * b2 - a2 * b1;
+    outHit.point = sf::Vector2f();
+    float a1 = aEnd.y - aStart.y;
+    float b1 = aStart.x - aEnd.x;
 
-    if (determinant != 0.0f)
-      return outHit;
+    float a2 = bEnd.y - bStart.y;
+    float b2 = bStart.x - bEnd.x;
+    outHit.det = a1 * b2 - a2 * b1;
 
+    outHit.collision = outHit.det != 0.0f;
+    if (!outHit.collision)
+      return;
 
-    float c1 = a1 * a.x + b1 * a.y;
-    float c2 = a2 * c.x + b2 * c.y;
-    outHit.point = sf::Vector2f((b2 * c1 - b1 * c2) / determinant, (a1 * c2 - a2 * c1) / determinant);
-    if (a.y > b.y)
-      outHit.collision = outHit.point <= a && outHit.point >= b;
-    else
-      outHit.collision = outHit.point <= b && outHit.point >= a;
-    return outHit;
+    float c1 = a1 * aStart.x + b1 * aStart.y;
+    float c2 = a2 * bStart.x + b2 * bStart.y;
+    outHit.point = sf::Vector2f((b2 * c1 - b1 * c2) / outHit.det, (a1 * c2 - a2 * c1) / outHit.det);
   }
 
-  static Hit cast(const sf::Vector2f& a, const sf::Vector2f& b, const sf::Vector2f& c, const sf::Vector2f& d)
+  static vu::Hit rayCast(const sf::Vector2f& aStart, const sf::Vector2f& aEnd, const sf::Vector2f& bStart, const sf::Vector2f& bEnd)
   {
-    Hit hit;
-    cast(hit, a, b, c, d);
+    vu::Hit hit;
+    cast(hit, aStart, aEnd, bStart, bEnd);
+    return hit;
+  }
+
+  static void lineIntersect(vu::Hit& outHit, const sf::Vector2f& aStart, const sf::Vector2f& aEnd, const sf::Vector2f& bStart, const sf::Vector2f& bEnd)
+  {
+    outHit.collision = false;
+    outHit.point = sf::Vector2f();
+    float a1 = aEnd.y - aStart.y;
+    float b1 = aStart.x - aEnd.x;
+
+    float a2 = bEnd.y - bStart.y;
+    float b2 = bStart.x - bEnd.x;
+    outHit.det = a1 * b2 - a2 * b1;
+
+    if (outHit.det == 0.0f)
+      return;
+
+    float c1 = a1 * aStart.x + b1 * aStart.y;
+    float c2 = a2 * bStart.x + b2 * bStart.y;
+    outHit.point = sf::Vector2f((b2 * c1 - b1 * c2) / outHit.det, (a1 * c2 - a2 * c1) / outHit.det);
+    if (aStart.y > aEnd.y)
+      outHit.collision = outHit.point <= aStart && outHit.point >= aEnd;
+    else
+      outHit.collision = outHit.point <= aEnd && outHit.point >= aStart;
+  }
+
+  static vu::Hit lineIntersect(const sf::Vector2f& aStart, const sf::Vector2f& aEnd, const sf::Vector2f& bStart, const sf::Vector2f& bEnd)
+  {
+    vu::Hit hit;
+    lineIntersect(hit, aStart, aEnd, bStart, bEnd);
     return hit;
   }
 }
